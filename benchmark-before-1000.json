@@ -1,0 +1,19 @@
+{
+  "label": "before",
+  "rows": 1000,
+  "seconds": {
+    "preflight": 0.047,
+    "inspect_source": 5.39,
+    "inspect_reference": 4.787,
+    "lookup": 20.196,
+    "summary": 23.982,
+    "clean": 11.38
+  },
+  "formula_checks": {
+    "lookup": 1000,
+    "summary": 2000,
+    "clean": 0
+  },
+  "app_sha256": "698378c482edc4b83ea6eeba7b32a3488ae0d49abc04388626f4a659e900737b",
+  "bridge_sha256": "f27a5484886faf678088cce697d8cb62ee17b0b6bc22c07cf9786b6c40ca79b5"
+}

@@ -1,0 +1,20 @@
+{
+  "passed": 14,
+  "checks": [
+    "header #0 safely displayed",
+    "manual preview waits without executing",
+    "cancel produces no execution",
+    "explicit acceptance executes exactly once",
+    "AI proposal waits for acceptance",
+    "AI clarification waits without execution",
+    "changed file blocks acceptance",
+    "invalid header input reports an error",
+    "busy window keeps worker alive",
+    "callback error is handled",
+    "header error shows raw row numbers and blocks execution",
+    "sheet selector remains available after header error",
+    "correcting header row recovers same file",
+    "reset session clears all inputs and returns to step 1"
+  ],
+  "scope": "Actual Tk controls; Excel execution mocked"
+}

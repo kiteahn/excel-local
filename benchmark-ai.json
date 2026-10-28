@@ -1,0 +1,10 @@
+{
+  "seconds": {
+    "before": 19.464,
+    "after": 7.742,
+    "repeat": 0.173
+  },
+  "model": "qwen3:4b-q4_K_M",
+  "ai_client_sha256": "3328f7c485d14fbb80ab7d45467081cd72feb0c6b2d8213aa5f1415da6979ebb",
+  "scope": "One request per case, CPU; cache is RAM-only and runtime/model checks still run"
+}

@@ -1,0 +1,325 @@
+{
+  "passed": 79,
+  "tests": [
+    {
+      "test": "complete file published",
+      "status": "pass"
+    },
+    {
+      "test": "existing output protected",
+      "status": "pass"
+    },
+    {
+      "test": "no partial output survives",
+      "status": "pass"
+    },
+    {
+      "test": "key '00123' General",
+      "status": "pass"
+    },
+    {
+      "test": "key 123 00000",
+      "status": "pass"
+    },
+    {
+      "test": "key -123 00000",
+      "status": "pass"
+    },
+    {
+      "test": "key 123 General",
+      "status": "pass"
+    },
+    {
+      "test": "key '  ABC  ' General",
+      "status": "pass"
+    },
+    {
+      "test": "key 'ĐOÀN' General",
+      "status": "pass"
+    },
+    {
+      "test": "key None General",
+      "status": "pass"
+    },
+    {
+      "test": "key '' General",
+      "status": "pass"
+    },
+    {
+      "test": "key 'a*b' General",
+      "status": "pass"
+    },
+    {
+      "test": "key 'a?b' General",
+      "status": "pass"
+    },
+    {
+      "test": "key 'a~b' General",
+      "status": "pass"
+    },
+    {
+      "test": "date key",
+      "status": "pass"
+    },
+    {
+      "test": "boolean key",
+      "status": "pass"
+    },
+    {
+      "test": "nonfinite key",
+      "status": "pass"
+    },
+    {
+      "test": "decimal arithmetic",
+      "status": "pass"
+    },
+    {
+      "test": "ambiguous number '1,234'",
+      "status": "pass"
+    },
+    {
+      "test": "ambiguous number '1.234,56'",
+      "status": "pass"
+    },
+    {
+      "test": "ambiguous number 'abc'",
+      "status": "pass"
+    },
+    {
+      "test": "ambiguous number ''",
+      "status": "pass"
+    },
+    {
+      "test": "ambiguous number None",
+      "status": "pass"
+    },
+    {
+      "test": "ambiguous number True",
+      "status": "pass"
+    },
+    {
+      "test": "ambiguous number inf",
+      "status": "pass"
+    },
+    {
+      "test": "ambiguous number '1e20'",
+      "status": "pass"
+    },
+    {
+      "test": "too many significant digits",
+      "status": "pass"
+    },
+    {
+      "test": "unsafe formula WEBSERVICE(\"https://x\")",
+      "status": "pass"
+    },
+    {
+      "test": "unsafe formula HYPERLINK(\"https://x\",\"x\")",
+      "status": "pass"
+    },
+    {
+      "test": "unsafe formula '[evil.xlsx]Sheet1'!A1",
+      "status": "pass"
+    },
+    {
+      "test": "unsafe formula cmd|something!A1",
+      "status": "pass"
+    },
+    {
+      "test": "unsafe formula UnknownUdf(A1)",
+      "status": "pass"
+    },
+    {
+      "test": "unsafe formula SUM(Table1[Amount])",
+      "status": "pass"
+    },
+    {
+      "test": "unsafe formula INDIRECT(A1)",
+      "status": "pass"
+    },
+    {
+      "test": "formula text is inert",
+      "status": "pass"
+    },
+    {
+      "test": "lookup matched count",
+      "status": "pass"
+    },
+    {
+      "test": "lookup duplicate count",
+      "status": "pass"
+    },
+    {
+      "test": "lookup missing count",
+      "status": "pass"
+    },
+    {
+      "test": "duplicates do not pick first",
+      "status": "pass"
+    },
+    {
+      "test": "wildcards escaped in exact match",
+      "status": "pass"
+    },
+    {
+      "test": "literal formula string kept as data",
+      "status": "pass"
+    },
+    {
+      "test": "independent aggregate total",
+      "status": "pass"
+    },
+    {
+      "test": "aggregate group count",
+      "status": "pass"
+    },
+    {
+      "test": "only intended strings cleaned",
+      "status": "pass"
+    },
+    {
+      "test": "input snapshot unchanged",
+      "status": "pass"
+    },
+    {
+      "test": "clean leaves numeric dates alone",
+      "status": "pass"
+    },
+    {
+      "test": "clean preserves padded numeric cell type",
+      "status": "pass"
+    },
+    {
+      "test": "AI unknown operation",
+      "status": "pass"
+    },
+    {
+      "test": "AI unknown column",
+      "status": "pass"
+    },
+    {
+      "test": "AI unknown field",
+      "status": "pass"
+    },
+    {
+      "test": "AI absent reference",
+      "status": "pass"
+    },
+    {
+      "test": "CSV leading zero preserved",
+      "status": "pass"
+    },
+    {
+      "test": "CSV formula remains string",
+      "status": "pass"
+    },
+    {
+      "test": "ragged CSV",
+      "status": "pass"
+    },
+    {
+      "test": "oversized CSV cell",
+      "status": "pass"
+    },
+    {
+      "test": "CSV control character",
+      "status": "pass"
+    },
+    {
+      "test": "external data connection",
+      "status": "pass"
+    },
+    {
+      "test": "network formula in OOXML",
+      "status": "pass"
+    },
+    {
+      "test": "external relationship",
+      "status": "pass"
+    },
+    {
+      "test": "DTD in otherwise unused XML part",
+      "status": "pass"
+    },
+    {
+      "test": "executable defined name",
+      "status": "pass"
+    },
+    {
+      "test": "Excel inspection row count",
+      "status": "pass"
+    },
+    {
+      "test": "Excel lookup reconciliation",
+      "status": "pass"
+    },
+    {
+      "test": "all matching formulas checked",
+      "status": "pass"
+    },
+    {
+      "test": "source sheets unchanged",
+      "status": "pass"
+    },
+    {
+      "test": "leading-zero numeric code matches",
+      "status": "pass"
+    },
+    {
+      "test": "literal wildcard correct after Excel",
+      "status": "pass"
+    },
+    {
+      "test": "formula injection inert after save",
+      "status": "pass"
+    },
+    {
+      "test": "no imported HYPERLINK formula",
+      "status": "pass"
+    },
+    {
+      "test": "PDF created",
+      "status": "pass"
+    },
+    {
+      "test": "Excel aggregation independent total",
+      "status": "pass"
+    },
+    {
+      "test": "Excel aggregate formula checks",
+      "status": "pass"
+    },
+    {
+      "test": "Excel clean only one cell",
+      "status": "pass"
+    },
+    {
+      "test": "original file hashes unchanged",
+      "status": "pass"
+    },
+    {
+      "test": "fresh Excel calculation error rejected",
+      "status": "pass"
+    },
+    {
+      "test": "new task files cleaned up",
+      "status": "pass"
+    },
+    {
+      "test": "Vietnamese AI lookup plan",
+      "status": "pass"
+    },
+    {
+      "test": "Vietnamese AI summary plan",
+      "status": "pass"
+    },
+    {
+      "test": "AI refuses arbitrary execution",
+      "status": "pass"
+    }
+  ],
+  "integration": true,
+  "ai": true,
+  "example_output": "D:\\Excel\\excel-local\\output\\20261006-114524_lookup_d1472c45.xlsx",
+  "security_scope": "Kiểm tra cục bộ chức năng và trust boundary; chưa nghiệm thu bảo mật toàn máy"
+}

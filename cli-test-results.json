@@ -1,0 +1,12 @@
+{
+  "passed": 6,
+  "checks": [
+    "default CLI previews without execution",
+    "wrong token blocks execution",
+    "matching token executes exactly once",
+    "changed source blocks previous token",
+    "CLI --batch-dir with --plan executes batch successfully",
+    "CLI --batch-dir with --ai-prompt infers plan and executes batch"
+  ],
+  "scope": "CLI gate; execution mocked"
+}

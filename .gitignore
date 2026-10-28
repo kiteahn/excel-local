@@ -1,0 +1,30 @@
+# Security & Secret configs
+config.json
+*.key
+*.token
+*.env
+
+# Runtime & local models (downloaded via setup-runtime.ps1)
+runtime/
+!runtime/.gitkeep
+
+# Work & staging directory
+.work/
+
+# Backup files
+*.bak
+
+# Output artifacts & test workbooks
+output/
+*.partial-*
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Excel temporary and lock files
+~$*.xlsx
+~$*.xls
+*.tmp

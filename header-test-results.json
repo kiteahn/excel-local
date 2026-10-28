@@ -1,0 +1,18 @@
+{
+  "passed": 11,
+  "checks": [
+    "title row reports actual empty cell addresses",
+    "empty table margins excluded",
+    "original cell format offset preserved",
+    "raw source rows unchanged",
+    "populated unnamed middle column is not removed",
+    "duplicate header identifies both addresses",
+    "out-of-range row keeps raw inspection available",
+    "native Excel sheet choices retained on header error",
+    "native table with leading margin reads correctly",
+    "native output keeps code format and source sheets",
+    "lookup reads zero-padded code from original offset"
+  ],
+  "scope": "Header parser + native Excel read/write; synthetic files only",
+  "app_sha256": "6f037a1fb39340cdac9ae309eb50efa48ea9ce28c7cbb5e33ca924a688f1c889"
+}

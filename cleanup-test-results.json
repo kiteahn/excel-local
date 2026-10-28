@@ -1,0 +1,10 @@
+﻿{
+    "scope":  "Native isolated Excel; no workbook or user data",
+    "checks":  [
+                   "Unowned Excel is not stopped",
+                   "Mismatched start time is not stopped",
+                   "Mismatched executable path is not stopped",
+                   "Exact owned Excel is stopped"
+               ],
+    "passed":  4
+}

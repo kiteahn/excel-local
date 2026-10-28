@@ -1,0 +1,162 @@
+{
+  "version": "0.2",
+  "created": "2026-10-06T13:37:45.687853+07:00",
+  "passed": 122,
+  "suites": {
+    "test-results.json": {
+      "passed": 101,
+      "sha256": "16e42f8f2cf04a8effc61aaa908a24fcfae3780ea506130db951d128f6911a00"
+    },
+    "gui-test-results.json": {
+      "passed": 10,
+      "sha256": "aa17754b6ac47b5887e1e1680ab9b87d9c6f1ea7b6a1ba8aa584053898b19259"
+    },
+    "cli-test-results.json": {
+      "passed": 4,
+      "sha256": "bc29f58aa3ff6c8c7688976dbe42f92bd96aaa6ee234f91882bb409a59f3b999"
+    },
+    "cleanup-test-results.json": {
+      "passed": 4,
+      "sha256": "27ae8fda99ae3c8522b18ba1c546ce7d5613b07ea0799cc290e2a942d321d8c7"
+    },
+    "read-boundary-test-results.json": {
+      "passed": 3,
+      "sha256": "95813ffc94b839557239d93911677204d1fe533c1bdd0431202fbf79fead7625"
+    }
+  },
+  "code_sha256": {
+    "app.py": "4328e48f2e93cdf6dc1a7eaf8d1cefa5fd0a05c262ff1c684a25f5fa4acf6c28",
+    "ai_client.py": "3328f7c485d14fbb80ab7d45467081cd72feb0c6b2d8213aa5f1415da6979ebb",
+    "excel_bridge.ps1": "e96e2abcdd88f57262efd1cbd04da6264b9e1e28d1a1dc06a5b328f03cb9b2b5",
+    "test_app.py": "bb0fb328190ee8c3eccae82574f7b754dd4603866a5a661d1eb45137909fe372",
+    "test_gui.py": "2c06896d82c7a77738fae59973d3630c0585e60a459a9c8ad6ba899e0984aaca",
+    "test_cli.py": "e60467de744eec2611bc61cc481129532613bbbe7d39458a71d9e3523cd1e141",
+    "test_cleanup.ps1": "305c26f9c0fabd8459f701568f21cf2c83a0b9aa997883e3ab987afe1b9506b8",
+    "test_read_boundary.py": "d5900e585493b17d506c81f3bd02eaae7a911594471a565c3af29c42bcffd195",
+    "benchmark.py": "07ac72ae015717e2d24b6681ac522aad1fa64783f20e27b30c7872109f9e668c",
+    "benchmark_ai.py": "a44a3432e3fac0c525015703a023427dda03f35ea4dfbd8b04ec3c8bc45dd534"
+  },
+  "benchmarks": {
+    "before_1000": {
+      "label": "before",
+      "rows": 1000,
+      "seconds": {
+        "preflight": 0.047,
+        "inspect_source": 5.39,
+        "inspect_reference": 4.787,
+        "lookup": 20.196,
+        "summary": 23.982,
+        "clean": 11.38
+      },
+      "formula_checks": {
+        "lookup": 1000,
+        "summary": 2000,
+        "clean": 0
+      },
+      "app_sha256": "698378c482edc4b83ea6eeba7b32a3488ae0d49abc04388626f4a659e900737b",
+      "bridge_sha256": "f27a5484886faf678088cce697d8cb62ee17b0b6bc22c07cf9786b6c40ca79b5"
+    },
+    "final_1000": {
+      "label": "final",
+      "rows": 1000,
+      "seconds": {
+        "preflight": 0.062,
+        "inspect_source": 4.809,
+        "inspect_reference": 4.902,
+        "lookup": 7.773,
+        "summary": 8.701,
+        "clean": 7.541
+      },
+      "formula_checks": {
+        "lookup": 1000,
+        "summary": 2000,
+        "clean": 0
+      },
+      "bridge_phases": {
+        "lookup": {
+          "verify_seconds": 0.12646270000000026,
+          "save_seconds": 0.1667019999999999,
+          "open_seconds": 1.6312119999999999,
+          "write_seconds": 2.6310282999999997,
+          "calculate_seconds": 0.014846200000000032
+        },
+        "summary": {
+          "verify_seconds": 0.21072800000000047,
+          "save_seconds": 0.16891070000000052,
+          "open_seconds": 1.4509853,
+          "write_seconds": 3.5616647,
+          "calculate_seconds": 0.07514290000000035
+        },
+        "clean": {
+          "verify_seconds": 0.06200200000000056,
+          "save_seconds": 0.1549391999999994,
+          "open_seconds": 1.5360744,
+          "write_seconds": 2.4634872,
+          "calculate_seconds": 0.017225999999999964
+        }
+      },
+      "app_sha256": "4328e48f2e93cdf6dc1a7eaf8d1cefa5fd0a05c262ff1c684a25f5fa4acf6c28",
+      "bridge_sha256": "e96e2abcdd88f57262efd1cbd04da6264b9e1e28d1a1dc06a5b328f03cb9b2b5"
+    },
+    "final_5000": {
+      "label": "final",
+      "rows": 5000,
+      "seconds": {
+        "preflight": 0.146,
+        "inspect_source": 5.12,
+        "inspect_reference": 4.959,
+        "lookup": 15.829,
+        "summary": 13.601,
+        "clean": 11.114
+      },
+      "formula_checks": {
+        "lookup": 5000,
+        "summary": 10000,
+        "clean": 0
+      },
+      "bridge_phases": {
+        "lookup": {
+          "verify_seconds": 0.6885249000000009,
+          "save_seconds": 0.40014950000000127,
+          "open_seconds": 1.5736727,
+          "write_seconds": 7.5420549999999995,
+          "calculate_seconds": 0.12129030000000007
+        },
+        "summary": {
+          "verify_seconds": 0.4686026999999999,
+          "save_seconds": 0.3208184000000003,
+          "open_seconds": 1.9329657999999998,
+          "write_seconds": 4.6177941,
+          "calculate_seconds": 0.03543410000000069
+        },
+        "clean": {
+          "verify_seconds": 0.08086789999999944,
+          "save_seconds": 0.35856149999999953,
+          "open_seconds": 1.5054634999999998,
+          "write_seconds": 3.6282681999999995,
+          "calculate_seconds": 0.01959930000000032
+        }
+      },
+      "app_sha256": "4328e48f2e93cdf6dc1a7eaf8d1cefa5fd0a05c262ff1c684a25f5fa4acf6c28",
+      "bridge_sha256": "e96e2abcdd88f57262efd1cbd04da6264b9e1e28d1a1dc06a5b328f03cb9b2b5"
+    },
+    "ai": {
+      "seconds": {
+        "before": 19.464,
+        "after": 7.742,
+        "repeat": 0.173
+      },
+      "model": "qwen3:4b-q4_K_M",
+      "ai_client_sha256": "3328f7c485d14fbb80ab7d45467081cd72feb0c6b2d8213aa5f1415da6979ebb",
+      "scope": "One request per case, CPU; cache is RAM-only and runtime/model checks still run"
+    }
+  },
+  "work_empty": true,
+  "scope": "Synthetic data. Main suite: native Excel + local AI. GUI/CLI gates mock execution. Cleanup and copied-input boundary also tested separately with native Excel.",
+  "limits": [
+    "Single benchmark run per case, not a statistical latency guarantee.",
+    "AI fresh-request observations: 7.742s in benchmark, 17.62s in full suite; repeat 0.173-0.23s.",
+    "Main suite preceded final copied-input hardening; adversarial boundary checks and both final benchmarks exercised the hardened input path.",
+    "Full-machine encryption/egress/AutoRecover and PDF visual layout remain unverified."
+  ]
+}

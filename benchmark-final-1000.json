@@ -1,0 +1,42 @@
+{
+  "label": "final",
+  "rows": 1000,
+  "seconds": {
+    "preflight": 0.062,
+    "inspect_source": 4.809,
+    "inspect_reference": 4.902,
+    "lookup": 7.773,
+    "summary": 8.701,
+    "clean": 7.541
+  },
+  "formula_checks": {
+    "lookup": 1000,
+    "summary": 2000,
+    "clean": 0
+  },
+  "bridge_phases": {
+    "lookup": {
+      "verify_seconds": 0.12646270000000026,
+      "save_seconds": 0.1667019999999999,
+      "open_seconds": 1.6312119999999999,
+      "write_seconds": 2.6310282999999997,
+      "calculate_seconds": 0.014846200000000032
+    },
+    "summary": {
+      "verify_seconds": 0.21072800000000047,
+      "save_seconds": 0.16891070000000052,
+      "open_seconds": 1.4509853,
+      "write_seconds": 3.5616647,
+      "calculate_seconds": 0.07514290000000035
+    },
+    "clean": {
+      "verify_seconds": 0.06200200000000056,
+      "save_seconds": 0.1549391999999994,
+      "open_seconds": 1.5360744,
+      "write_seconds": 2.4634872,
+      "calculate_seconds": 0.017225999999999964
+    }
+  },
+  "app_sha256": "4328e48f2e93cdf6dc1a7eaf8d1cefa5fd0a05c262ff1c684a25f5fa4acf6c28",
+  "bridge_sha256": "e96e2abcdd88f57262efd1cbd04da6264b9e1e28d1a1dc06a5b328f03cb9b2b5"
+}

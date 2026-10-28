@@ -1,0 +1,9 @@
+{
+  "passed": 3,
+  "checks": [
+    "Changed copy rejected before Excel opens",
+    "Exact copied XML is checked before Excel opens",
+    "Verified one-column workbook reads in native Excel"
+  ],
+  "scope": "Two adversarial swaps + one real Excel read; synthetic files only"
+}
