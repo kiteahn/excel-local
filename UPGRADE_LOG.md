@@ -229,5 +229,28 @@ Trạng thái từng vấn đề (đối chiếu log từ Bước 0 tới Vòng 
 | 17 | Batch GUI: lambda giữ exc → NameError | Đã vá (Vòng 18); kiểm chứng trực quan: hàng đợi Windows |
 
 Số liệu đo thật tại vòng này: nhánh muse-upgrade có 19 commit (Bước 0 + Vòng 1–18) trên nền commit gốc 28f5679. app.py 2.264 → 2.330 dòng; ai_client.py 1.439 → 1.511 dòng (tăng do tách helper + guard + tooltip — độ dài hàm lớn nhất giảm mạnh dù tổng dòng tăng nhẹ). Suite: 17/17 file exit 0 trên Linux; cộng các bộ đếm đã in trong output thật: 79 (app) + 61 (edge) + 28 (upgrades) + 6 (cli) + 7 mục (router) + 38 (security, phần logic Linux) + 34 (usecases) + 20 (fuzz) + 28 (infer golden) + 8 (sanitize) + 53 mẫu (privacy corpus) + 24 (single-file) + 11 (headers) + 6 (diverse) + 10 (batch) + 2 (read boundary, phần Linux) ≈ **415 check logic đã kiểm chứng trên Linux**; phần cần Windows/Excel/DPAPI/display được SKIP có lý do, không tính là đạt.
+
+### Vòng 20 — TỔNG KẾT 20 VÒNG (2026-10-30)
+
+21 commit trên nhánh `muse-upgrade` (Bước 0 + Vòng 1–20, tính cả commit chứa tổng kết này), chưa push. Toàn bộ thay đổi đều có test chạy lại trên máy Linux không Excel; mọi khẳng định "đã sửa" trong log đều kèm bằng chứng chạy thật, và 4 lần kỳ vọng ban đầu của chính quá trình bị dữ kiện bác bỏ đều được ghi lại thay vì giấu (UC-20b, UC-26, F-14, sự cố khôi phục mutation ở Vòng 12).
+
+Chấm lại 8 hạng mục (thang 10):
+
+| Hạng mục | Bước 0 | Vòng 10 | Vòng 20 | Căn cứ vòng 20 |
+|---|---|---|---|---|
+| Độ đúng dữ liệu | 7 | 7 | **8** | Vá VĐ-12 (mất dữ liệu CSV), VĐ-14, VĐ-15/16 (khóa/cột ma), VĐ-17; phủ thêm fuzz + mutation 2 đợt |
+| Bảo mật / riêng tư | 6 | 8 | **8** | Giữ nguyên: VĐ-11 đã vá + corpus 53 mẫu; nghiệm thu DPAPI thật vẫn chờ Windows nên không tăng |
+| Cấu trúc code | 4 | 5 | **6** | infer_smart_plan 478 → 25 dòng + 5 helper; prepare_sheets giữ nguyên có lý do; gui ~909 dòng chưa tách nên trần ở 6 |
+| Xử lý lỗi | 5 | 6 | **7** | Thêm VĐ-17 (đường báo lỗi tự sập) + hợp đồng fuzz "không ngoại lệ lạ" |
+| Test | 6 | 8 | **9** | 17 file, ~415 check trên Linux; có test vàng, fuzz, mutation 10/10 bị bắt (2 đợt); trừ 1 vì phần Excel thật chưa chạy lại được ở đây |
+| Hiệu quả (hiệu năng) | 5 | 6 | **6** | Không đổi: giai đoạn Python đã đo và không nghẽn; Excel COM chưa đo được |
+| Giao diện | 5 | 6 | **6** | Không đổi: tooltip/phím tắt/VĐ-17 đều chưa kiểm chứng trực quan trên Windows |
+| Tài liệu | 4 | 8 | **9** | Thêm USECASES.md (37 use case), README đồng bộ 2 lần theo số thật, log này là hồ sơ đầy đủ |
+
+Việc còn dở, nói thẳng:
+1. **Toàn bộ hàng đợi Windows chưa hề được chạm vào** vì môi trường này không có Excel/DPAPI/display: UC-32/33/35/36, đo lại benchmark Excel COM, kiểm tra trực quan tooltip (Vòng 10) và đường lỗi batch (VĐ-17), nghiệm thu DPAPI thật (VĐ-11). Đây là phần rủi ro tồn dư lớn nhất — code đã sẵn, bằng chứng thì chưa.
+2. **gui() ~909 dòng chưa tách** (phần còn lại của VĐ-06) — cần test GUI thật trên Windows để tách an toàn, không nên tách mù từ Linux.
+3. Ba quyết định chờ người dùng (ở NEXT.md): push nhánh hay không; chính sách cloud/local mặc định; '500.000' = 500 nghìn hay 500 thập phân.
+4. Dư nhỏ đã chấp nhận: 16 `except Exception` giữ kèm lý do (VĐ-05); từ 'cập nhật' chưa kích hoạt lookup (VĐ-16 dư); tên riêng đứng một mình lọt PrivacyGuard (giới hạn regex đã đo và ghi trong README).
 - Kiểm chứng mạnh hơn các đợt trước: ngoài toàn bộ suite liên quan (router 7, security 38, app 79, edge 61, usecases 34, fuzz 20, privacy corpus, upgrades 28, cli 6 — tất cả đạt), còn so sánh trực tiếp hành vi: nạp song song ai_client bản trước vòng này (từ git HEAD) và bản mới, chạy 15 prompt đại diện cho cả 5 nhánh (Q&A, lookup, summary, clean, filter, không khớp gì) — kết quả JSON giống hệt 15/15.
 - Kiểm tra sau: chạy lại toàn bộ 13 file test — tất cả exit 0; root không còn file *.json; file kết quả mới sinh ra nằm trong `results/` (đã khôi phục nội dung kết quả đã commit để vòng này chỉ gồm việc di chuyển, không lẫn nội dung kết quả chạy trên Linux).

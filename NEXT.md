@@ -1,28 +1,30 @@
 # NEXT — việc tiếp theo (cập nhật sau mỗi vòng)
 
-## Vòng tiếp theo: Vòng 19 — Đối chiếu mọi mục còn mở, chuẩn bị tổng kết
+## Trạng thái: đã hoàn thành mốc TỔNG KẾT 20 VÒNG (xem UPGRADE_LOG.md)
 
-1. Rà UPGRADE_LOG từ Bước 0: liệt kê trạng thái từng VĐ (01–17) — đã
-   sửa/chấp nhận/hàng đợi Windows — kiểm tra không mục nào bị quên.
-2. Đếm lại toàn bộ số liệu sẽ dùng trong tổng kết: số commit, số file test
-   và tổng số check chạy được trên Linux (chạy lại cả suite một lượt và
-   cộng từ output thật), số dòng app.py/ai_client.py trước (từ git bản gốc
-   28f5679) và nay.
-3. Soát README + USECASES.md lần cuối cho khớp số liệu vòng 19.
+Nhánh `muse-upgrade`: 21 commit (Bước 0 + Vòng 1–20), CHƯA push.
 
-## Vòng 20 — TỔNG KẾT 20 VÒNG (bắt buộc theo PROMPT_MUSE)
-- Viết mục "TỔNG KẾT 20 VÒNG" vào UPGRADE_LOG.md: chấm lại 8 hạng mục,
-  bảng VĐ-01…17 và trạng thái, những gì CHƯA làm được (hàng đợi Windows
-  nguyên vẹn), câu hỏi chờ người dùng, và đề xuất hướng tiếp theo sau
-  vòng 20 nếu người dùng muốn chạy tiếp (ứng viên: nghiệm thu Windows,
-  tách gui có kiểm chứng, xử lý nốt từ kích hoạt 'cập nhật').
-- Cập nhật NEXT.md thành kế hoạch hậu-20 vòng.
-- Commit tổng kết. Sau vòng 20, nếu không có chỉ đạo mới từ người dùng,
-  vòng lặp vẫn tiếp tục theo NEXT (chế độ không cạn việc) — trừ khi có
-  STOP.txt.
+## Hướng tiếp theo nếu chạy tiếp (theo thứ tự giá trị)
+
+1. **Nghiệm thu Windows (giá trị cao nhất, cần máy Windows của người dùng):**
+   chạy trên máy có Excel — test_app.py --integration, UC-32/33/35/36 trong
+   USECASES.md, benchmark.py đo lại, test_gui.py + nhìn trực tiếp tooltip
+   (Vòng 10) và hộp lỗi batch (VĐ-17), test_security_privacy mục DPAPI.
+   Kết quả (đạt/không) cần được ghi bổ sung vào UPGRADE_LOG.
+2. **Tách gui() có kiểm chứng** — chỉ sau khi có test_gui chạy thật ở mục 1:
+   tách theo panel (nguồn/tham chiếu, đề xuất, xem trước, batch, settings)
+   với test vàng hành vi nếu khả thi.
+3. **Vòng lặp bảo trì nhẹ từ Linux** (làm được ngay, giá trị giảm dần):
+   fuzz đợt 2 cho detect_header_row/select_header trên snapshot dict;
+   mutation đợt 3 cho app.py (preflight, validate_plan, execute token);
+   rà soát các except giữ lại ở VĐ-05 khi có tín hiệu lỗi mới.
 
 ## Câu hỏi chờ người dùng (ghi lại, vẫn làm việc khác — không chờ)
+- Push nhánh `muse-upgrade` (21 commit) lên GitHub chưa? Repo công khai
+  nên cần xác nhận rõ ràng.
 - Chính sách mặc định: Smart Router (có cloud) hay Ollama-only?
 - '500.000' một dấu chấm = 500 nghìn hay 500 thập phân? (USECASES UC-20b)
-- Nhánh `muse-upgrade`: 19 commit (Bước 0 + Vòng 1–18), CHƯA push — cần
-  người dùng xác nhận mới push lên GitHub (repo công khai).
+
+## Điều kiện dừng
+- File `STOP.txt` ở thư mục gốc repo (kiểm tra sau mỗi vòng — tới nay
+  chưa từng xuất hiện).
