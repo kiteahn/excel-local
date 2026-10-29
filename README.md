@@ -1,17 +1,17 @@
 # Excel Local Expert (v0.3.1)
 
-Ứng dụng Windows xử lý bảng tính với Smart Multi-Model Router (Kiến trúc 9Router luân phiên: Google Gemini Free Tier, Groq Cloud Free Llama 70B, OpenAI Official & Ollama Local Offline), tính năng tự chữa lành ô gộp/tiêu đề và đối soát độc lập bằng native Excel Desktop.
+Ứng dụng Windows xử lý bảng tính với Smart Multi-Model Router (luân phiên các nhà cung cấp người dùng đã cấu hình khóa: Google Gemini, Groq Cloud, OpenAI/OpenRouter hoặc endpoint tương thích, và Ollama Local), tính năng tự chữa lành ô gộp/tiêu đề và đối soát độc lập bằng native Excel Desktop. Người dùng tự chọn động cơ: chế độ cục bộ (heuristic/Ollama) không gửi gì ra ngoài; chế độ cloud gửi **tên cột và câu yêu cầu đã qua bước che PII bằng regex** tới nhà cung cấp đã chọn — không gửi dữ liệu hàng (xem mục "Bảo mật & quyền riêng tư" để biết giới hạn).
 
 ## Mở ứng dụng
 
 Nhấp đúp `start.cmd` hoặc chạy `python app.py`. Máy hiện tại đã có Python 3.14 và Excel Microsoft 365. Không cần cài thêm bất kỳ thư viện ngoài nào (100% Python Standard Library).
 
-1. Chọn **File nguồn** XLSX/CSV/XLS. Bấm **🔍 Tự tìm dòng** nếu file có các dòng tiêu đề/banner phía trên. Bật tùy chọn **Tự chữa lành ô gộp & cột khuyết** để tự động xử lý ô gộp và cột trùng tên.
+1. Chọn **File nguồn** XLSX/CSV (định dạng XLS cũ chưa được hỗ trợ — xem mục Giới hạn). Bấm **🔍 Tự tìm dòng** nếu file có các dòng tiêu đề/banner phía trên. Bật tùy chọn **Tự chữa lành ô gộp & cột khuyết** để tự động xử lý ô gộp và cột trùng tên.
 2. Với đối chiếu, chọn thêm **Danh mục đối chiếu** và các cột khóa/giá trị.
 3. Chọn động cơ AI:
    - **⚡ Smart Multi-Model Router (Khuyên dùng):** Tự động luân phiên giữa các model AI miễn phí & trả phí chất lượng cao (Google Gemini Free Tier, Groq Llama 3.3 70B, OpenAI). Tự động failover sang model kế tiếp khi gặp giới hạn hạn mức (quota) và tự động fallback về Ollama Local khi mất mạng internet.
-   - **🏠 Ollama Cục bộ (Offline 100%):** Chạy hoàn toàn nội bộ trên máy trong mạng cô lập (không cần internet).
-4. Bấm **⚙ Cài đặt AI & Smart Router** để nhập API Key (được mã hóa bảo mật tuyệt đối bằng Windows DPAPI). Có thể dùng API Key hoàn toàn miễn phí từ Google AI Studio hoặc Groq Cloud.
+   - **🏠 Ollama Cục bộ (Offline):** Khi chọn chế độ này, ứng dụng chỉ gọi Ollama tại 127.0.0.1 trên máy, không cần internet.
+4. Bấm **⚙ Cài đặt AI & Smart Router** để nhập API Key (được mã hóa bằng Windows DPAPI; chỉ tài khoản Windows hiện tại mới giải mã được — đây là lớp bảo vệ khi file cấu hình bị sao chép, không phải bảo vệ tuyệt đối nếu chính tài khoản/máy đã bị xâm nhập). Có thể dùng API Key hoàn toàn miễn phí từ Google AI Studio hoặc Groq Cloud.
 5. Nhập yêu cầu tự nhiên rồi bấm **✨ AI Phân tích & Lập đề xuất**, hoặc chọn cột thủ công.
 6. Bấm **3. Kiểm tra kết quả dự kiến (Preview)** để xem trước dữ liệu mẫu và các thẻ thống kê trực quan.
 7. Bấm **Chấp nhận và thực hiện** để Excel native thực thi, tính toán và đối soát độc lập.
@@ -23,7 +23,7 @@ Nhấp đúp `start.cmd` hoặc chạy `python app.py`. Máy hiện tại đã c
 | Đối chiếu | Khớp khóa chính xác, công thức INDEX/MATCH từ mẫu cố định, liệt kê `KHOP`, `KHONG_TIM_THAY`, `KHOA_TRUNG`, `KHOA_TRONG` |
 | Tổng hợp | Cộng một cột số theo nhóm; SUM/COUNT trên vùng riêng của từng nhóm trong Excel được so với tổng Decimal và số dòng tính độc lập bằng Python |
 | Làm sạch | Bỏ khoảng trắng đầu/cuối và chuẩn NFC ở một cột, trên sheet kết quả; không xóa dòng trùng |
-| AI tiếng Việt | Tự động phân tích yêu cầu ngôn ngữ tự nhiên thành một trong bốn thao tác; tự động nhận diện ý định lọc cán sự/điểm số |
+| AI tiếng Việt | Tự động phân tích yêu cầu ngôn ngữ tự nhiên thành một trong các thao tác lookup/summary/clean/filter (hoặc clarify để hỏi lại); tự động nhận diện ý định lọc cán sự/điểm số |
 | Xem trước và chấp nhận | Dự kiến tính trong RAM; thay đổi file, dữ liệu, cột, PDF hoặc thư mục đầu ra làm mất hiệu lực bản chấp nhận |
 | Xuất bản | Sau khi chấp nhận và đối soát: workbook XLSX mới, biên bản JSON, sheet kiểm tra và PDF tùy chọn |
 
@@ -48,18 +48,18 @@ Khóa danh mục xuất hiện nhiều lần luôn được báo trùng, kể c�
 
 Runtime portable: Ollama **0.35.1**, cổng **127.0.0.1:11435**; model **qwen3:4b-q4_K_M**, digest **2bfd38a7daaf4b1037efe517ccb73d1a3bbd4822cf89f1a82be1569050a114e0**. `runtime/runtime-lock.json` ghi hash binary và model đã chuẩn bị. Ứng dụng kiểm tra lock trước khi dùng.
 
-`setup-runtime.ps1` dành cho giai đoạn chuẩn bị có mạng: tải bản phát hành chính thức đã khóa SHA-256 và model. Trong sử dụng thông thường, ứng dụng chỉ gọi API loopback, không tự tải model, không dùng proxy/chuyển hướng và không chuyển sang cloud khi lỗi. `OLLAMA_NO_CLOUD=1` được đặt khi khởi động server. AI nhận tên cột và yêu cầu để lập kế hoạch; không nhận toàn bộ dữ liệu hàng.
+`setup-runtime.ps1` dành cho giai đoạn chuẩn bị có mạng: tải bản phát hành chính thức đã khóa SHA-256 và model. **Đoạn này chỉ mô tả chế độ Ollama cục bộ:** ở chế độ đó, ứng dụng chỉ gọi API loopback (127.0.0.1:11435), không tự tải model, không dùng proxy/chuyển hướng và không tự chuyển sang cloud khi lỗi; `OLLAMA_NO_CLOUD=1` được đặt khi khởi động server Ollama. **Ở chế độ Smart Router hoặc khi chọn một nhà cung cấp cloud, ứng dụng CÓ gửi dữ liệu ra internet** — cụ thể là tên cột và câu yêu cầu của người dùng, sau khi đã qua bước che PII/bí danh cột (xem mục Bảo mật) — tới đúng nhà cung cấp đã cấu hình khóa; khi cloud lỗi/hết quota và tùy chọn `auto_fallback` đang bật (mặc định bật), ứng dụng mới rơi xuống Ollama cục bộ. Ở mọi chế độ, AI chỉ nhận tên cột và yêu cầu để lập kế hoạch; dữ liệu hàng không được đưa vào prompt.
 
 Máy đã kiểm tra: RAM khoảng 16 GB, i5-12450H, RTX 2050 VRAM 4 GB, Excel Microsoft 365 16.0.20430.20092. Trong lần triển khai, `nvidia-smi` báo **GPU is lost**; Ollama đang dùng CPU. Không thay đổi driver hoặc khởi động lại máy trong tác vụ này. Sau khi người dùng khởi động lại và GPU hoạt động, runtime có thể cần khởi động lại để nhận diện GPU.
 
-## Trạng thái bảo mật & Kiến trúc Zero-Leakage
+## Bảo mật & quyền riêng tư (mô tả đúng hành vi code, kèm giới hạn)
 
-1. **Khử định danh PII tự động (Zero-Leakage Privacy Guard):** Khi gọi AI (OpenAI API hoặc Ollama), hệ thống tự động nhận diện và xóa bỏ mọi thông tin định danh cá nhân (PII) trong prompt: CCCD (12 số), CMND (9 số), SĐT VN (+84, 03x-09x), Email, Số tài khoản ngân hàng, Mã số thuế, Mật khẩu, Tên riêng.
+1. **Che PII bằng regex (Privacy Guard):** Trước khi gọi bất kỳ động cơ AI nào (cloud hoặc Ollama), hệ thống quét câu yêu cầu bằng biểu thức chính quy và che các mẫu nhận diện được: CCCD (12 số), CMND (9 số), SĐT VN (+84, 03x-09x), email, số tài khoản ngân hàng, mã số thuế, mật khẩu, một số mẫu tên riêng. **Giới hạn:** đây là regex nên KHÔNG bảo đảm che hết — định dạng lạ, tên riêng hiếm hoặc thông tin định danh viết cách khác có thể lọt; ngược lại một số chuỗi số hợp lệ có thể bị che nhầm. Đừng gõ thông tin định danh thật vào ô yêu cầu.
 2. **Bảo vệ tiêu đề cột (Column Pseudonymization):** Tiêu đề cột chứa dữ liệu nhạy cảm được thay thế bằng bí danh `[COT_BAO_MAT_i]` khi gọi API và hoàn nguyên cục bộ khi nhận kết quả.
 3. **Mã hóa khóa API bằng Windows DPAPI:** Khóa OpenAI API Key được mã hóa bằng chuẩn Windows Data Protection API (DPAPI). Không lưu văn bản thô trên ổ đĩa; chỉ tài khoản Windows hiện tại mới có thể giải mã.
 4. **Bộ nhớ đệm kế hoạch cục bộ (Local Plan Cache):** Yêu cầu lặp lại cùng ý định được phục vụ ngay từ RAM trong 0ms, không phát sinh bất kỳ kết nối mạng nào ra ngoài (Zero Egress).
 5. **Cách ly chỉ thị & Chống Prompt Injection:** Sử dụng ranh giới XML (`<danh_sach_cot_nguon>`, `<yeu_cau_nguoi_dung>`) và chỉ thị hệ thống cấm mô hình thực thi shell hoặc phá vỡ cấu trúc schema.
-6. **Bảo toàn dữ liệu ô tính:** Dữ liệu hàng nghìn ô tính của người dùng tuyệt đối không bao giờ được gửi vào prompt hay truyền ra internet. AI chỉ trả JSON kế hoạch 4 thao tác (`lookup`, `summary`, `clean`, `clarify`). Mọi công thức được sinh từ template cố định và đối soát độc lập trong native Excel Desktop.
+6. **Dữ liệu hàng không vào prompt:** Theo thiết kế, prompt gửi cho AI chỉ gồm tên cột (đã thay bí danh nếu nhạy cảm) và câu yêu cầu đã che PII; giá trị các hàng dữ liệu không được đưa vào prompt ở bất kỳ chế độ nào. AI chỉ trả JSON kế hoạch thuộc 5 loại: 4 thao tác thực thi (`lookup`, `summary`, `clean`, `filter`) và `clarify` (hỏi lại, không thực thi). Mọi công thức được sinh từ template cố định và đối soát độc lập trong native Excel Desktop.
 7. **Tự động dọn dẹp file tạm:** Hàm `cleanup_stale_work_dirs()` tự động dọn sạch các thư mục tạm trong `.work/` khi ứng dụng khởi động.
 
 ## Kiểm tra và mã nguồn
@@ -73,7 +73,7 @@ python -X utf8 test_upgrades.py           # 28 bài test tự chữa lành ô g�
 python -X utf8 test_app.py                # 79 bài test logic, trust boundary và console UTF-8
 python -X utf8 test_app.py --integration  # 97 bài test Excel Desktop COM thật, tính toán và xuất PDF
 python -X utf8 test_gui.py                # 14 bài test kiểm tra giao diện Stepper, treeview, xem trước/hủy/chấp nhận
-python -X utf8 test_cli.py                # 4 bài test kiểm tra cổng chấp nhận an toàn của CLI
+python -X utf8 test_cli.py                # 6 bài test kiểm tra cổng chấp nhận an toàn của CLI
 python -X utf8 test_headers.py            # 11 bài test chẩn đoán tiêu đề, lề trống, định dạng
 python -X utf8 test_read_boundary.py      # 3 bài test chống tráo file; lượt đọc Excel thật
 python -X utf8 test_diverse_scenarios_e2e.py # 6 kịch bản thực tế đại học/kế toán/kho vận E2E
@@ -91,7 +91,7 @@ Tài liệu tham chiếu: [Ollama Windows](https://docs.ollama.com/windows), [St
 
 ## API AI và chấp nhận trên CLI
 
-`ai_client.request_plan(prompt, source_columns, reference_columns)` chỉ gọi API Ollama local và trả JSON đề xuất; module này không mở/ghi workbook. `app.ai_plan` kiểm tra đề xuất theo tên cột và ba thao tác được hỗ trợ. `app.preview_plan` tính mẫu và số liệu dự kiến trong bộ nhớ. `app.execute` yêu cầu token khớp bản xem trước hiện tại; giao diện chỉ truyền token sau khi bạn bấm chấp nhận.
+`ai_client.request_plan(prompt, source_columns, reference_columns)` trả JSON đề xuất và không mở/ghi workbook. Động cơ được dùng tùy lựa chọn của người dùng và cấu hình: heuristic cục bộ (không gọi mạng), Ollama local (chỉ loopback), hoặc Smart Router gọi lần lượt các nhà cung cấp cloud đã cấu hình khóa (Gemini → Groq → OpenAI → OpenRouter/endpoint tùy chỉnh), lỗi thì rơi xuống Ollama nếu `auto_fallback` bật. `app.ai_plan` kiểm tra đề xuất theo tên cột và các thao tác được hỗ trợ (lookup, summary, clean, filter; clarify chỉ để hỏi lại). `app.preview_plan` tính mẫu và số liệu dự kiến trong bộ nhớ. `app.execute` yêu cầu token khớp bản xem trước hiện tại; giao diện chỉ truyền token sau khi bạn bấm chấp nhận.
 
 Các đề xuất trùng yêu cầu và tên cột được cache tối đa 16 mục trong RAM; mỗi lượt vẫn kiểm tra runtime/model. Cache không ghi xuống đĩa. Dữ liệu hàng không gửi vào model.
 
@@ -103,4 +103,4 @@ python -X utf8 app.py --source "examples/ho-so-mau.xlsx" --reference "examples/d
 
 Sau khi kiểm tra JSON, lưu đúng đối tượng `preview.plan` thành `plan.json`. Chạy lại cùng nguồn/sheet/hàng tiêu đề và tùy chọn PDF, dùng `--plan plan.json --approve TOKEN`, với TOKEN là `preview.approval_token` đã xem. Thay đổi bất kỳ thành phần được chấp nhận sẽ bị từ chối và cần xem trước lại. `--ref-header-row` hỗ trợ hàng tiêu đề riêng cho danh mục.
 
-Khởi động ứng dụng bằng `start.cmd` hoặc `python app.py` để trải nghiệm phiên bản **v0.3.0** với đầy đủ các nâng cấp mới nhất.
+Khởi động ứng dụng bằng `start.cmd` hoặc `python app.py` để trải nghiệm phiên bản **v0.3.1** với đầy đủ các nâng cấp mới nhất.

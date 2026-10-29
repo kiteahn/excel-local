@@ -1,23 +1,22 @@
 # NEXT — việc tiếp theo (cập nhật sau mỗi vòng)
 
-## Vòng tiếp theo: Vòng 1 — Sửa README theo hành vi thật (VĐ-01, VĐ-02, VĐ-08)
-
-Vì sao: tài liệu đang nói sai về việc dữ liệu có đi cloud hay không — đây là vấn
-đề nghiêm trọng nhất vì liên quan tới kỳ vọng quyền riêng tư của người dùng.
+## Vòng tiếp theo: Vòng 2 — Bỏ đường dẫn cứng (VĐ-03, mục B của PROMPT)
 
 Làm:
-1. Đọc `ai_client.request_plan` và `get_active_candidates` để xác nhận chuỗi
-   provider thật cho từng lựa chọn (smart / từng cloud / ollama).
-2. Sửa README: phân biệt rõ 2 chế độ — Ollama local (chỉ loopback) và Smart
-   Router/cloud (tên cột + yêu cầu đã khử PII được gửi tới nhà cung cấp đã chọn).
-   Bỏ "Zero-Leakage"/"tuyệt đối", thay bằng mô tả có giới hạn.
-3. Sửa: v0.3.0 → v0.3.1 ở đoạn cuối; "ba thao tác" → bốn; test_cli 4 → 6;
-   bước 1 bỏ XLS hoặc ghi rõ bị từ chối theo mục Giới hạn.
-4. Kiểm tra: `grep -n "tuyệt đối\|Zero-Leakage\|v0.3.0\|ba thao tác" README.md`
-   phải sạch; chạy lại test_app.py (79) để chắc chắn không đụng code.
-5. Commit, cập nhật UPGRADE_LOG.md, chuyển NEXT sang Vòng 2 (đường dẫn cứng).
+1. `test_router.py:30`: bỏ `Path(r'd:\Excel\excel-local\config.json')`. Test phải
+   hermetic: tự tạo config.json tạm trong thư mục tạm (hoặc monkeypatch
+   `ai_client.CONFIG_FILE`) với khóa giả, kiểm tra vòng đời mã hóa DPAPI/đọc-ghi
+   trên đó; trên máy không có DPAPI thì phần DPAPI skip rõ ràng (liên quan VĐ-04).
+2. `generate_project_pdf.py:7`: `OUTPUT_DIR` đổi sang đường dẫn theo `__file__`
+   (`Path(__file__).parent / 'output'`). Đường dẫn Edge/Excel trong nội dung
+   HTML báo cáo (dòng ~613, ~1055) là dữ kiện môi trường máy đích — giữ nhưng
+   cho phép ghi đè bằng biến môi trường nếu đơn giản.
+3. Kiểm tra: chạy test_router.py trên Linux — phần không cần DPAPI phải chạy,
+   phần DPAPI skip có thông báo; chạy lại test_app.py (79) và
+   test_all_edge_cases.py (61).
+4. Commit, cập nhật UPGRADE_LOG.md, chuyển NEXT sang Vòng 3 (skip theo nền tảng).
 
 ## Câu hỏi chờ người dùng (ghi lại, vẫn làm việc khác — không chờ)
 - Chính sách mặc định mong muốn là Smart Router (có cloud) hay Ollama-only?
-  Hiện code để người dùng chọn; tài liệu sẽ mô tả đúng như code, không tự đổi
-  chính sách. (Xem mục "DỪNG VÀ HỎI TÔI" trong PROMPT_MUSE.md.)
+  Hiện code để người dùng chọn (mặc định config `smart_local`); Vòng 1 chỉ sửa
+  tài liệu cho đúng code, chưa đổi chính sách.
