@@ -46,12 +46,12 @@ class PrivacyGuard:
     """
     CCCD_12_REGEX = re.compile(r'\b0\d{11}\b')
     CMND_9_REGEX = re.compile(r'\b\d{9}\b')
-    PHONE_REGEX = re.compile(r'(?:(?:\(\+84\)\s*|\+84\s*|0)[\s.-]?(?:3[2-9]|5[25689]|7[06-9]|8[1-9]|9[0-9])[\s.-]?(?:\d[\s.-]?){7}\b)')
+    PHONE_REGEX = re.compile(r'(?:(?:\(\+84\)\s*|\+84\s*|84|0)[\s.-]?(?:3[2-9]|5[25689]|7[06-9]|8[1-9]|9[0-9])[\s.-]?(?:\d[\s.-]?){7}\b)')
     EMAIL_REGEX = re.compile(r'[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+')
     TAX_REGEX = re.compile(r'\b\d{10}(?:-\d{3})?\b')
     BANK_REGEX = re.compile(r'\b(?:\d[\s.-]?){12,19}\b')
     API_KEY_REGEX = re.compile(r'(?:sk-[a-zA-Z0-9_-]{20,}|ghp_[a-zA-Z0-9]{36}|Bearer\s+[a-zA-Z0-9_.\-]+)', re.IGNORECASE)
-    PASSWORD_REGEX = re.compile(r'(?:mật khẩu|mat khau|password|token|secret)\s*[:=]\s*\S+', re.IGNORECASE)
+    PASSWORD_REGEX = re.compile(r'(?:mật khẩu|mat khau|password|token|secret)(?:\s*[:=]\s*|\s+là\s+|\s+la\s+|(?:\s+\S+){1,3}?\s+là\s+|(?:\s+\S+){1,3}?\s+la\s+)\S+', re.IGNORECASE)
     NAME_TITLE_REGEX = re.compile(r'\b((?i:sinh viên|học sinh|thầy giáo|cô giáo|thầy|cô|anh|chị|ông|bà))\s+([A-ZÀ-ỸĐ][a-zà-ỹđ]*(?:\s+[A-ZÀ-ỸĐ][a-zà-ỹđ]*){1,4})\b')
 
     PII_HEADER_CHECKS = [

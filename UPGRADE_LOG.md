@@ -94,3 +94,10 @@ Tổng kiểm chứng được trên Linux: 79 + 61 + 28 + 6 = 174 check đạt.
   - test_read_boundary: 2 check đối kháng (mock bridge) chạy mọi nơi; chỉ lượt đọc Excel thật cuối file được guard.
   - test_gui: bắt `tk.TclError` khi không có display → in SKIP + hướng dẫn, exit 0.
 - Sau khi sửa (Linux): **cả 12/12 file test exit 0**. Check thuần logic đã kiểm chứng: test_app 79 + edge 61 + upgrades 28 + cli 6 + router 7 + security 38 = **219 check đạt**; phần bị SKIP đều in rõ lý do (5 check DPAPI của security khớp tổng 43 như README ghi cho Windows).
+
+### Vòng 5 — Đo PrivacyGuard bằng bộ 53 mẫu (mục E) (2026-10-30)
+- Tạo `test_privacy_guard_cases.py`: 33 mẫu PII phải che (SĐT mọi đầu số/dạng viết +84, 84 trần, chấm/gạch/khoảng trắng; CCCD/CMND; MST 10/13; STK 13/16/khoảng trắng; email; khóa sk-/Bearer; mật khẩu; tên kèm xưng hô; tên đứng một mình) + 20 mẫu không-phải-PII phải giữ nguyên (mã 00123, MSSV, mã lớp/môn, tiền, điểm, năm, số dòng/cột, số nội bộ, mã đơn/mã nghiệp vụ dài).
+- Số đo TRƯỚC khi sửa: lọt bất ngờ 2/33 (SĐT dạng `84xxxxxxxxx` không dấu +; mật khẩu theo mẫu "… là <mật khẩu>"), che nhầm bất ngờ 0/20.
+- Sửa tối thiểu trong ai_client: (1) PHONE_REGEX thêm nhánh tiền tố `84` trần; (2) PASSWORD_REGEX thêm mẫu "là/la" ngay sau từ khóa và cho phép tối đa 3 từ chen giữa từ khóa và "là".
+- Số đo SAU: lọt bất ngờ 0/33, che nhầm bất ngờ 0/20. Chạy kèm: security 38, router 7, app 79, edge 61, upgrades 28, cli 6 — tất cả vẫn đạt.
+- Giới hạn còn lại (đã đo, ghi trong test và README, không giấu): tên riêng đứng một mình không xưng hô — có dấu lẫn không dấu — đều lọt (regex không phân biệt được với cụm từ viết hoa thường); che nhầm theo thiết kế với dãy 9 số (trùng mẫu CMND) và mã 13 số (trùng mẫu STK). Muốn xử lý tên đứng một mình cần cơ chế khác (từ điển/danh sách tên hoặc NER) — ngoài phạm vi regex, ghi vào backlog dài hạn.
