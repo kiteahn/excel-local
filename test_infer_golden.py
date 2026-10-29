@@ -25,10 +25,17 @@ CASES = [
      ("lookup", "Mã sinh viên", "", "Mã sinh viên", "Họ tên")),
     ("Tra cứu theo MSSV lấy Quê quán", ["MSSV"], ["MSSV", "Quê quán"],
      ("lookup", "MSSV", "", "MSSV", "Quê quán")),
-    # Known quirk pinned as-is (VD-15): dest-detection grabs the word after
-    # 'sang', so value='bảng'. Behaviour change needs its own round.
+    # VD-15 fixed in round 16: generic words after 'sang'/'vào' ('bảng',
+    # 'file') are not destination columns; value must be empty.
     ("Điền tên sinh viên sang bảng này", ["MSSV"], ["MSSV", "Họ tên"],
-     ("lookup", "MSSV", "bảng", "MSSV", "Họ tên")),
+     ("lookup", "MSSV", "", "MSSV", "Họ tên")),
+    ("Ghép dữ liệu vào file này", ["MSSV"], ["MSSV", "Họ tên"],
+     ("lookup", "MSSV", "", "MSSV", "Họ tên")),
+    # Real destination columns mentioned in the prompt must keep working.
+    ("Điền Họ tên vào cột Ghi chú", ["MSSV", "Ghi chú"], ["MSSV", "Họ tên"],
+     ("lookup", "MSSV", "Ghi chú", "MSSV", "Họ tên")),
+    ("Lấy Quê quán sang cột Địa chỉ", ["MSSV", "Địa chỉ"], ["MSSV", "Quê quán"],
+     ("lookup", "MSSV", "Địa chỉ", "MSSV", "Quê quán")),
     ("Tính tổng học phí của từng lớp", ["Lớp", "Học phí"], (), ("summary", "Lớp", "Học phí", "", "")),
     ("Cộng tổng tiền theo khoa", ["Khoa", "Tiền"], (), ("summary", "Khoa", "Tiền", "", "")),
     ("Thống kê số lượng theo nhóm", ["Nhóm", "Số lượng"], (), ("summary", "Nhóm", "Số lượng", "", "")),

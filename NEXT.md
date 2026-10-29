@@ -1,31 +1,29 @@
 # NEXT — việc tiếp theo (cập nhật sau mỗi vòng)
 
-## Vòng tiếp theo: Vòng 16 — Phân tích và xử lý VĐ-15 (lookup value='bảng')
-
-Hiện tượng: "Điền tên sinh viên sang bảng này" → lookup value='bảng' vì
-regex cột đích bắt từ đứng sau "sang". value trong lookup đáng lẽ là cột
-đích ở bảng nguồn hoặc để trống.
+## Vòng tiếp theo: Vòng 17 — Đánh giá tách prepare_sheets (app.py, ~261 dòng)
 
 Làm:
-1. Đọc đoạn trích cột đích (dest/target) trong _lookup_plan: liệt kê các
-   mẫu câu nó phục vụ ("điền X vào cột Y", "lấy X sang Y", "áp X lên Y"...).
-2. Thêm prompt vàng cho các mẫu ĐANG ĐÚNG trước khi sửa (đặc biệt các mẫu
-   có cột đích thật: "điền Họ tên vào cột Ghi chú", "lấy Quê quán sang cột
-   Địa chỉ" — kiểm tra hành vi thật hiện tại trước, ghim đúng kết quả hợp lý).
-3. Sửa tối thiểu: nếu từ bắt được là từ chung chỉ bảng/vị trí (bảng, sheet,
-   file, đây, đó...) và không khớp tên cột nào trong source_columns sau
-   fuzzy match thì bỏ qua (value=''). Kiểm chứng: toàn bộ prompt vàng cũ
-   chỉ thay đổi đúng case VĐ-15, còn lại giữ nguyên.
-4. Nếu phân tích cho thấy sửa rủi ro hơn lợi: giữ nguyên, ghi lý do vào log
-   và đóng VĐ-15 dạng "chấp nhận hiện trạng".
+1. Đọc prepare_sheets: liệt kê các giai đoạn bên trong (tiền xử lý lookup /
+   summary / clean / filter?) và biến trạng thái dùng chung. Nếu các giai
+   đoạn theo action độc lập nhau, tách theo action như mẫu infer (mỗi khối
+   một helper), kiểm chứng bằng: test_app 79, edge 61, usecases 34, và bộ
+   test vàng mới cho prepare (chạy prepare_sheets trên fixture của test_app
+   cho 4 action, ghim output plan/preview trước khi tách).
+2. Nếu trạng thái đan xen không tách sạch được: ghi lý do vào log, chuyển
+   sang mục dưới thay vì tách gượng.
+3. Việc thay thế: xử lý VĐ-16 — (a) guard passthrough ở nhánh m_key của
+   _lookup_plan giống Vòng 16; (b) mở rộng cụm kích hoạt lookup cho mẫu
+   "áp <cột> lên" bị chen tên cột — chỉ làm nếu ghim đủ prompt vàng trước.
 
 ## Hàng đợi sau đó
-- Vòng 17+: tách prepare_sheets (~261 dòng) theo mẫu test vàng; gui sau cùng.
-- Tổng kết vòng 20 theo PROMPT (mỗi 10 vòng).
+- Vòng 18–19: tách gui (~890 dòng) nếu đủ phủ; rà soát lỗi còn lại trong
+  UPGRADE_LOG (điểm cấu trúc/GUI).
+- Vòng 20: TỔNG KẾT 20 VÒNG theo PROMPT_MUSE (bắt buộc): chấm lại toàn bộ,
+  việc còn dở, hàng đợi Windows, câu hỏi chờ người dùng.
 - Quyết định chờ người dùng: '500.000' (UC-20b); cloud/local mặc định.
 - Hàng đợi Windows: UC-32/33/35/36; benchmark lại; test_gui + trực quan
   Vòng 10; nghiệm thu DPAPI thật.
 
 ## Câu hỏi chờ người dùng (ghi lại, vẫn làm việc khác — không chờ)
-- Nhánh `muse-upgrade`: 16 commit (Bước 0 + Vòng 1–15), CHƯA push — cần
+- Nhánh `muse-upgrade`: 17 commit (Bước 0 + Vòng 1–16), CHƯA push — cần
   người dùng xác nhận mới push lên GitHub (repo công khai).

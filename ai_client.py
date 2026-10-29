@@ -930,7 +930,11 @@ def _lookup_plan(prompt: str, p_lower: str, source_columns, reference_columns) -
             # Try fuzzy match / substring match (e.g. 'VR' -> 'TTVR')
             if not target_dest:
                 fm = fuzzy_match_column(cand_dest, source_columns)
-                if fm:
+                # fuzzy_match_column passes the input through unchanged when
+                # nothing matches; only accept it when it resolved to a real
+                # source column (VD-15: generic words like 'bảng'/'file' after
+                # 'sang'/'vào' are not destination columns).
+                if fm and fm in source_columns:
                     target_dest = fm
                 else:
                     for sc in source_columns:
