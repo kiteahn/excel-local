@@ -168,6 +168,14 @@ def run():
         rejects('UC-28 execute voi token sai bi chan truoc khi cham Excel',
                 lambda: app.execute(local, None, plan, output_dir=d / 'out', approval_token='sai-token'))
 
+        src = snap(['MSSV', 'Ho ten'], [['001', 'An']])
+        plan = {'action': 'execute_anything', 'key': 'MSSV', 'value': '', 'ref_key': '', 'ref_value': '', 'message': ''}
+        rejects('SEC-01 validate_plan tu choi action ngoai danh sach (dot bien M3-4 tung lot)',
+                lambda: app.validate_plan(plan, src, None))
+        plan2 = {'action': 'lookup', 'key': 'MSSV', 'value': '', 'ref_key': 'MSSV', 'ref_value': 'Ho ten', 'message': '', 'truong_la': 1}
+        rejects('SEC-02 validate_plan tu choi truong la trong ke hoach',
+                lambda: app.validate_plan(plan2, src, src))
+
         print('--- Preflight OOXML (UC-29..UC-31) ---')
         good = d / 'good.xlsx'
         fixture(good, {'Data': [['ID'], ['001']]})

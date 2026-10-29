@@ -2,7 +2,7 @@
 
 ## Trạng thái: đã hoàn thành mốc TỔNG KẾT 20 VÒNG (xem UPGRADE_LOG.md)
 
-Nhánh `muse-upgrade`: 21 commit (Bước 0 + Vòng 1–20), CHƯA push.
+Nhánh `muse-upgrade`: 22 commit (Bước 0 + Vòng 1–21), CHƯA push.
 
 ## Hướng tiếp theo nếu chạy tiếp (theo thứ tự giá trị)
 
@@ -15,12 +15,12 @@ Nhánh `muse-upgrade`: 21 commit (Bước 0 + Vòng 1–20), CHƯA push.
    tách theo panel (nguồn/tham chiếu, đề xuất, xem trước, batch, settings)
    với test vàng hành vi nếu khả thi.
 3. **Vòng lặp bảo trì nhẹ từ Linux** (làm được ngay, giá trị giảm dần):
-   fuzz đợt 2 cho detect_header_row/select_header trên snapshot dict;
-   mutation đợt 3 cho app.py (preflight, validate_plan, execute token);
-   rà soát các except giữ lại ở VĐ-05 khi có tín hiệu lỗi mới.
+   mutation đợt 3 cho app.py ĐÃ XONG ở Vòng 21 (5/5 sau khi thêm SEC-01/02);
+   còn lại: fuzz đợt 2 cho detect_header_row/select_header trên snapshot
+   dict; rà soát các except giữ lại ở VĐ-05 khi có tín hiệu lỗi mới.
 
 ## Câu hỏi chờ người dùng (ghi lại, vẫn làm việc khác — không chờ)
-- Push nhánh `muse-upgrade` (21 commit) lên GitHub chưa? Repo công khai
+- Push nhánh `muse-upgrade` (22 commit) lên GitHub chưa? Repo công khai
   nên cần xác nhận rõ ràng.
 - Chính sách mặc định: Smart Router (có cloud) hay Ollama-only?
 - '500.000' một dấu chấm = 500 nghìn hay 500 thập phân? (USECASES UC-20b)
