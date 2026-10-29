@@ -7,10 +7,10 @@ from __future__ import annotations
 import sys
 if sys.stdout and hasattr(sys.stdout, 'reconfigure'):
     try: sys.stdout.reconfigure(encoding='utf-8', errors='replace')
-    except Exception: pass
+    except (AttributeError, OSError, ValueError): pass
 if sys.stderr and hasattr(sys.stderr, 'reconfigure'):
     try: sys.stderr.reconfigure(encoding='utf-8', errors='replace')
-    except Exception: pass
+    except (AttributeError, OSError, ValueError): pass
 
 import copy
 import difflib
@@ -271,8 +271,8 @@ def get_config():
                         prov_keys[p_name] = dpapi_unprotect(p_enc) if p_enc else ''
                 stored['provider_keys'] = prov_keys
                 defaults.update(stored)
-        except Exception:
-            pass
+        except (OSError, ValueError):
+            pass  # unreadable/corrupt config file: fall back to defaults
     return defaults
 
 
@@ -1168,7 +1168,7 @@ def call_openai_plan(prompt, source_columns, reference_columns=(), api_key=None,
         try:
             err_json = json.loads(err_msg)
             err_detail = err_json.get('error', {}).get('message', err_msg)
-        except Exception:
+        except (ValueError, TypeError, AttributeError):
             err_detail = err_msg
         clean_detail = PrivacyGuard.sanitize_error(err_detail)
         raise RuntimeError(f'OpenAI API lỗi ({exc.code}): {clean_detail}') from exc

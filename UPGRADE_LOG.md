@@ -101,3 +101,15 @@ Tổng kiểm chứng được trên Linux: 79 + 61 + 28 + 6 = 174 check đạt.
 - Sửa tối thiểu trong ai_client: (1) PHONE_REGEX thêm nhánh tiền tố `84` trần; (2) PASSWORD_REGEX thêm mẫu "là/la" ngay sau từ khóa và cho phép tối đa 3 từ chen giữa từ khóa và "là".
 - Số đo SAU: lọt bất ngờ 0/33, che nhầm bất ngờ 0/20. Chạy kèm: security 38, router 7, app 79, edge 61, upgrades 28, cli 6 — tất cả vẫn đạt.
 - Giới hạn còn lại (đã đo, ghi trong test và README, không giấu): tên riêng đứng một mình không xưng hô — có dấu lẫn không dấu — đều lọt (regex không phân biệt được với cụm từ viết hoa thường); che nhầm theo thiết kế với dãy 9 số (trùng mẫu CMND) và mã 13 số (trùng mẫu STK). Muốn xử lý tên đứng một mình cần cơ chế khác (từ điển/danh sách tên hoặc NER) — ngoài phạm vi regex, ghi vào backlog dài hạn.
+
+### Vòng 6 — Thu hẹp `except Exception` đợt 1 (VĐ-05) (2026-10-30)
+- Phân loại đủ 30 chỗ (app.py 20, ai_client.py 10) thành: nuốt lỗi im lặng / bắt rộng nhưng có xử lý / ranh giới ngoài có thông báo. Đã thu hẹp 14 chỗ:
+  - app.py + ai_client.py: guard `sys.stdout/stderr.reconfigure` (4 chỗ) → `(AttributeError, OSError, ValueError)`.
+  - app.py `cleanup_stale_work_dirs`: → `OSError`.
+  - app.py `terminate_active_bridges` (3 chỗ): → `(OSError, subprocess.SubprocessError)` và `(OSError, ValueError, subprocess.SubprocessError)` cho vòng đọc bản ghi tiến trình.
+  - app.py GUI: 4 guard `pack/pack_forget` của nút Dừng → `tk.TclError`.
+  - ai_client `get_config`: → `(OSError, ValueError)` (đọc file + parse JSON hỏng thì về mặc định).
+  - ai_client phân tích thân lỗi HTTP: → `(ValueError, TypeError, AttributeError)`.
+- Giữ nguyên 16 chỗ sau khi soi, có lý do: fallback DPAPI (đã có save_config chặn ghi thô từ Vòng 3), `load_xlsx_fast` trả None để rơi xuống đường Excel bridge, rollback xuất bản có re-raise, cách ly lỗi từng file trong batch (ghi vào báo cáo), callback tiến độ không được giết batch, ranh giới worker GUI/CLI (đều đưa lỗi ra giao diện), cascade router (ghi lỗi đã sanitize rồi chuyển provider), fallback Ollama → heuristic, `test_ai_connection` trả (False, thông báo).
+- Kiểm tra sau: toàn bộ suite đạt như trước — app 79, edge 61, upgrades 28, cli 6, router 7, security 38, privacy corpus 53 mẫu (0 lọt/0 che nhầm bất ngờ). `grep -c "except Exception"`: app.py 20→10, ai_client.py 10→6.
+- Lưu ý: 4 guard GUI mới chỉ kiểm ở mức compile + soi code (headless, test_gui SKIP như các vòng trước) — CHƯA kiểm tra trực quan.

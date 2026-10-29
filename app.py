@@ -7,10 +7,10 @@ from __future__ import annotations
 import sys
 if sys.stdout and hasattr(sys.stdout, 'reconfigure'):
     try: sys.stdout.reconfigure(encoding='utf-8', errors='replace')
-    except Exception: pass
+    except (AttributeError, OSError, ValueError): pass
 if sys.stderr and hasattr(sys.stderr, 'reconfigure'):
     try: sys.stderr.reconfigure(encoding='utf-8', errors='replace')
-    except Exception: pass
+    except (AttributeError, OSError, ValueError): pass
 
 import argparse
 import collections
@@ -61,7 +61,7 @@ def cleanup_stale_work_dirs(max_age_seconds=3600):
                 mtime = item.stat().st_mtime
                 if now - mtime > max_age_seconds:
                     shutil.rmtree(item, ignore_errors=True)
-            except Exception:
+            except OSError:
                 pass
 
 
@@ -198,7 +198,7 @@ def terminate_active_bridges():
         subprocess.run(['powershell.exe', '-NoProfile', '-NonInteractive', '-Command',
             'Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -like "*excel_bridge.ps1*" } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }'],
             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0), timeout=5)
-    except Exception:
+    except (OSError, subprocess.SubprocessError):
         pass
     try:
         for p in WORK.glob('*/excel-process.json'):
@@ -207,9 +207,9 @@ def terminate_active_bridges():
                 if rec.get('owned') and rec.get('pid'):
                     subprocess.run(['powershell.exe', '-NoProfile', '-NonInteractive', '-Command', f'Stop-Process -Id {int(rec["pid"])} -Force -ErrorAction SilentlyContinue'],
                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0), timeout=5)
-            except Exception:
+            except (OSError, ValueError, subprocess.SubprocessError):
                 pass
-    except Exception:
+    except OSError:
         pass
 
 
@@ -1728,7 +1728,7 @@ def gui(smoke=False):
             self.progress.stop()
             try:
                 self.stop_button.pack_forget()
-            except Exception:
+            except tk.TclError:
                 pass
             self.run_button.configure(state='normal')
             self.status.set('⏹ Đã dừng thao tác.')
@@ -1744,7 +1744,7 @@ def gui(smoke=False):
             self.progress.start()
             try:
                 self.stop_button.pack(side='right', padx=(0, 8))
-            except Exception:
+            except tk.TclError:
                 pass
             self.run_button.configure(state='disabled')
             worker_id = uuid.uuid4().hex
@@ -1776,7 +1776,7 @@ def gui(smoke=False):
                 self.progress.stop()
                 try:
                     self.stop_button.pack_forget()
-                except Exception:
+                except tk.TclError:
                     pass
                 self.run_button.configure(state='normal')
                 if error:
@@ -1792,7 +1792,7 @@ def gui(smoke=False):
                 self.progress.stop()
                 try:
                     self.stop_button.pack_forget()
-                except Exception:
+                except tk.TclError:
                     pass
                 self.run_button.configure(state='normal')
                 self.status.set('Không thể hiển thị kết quả; hãy kiểm tra lại.')
