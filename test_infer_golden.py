@@ -40,6 +40,9 @@ CASES = [
     ("Lọc các dòng lớp KTPM1", ["Họ tên", "Lớp"], (), ("filter", "Lớp", "ktpm1", "", None)),
     ("Đăng ký đơn cho sinh viên", ["Họ tên", "Hình thức"], (), ("filter", "Hình thức", "Đơn", "", None)),
     ("Cho tôi danh sách các sinh viên", ["Họ tên", "Lớp"], (), ("filter", "Lớp", "*", "", None)),
+    # M2-4 regression (round 15): a filter-intent prompt with NO reference
+    # columns must stay a filter; the lookup branch requires reference columns.
+    ("Lấy riêng danh sách lớp trưởng", ["Họ tên", "Chức vụ"], (), ("filter", "Chức vụ", "lớp trưởng", "", None)),
     ("Hôm nay thời tiết đẹp", ["A", "B"], (), None),
 ]
 
