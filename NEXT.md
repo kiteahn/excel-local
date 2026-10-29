@@ -1,37 +1,34 @@
 # NEXT — việc tiếp theo (cập nhật sau mỗi vòng)
 
-## Vòng tiếp theo: Vòng 12 — Fuzz nhẹ cho parser CSV/header + mutation test bộ test
+## Vòng tiếp theo: Vòng 13 — Tách tiếp infer_smart_plan: khối Filter (~170 dòng)
 
-Theo "CHẾ ĐỘ KHÔNG CẠN VIỆC" trong PROMPT_MUSE.md.
+Tiếp VĐ-06 theo cách cơ học của Vòng 7 (tách từng khối tự chứa, không đổi
+hành vi, test sau mỗi bước; bước nào đỏ thì hoàn tác bước đó).
 
 Làm:
-1. Fuzz CSV: sinh có hệ thống các biến thể quanh load_csv/inspect CSV —
-   BOM lạ, dòng trống xen kẽ, nháy đơn/kép lồng nhau, phân cách hỗn hợp,
-   ô đúng 32767 ký tự (đạt) và 32768 (từ chối), dòng cuối thiếu newline,
-   CRLF vs LF, ký tự điều khiển ở các vị trí khác nhau. Kỳ vọng: hoặc đọc
-   đúng, hoặc ValueError rõ ràng — không bao giờ traceback lạ/sập.
-2. Fuzz header: snapshot dict với header rỗng từng phần, toàn khoảng trắng,
-   ký tự đặc biệt, tên cột cực dài, trùng sau NFC/NFD — qua select_header
-   và detect_header_row.
-3. Mutation test: chọn 4–6 đột biến nhỏ trong app.py (đổi toán tử so sánh
-   trong validate số, bỏ chuẩn NFC ở key_value, đổi dung sai...) — áp dụng
-   tạm thời, chạy suite liên quan, ghi đột biến nào bị test bắt / lọt.
-   Đột biến lọt → bổ sung test. Hoàn tác mọi đột biến sau khi đo (kiểm tra
-   `git diff` sạch trước khi commit phần test mới).
-4. Cập nhật UPGRADE_LOG (số mẫu fuzz, số đột biến bị bắt/lọt), USECASES.md
-   nếu có use case mới. Commit.
+1. Đọc khối Filter (mục 5, 5a–5e) trong infer_smart_plan hiện tại (375 dòng):
+   xác định biến vào/ra — khối này dùng p_lower, source_columns và các hàm
+   extract_requested_columns/find...; kiểm tra nó có phụ thuộc biến cục bộ
+   nào từ khối Lookup/Summary không.
+2. Nếu tự chứa: tách thành `_filter_plan(p_lower, source_columns)`. Nếu dính
+   biến chung thì chỉ tách các tiểu khối 5a (đăng ký đơn/team) hoặc 5c (điều
+   kiện số) nếu chúng tự chứa; phần còn lại để nguyên và ghi lý do.
+3. Kiểm tra sau mỗi bước: router 7, security 38, app 79, edge 61, usecases 34,
+   fuzz 20, privacy corpus — đạt như trước.
+4. Commit, cập nhật UPGRADE_LOG, NEXT sang Vòng 14 (khối Lookup hoặc
+   prepare_sheets).
 
 ## Hàng đợi sau đó
-- Vòng 13+: tách tiếp khối Lookup (~150 dòng) rồi Filter (~170 dòng) trong
-  infer_smart_plan theo cách cơ học như Vòng 7; tách prepare_sheets, gui.
-- Quyết định chờ người dùng: '500.000' một dấu chấm nên hiểu là 500 nghìn
-  hay 500 thập phân trong ngữ cảnh tiền VN? (chi tiết ở USECASES.md UC-20b)
-- Hàng đợi Windows (chỉ làm được trên máy Windows có Excel): UC-32/33/35/36;
-  đo lại benchmark.py cho code hiện tại; chạy test_gui.py thật + kiểm tra
-  trực quan tooltip/phím tắt (Vòng 10) và messagebox DPAPI (Vòng 3);
-  nghiệm thu DPAPI thật (security mục 16–17, router mục 1/7).
+- Vòng 14+: tách khối Lookup trong infer_smart_plan; tách prepare_sheets
+  (~261 dòng); tách gui (~890 dòng) — chỉ khi test đủ phủ.
+- Mutation đợt 2 cho ai_client.py (PrivacyGuard regex, sanitize_plan,
+  cascade router) theo quy trình khôi phục bằng bản sao file.
+- Quyết định chờ người dùng: '500.000' một dấu chấm = 500 nghìn hay 500
+  thập phân? (USECASES.md UC-20b)
+- Hàng đợi Windows: UC-32/33/35/36; benchmark lại; test_gui + kiểm tra trực
+  quan Vòng 10; nghiệm thu DPAPI thật.
 
 ## Câu hỏi chờ người dùng (ghi lại, vẫn làm việc khác — không chờ)
-- Chính sách mặc định mong muốn là Smart Router (có cloud) hay Ollama-only?
-- Nhánh `muse-upgrade` hiện có 12 commit (Bước 0 + Vòng 1–11) CHƯA push lên
-  GitHub (repo công khai) — cần người dùng xác nhận mới push.
+- Chính sách mặc định: Smart Router (có cloud) hay Ollama-only?
+- Nhánh `muse-upgrade`: 13 commit (Bước 0 + Vòng 1–12), CHƯA push — cần
+  người dùng xác nhận mới push lên GitHub (repo công khai).

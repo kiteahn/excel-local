@@ -147,6 +147,11 @@ def run():
         rejects('UC-24 o so trong khong tu doi thanh 0',
                 lambda: app.prepare_sheets(snap(['G', 'V'], [['A', '']]), None, {'action': 'summary', 'key': 'G', 'value': 'V'}, 't'))
 
+        rejects('UC-29 tran 1e14 cua parse_lenient_number (dot bien MUT-5 tung lot)',
+                lambda: app.parse_lenient_number('999.999.999.999.999'))
+        rejects('UC-29b tran 1e14 dang so thang cua parse_lenient_number',
+                lambda: app.parse_lenient_number('100000000000001'))
+
         print('--- Dates, clean, token gate (UC-25..UC-28) ---')
         check('UC-25 key_value ngay serial khi allow_dates', app.key_value(45000, 'dd/mm/yyyy', allow_dates=True) == '2023-03-15')
         rejects('UC-26 khoa so dinh dang ngay bi tu choi khi chua cho phep ngay',

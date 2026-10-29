@@ -437,7 +437,10 @@ def select_header(snapshot, header_row, auto_heal=False):
     repeated = collections.defaultdict(list)
     for i, value in enumerate(raw_headers):
         if value:
-            repeated[value].append(f'{column_name(first+i+1)}{header_row}')
+            # Compare headers after NFC normalisation: an NFC and an NFD
+            # spelling of the same name look identical to the user and would
+            # make column references ambiguous.
+            repeated[unicodedata.normalize('NFC', value)].append(f'{column_name(first+i+1)}{header_row}')
     duplicates = [f'“{value[:60]}” tại ' + ', '.join(addresses) for value, addresses in repeated.items() if len(addresses) > 1]
     problems = []
     if empty:

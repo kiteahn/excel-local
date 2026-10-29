@@ -38,6 +38,7 @@ Cập nhật: Vòng 11 (2026-10-30). "Đã chạy" = có check trong
 | UC-29 | preflight workbook sạch | Được chấp nhận | Đã chạy — đạt |
 | UC-30 | Workbook chứa vbaProject (macro) | preflight từ chối | Đã chạy — đạt |
 | UC-31 | Workbook chứa externalLink | preflight từ chối | Đã chạy — đạt |
+| UC-29 | Trần 10^14 trong parse_lenient_number (số lenient khổng lồ) | Bị từ chối | Đã chạy — đạt (bổ sung ở Vòng 12 sau mutation test) |
 | UC-32 | XLSX qua Excel thật: inspect → preview → execute → đối soát → XLSX/PDF | Toàn luồng | CHƯA CHẠY ĐƯỢC — cần Windows (test_app --integration) |
 | UC-33 | File đang mở trong Excel / bị khóa ghi | Báo lỗi dễ hiểu | CHƯA CHẠY ĐƯỢC — cần Windows |
 | UC-34 | File bị tráo giữa xem trước và thực thi (đường Excel thật) | Bị chặn bởi hash/token | Một phần: bản mock đã chạy (test_read_boundary); đường thật CHƯA CHẠY ĐƯỢC |

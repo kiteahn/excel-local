@@ -36,7 +36,7 @@ Khóa danh mục xuất hiện nhiều lần luôn được báo trùng, kể c�
 ## Giới hạn v1
 
 - XLSX/CSV tối đa 80 MB; XLSX tối đa 256 MB dữ liệu giải nén; tối đa 20.000 dòng dữ liệu, 60 cột và 400.000 ô được đọc trên sheet chọn.
-- Một hàng tiêu đề, tên cột đầy đủ và không trùng. CSV là UTF-8 hoặc UTF-16 có BOM, dấu phân cách phẩy/chấm phẩy/tab; không đoán encoding cũ.
+- Một hàng tiêu đề, tên cột đầy đủ và không trùng (so trùng theo dạng chuẩn NFC, nên cùng một tên viết kiểu NFC và NFD cũng bị coi là trùng). CSV ưu tiên UTF-8 hoặc UTF-16 có BOM, dấu phân cách phẩy/chấm phẩy/tab; nếu không giải mã được bằng hai encoding đó, bộ đọc sẽ thử lần lượt cp1258/cp1252/latin1 (hành vi thực tế của `load_csv`, bản cũ của tài liệu ghi "không đoán encoding cũ" là không đúng với code).
 - Số tổng hợp: ô số Excel hoặc chuỗi số dùng dấu chấm thập phân và không phân nhóm nghìn. Không tự đoán `1,234`, không tự đổi ô trống thành 0; từ chối số/tổng nhóm vượt 10^14 hoặc có hơn 15 chữ số có nghĩa. Dung sai đối soát số học tuyệt đối 0,000001; tác vụ dừng khi vượt dung sai.
 - V1 từ chối sheet có giá trị lỗi Excel sau khi tính lại; không biến mã lỗi COM thành số. CSV không nhận ô dài quá 32767 ký tự hoặc ký tự điều khiển không hợp lệ.
 - Chưa hỗ trợ XLS/XLSM, macro, OCR, Word, công thức tự do, cập nhật PivotTable, ghép nhiều-nhiều hay chọn bản ghi trùng theo quy tắc nghiệp vụ.
