@@ -1311,6 +1311,39 @@ def ai_plan(prompt, source, reference=None, allow_clarify=False, provider=None, 
     return validate_plan(plan, source, reference, allow_clarify)
 
 
+class _ToolTip:
+    """Minimal hover tooltip (stdlib Tk only); shows a small label near the widget."""
+
+    def __init__(self, widget, text):
+        self.widget = widget
+        self.text = text
+        self.tip = None
+        widget.bind('<Enter>', self._show, add='+')
+        widget.bind('<Leave>', self._hide, add='+')
+
+    def _show(self, _event=None):
+        import tkinter as tk  # local import: app.py imports Tk lazily inside gui()
+        if self.tip is not None:
+            return
+        try:
+            x = self.widget.winfo_rootx() + 12
+            y = self.widget.winfo_rooty() + self.widget.winfo_height() + 6
+            self.tip = tk.Toplevel(self.widget)
+            self.tip.wm_overrideredirect(True)
+            self.tip.wm_geometry(f'+{x}+{y}')
+            tk.Label(self.tip, text=self.text, justify='left', background='#ffffe0',
+                     relief='solid', borderwidth=1, font=('Segoe UI', 8), wraplength=380).pack()
+        except tk.TclError:
+            self.tip = None
+
+    def _hide(self, _event=None):
+        import tkinter as tk  # local import: app.py imports Tk lazily inside gui()
+        if self.tip is not None:
+            try: self.tip.destroy()
+            except tk.TclError: pass
+            self.tip = None
+
+
 def gui(smoke=False):
     import tkinter as tk
     from tkinter import ttk, filedialog, messagebox
@@ -1398,9 +1431,15 @@ def gui(smoke=False):
             engine_box = ttk.Frame(controls)
             engine_box.pack(fill='x', pady=(0, 4))
             ttk.Label(engine_box, text='Động cơ AI:').pack(side='left', padx=(0, 8))
-            ttk.Radiobutton(engine_box, text='⚡ Siêu tốc 0-Token (Cục bộ ➔ Cloud khi cần)', variable=self.ai_provider, value='smart_local', command=self.save_engine_choice).pack(side='left', padx=(0, 12))
-            ttk.Radiobutton(engine_box, text='🌐 Smart Router (Cloud Cascade)', variable=self.ai_provider, value='smart', command=self.save_engine_choice).pack(side='left', padx=(0, 12))
-            ttk.Radiobutton(engine_box, text='🏠 100% Cục bộ (Offline)', variable=self.ai_provider, value='heuristic', command=self.save_engine_choice).pack(side='left', padx=(0, 12))
+            rb_local_first = ttk.Radiobutton(engine_box, text='⚡ Siêu tốc 0-Token (Cục bộ ➔ Cloud khi cần)', variable=self.ai_provider, value='smart_local', command=self.save_engine_choice)
+            rb_local_first.pack(side='left', padx=(0, 12))
+            _ToolTip(rb_local_first, 'Ưu tiên xử lý ngay trên máy (không tốn token). Chỉ khi yêu cầu phức tạp mới gọi Cloud bằng khóa bạn đã cấu hình.')
+            rb_smart = ttk.Radiobutton(engine_box, text='🌐 Smart Router (Cloud Cascade)', variable=self.ai_provider, value='smart', command=self.save_engine_choice)
+            rb_smart.pack(side='left', padx=(0, 12))
+            _ToolTip(rb_smart, 'Gửi tên cột và yêu cầu (đã che PII) tới lần lượt Gemini → Groq → OpenAI/OpenRouter theo khóa đã cấu hình; lỗi thì dự phòng Ollama trên máy. Dữ liệu ô tính không được gửi.')
+            rb_offline = ttk.Radiobutton(engine_box, text='🏠 100% Cục bộ (Offline)', variable=self.ai_provider, value='heuristic', command=self.save_engine_choice)
+            rb_offline.pack(side='left', padx=(0, 12))
+            _ToolTip(rb_offline, 'Chỉ dùng thuật toán nội bộ trên máy: không internet, không Ollama, không token.')
 
             op_box = ttk.Frame(controls)
             op_box.pack(fill='x', pady=4)
@@ -1441,21 +1480,29 @@ def gui(smoke=False):
             ttk.Button(chip_box, text='🧹 Chuẩn hóa Họ tên & Chuỗi', command=lambda: set_prompt_template('Làm sạch khoảng trắng thừa và chuẩn hóa Unicode cột Họ tên', 'clean')).pack(side='left', padx=2)
 
             # Prompt
-            ttk.Label(controls, text='🔒 Bảo mật Zero-Leakage: Tự động khử định danh PII (CCCD, SĐT, Email) trước khi gọi AI · Dữ liệu ô tính không bao giờ gửi ra ngoài', font=('Segoe UI', 8, 'italic'), foreground='#198754').pack(anchor='w', pady=(2, 2))
+            ttk.Label(controls, text='🔒 Quyền riêng tư: PII trong yêu cầu được che bằng regex trước khi gọi AI · Chỉ tên cột + yêu cầu được gửi tới động cơ bạn chọn · Dữ liệu ô tính không đưa vào prompt', font=('Segoe UI', 8, 'italic'), foreground='#198754').pack(anchor='w', pady=(2, 2))
             self.prompt = tk.Text(controls, height=2, font=('Segoe UI', 10), wrap='word')
             self.prompt.pack(fill='x', pady=(2, 6))
             self.prompt.insert('1.0', 'Ví dụ: Đối chiếu cột Mã sinh viên với danh mục để lấy Họ tên và Quê quán.')
+            self.prompt.bind('<Control-Return>', lambda _e: (self.plan(), 'break')[1])
 
             actions = ttk.Frame(controls)
             actions.pack(fill='x')
             ttk.Button(actions, text='✨ AI Phân tích & Lập đề xuất', command=self.plan).pack(side='left')
             self.pdf = tk.BooleanVar(value=False)
-            ttk.Checkbutton(actions, text='Xuất PDF của sheet kết quả', variable=self.pdf).pack(side='left', padx=12)
+            cb_pdf = ttk.Checkbutton(actions, text='Xuất PDF của sheet kết quả', variable=self.pdf)
+            cb_pdf.pack(side='left', padx=12)
+            _ToolTip(cb_pdf, 'Sau khi thực thi và đối soát xong, Excel sẽ xuất thêm PDF của sheet kết quả. PDF chưa được kiểm tra bố cục trực quan.')
             self.auto_heal = tk.BooleanVar(value=True)
-            ttk.Checkbutton(actions, text='Tự chữa lành ô gộp & khoảng trắng', variable=self.auto_heal).pack(side='left', padx=8)
+            cb_heal = ttk.Checkbutton(actions, text='Tự chữa lành ô gộp & khoảng trắng', variable=self.auto_heal)
+            cb_heal.pack(side='left', padx=8)
+            _ToolTip(cb_heal, 'Khi đọc file: tự xử lý ô gộp (merged cells) và cột trùng tên/thiếu tên để tìm đúng dòng tiêu đề và cột dữ liệu.')
             self.clean_output = tk.BooleanVar(value=True)
-            ttk.Checkbutton(actions, text='Xuất bảng gọn gàng (Không chèn cột trạng thái thừa)', variable=self.clean_output).pack(side='left', padx=8)
+            cb_clean = ttk.Checkbutton(actions, text='Xuất bảng gọn gàng (Không chèn cột trạng thái thừa)', variable=self.clean_output)
+            cb_clean.pack(side='left', padx=8)
+            _ToolTip(cb_clean, 'Bật: sheet kết quả chỉ gồm dữ liệu, không thêm cột trạng thái đối chiếu (KHOP/KHONG_TIM_THAY...). Tắt nếu bạn muốn xem cột trạng thái để rà soát.')
             self.run_button = ttk.Button(actions, text='3. Kiểm tra kết quả dự kiến (Preview)', style='Highlight.TButton', command=self.run)
+            _ToolTip(self.run_button, 'Chỉ tính thử và hiển thị kết quả dự kiến, chưa ghi file. Muốn thực thi phải bấm Chấp nhận ở hộp thoại xem trước.')
             self.run_button.pack(side='right')
 
             # Preview treeview
@@ -1566,7 +1613,9 @@ def gui(smoke=False):
             prov_cb.pack(side='left', padx=(0, 16))
 
             fallback_var = tk.BooleanVar(value=cfg.get('auto_fallback', True))
-            ttk.Checkbutton(row_top, text='Tự động dự phòng Ollama khi mất mạng', variable=fallback_var).pack(side='left')
+            cb_fallback = ttk.Checkbutton(row_top, text='Tự động dự phòng Ollama khi mất mạng', variable=fallback_var)
+            cb_fallback.pack(side='left')
+            _ToolTip(cb_fallback, 'Khi các Cloud model lỗi/hết quota, tự chuyển xuống Ollama chạy trên máy của bạn (cần đã cài runtime và model).')
 
             keys_frame = ttk.LabelFrame(f, text='Quản lý Khóa API các Nhà cung cấp (Tự động xoay vòng)', padding=8)
             keys_frame.pack(fill='x', pady=(0, 8))

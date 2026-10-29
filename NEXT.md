@@ -1,40 +1,35 @@
 # NEXT — việc tiếp theo (cập nhật sau mỗi vòng)
 
-## Vòng tiếp theo: Vòng 10 — Giao diện nhẹ (VĐ-10, mục I) + Tổng kết 10 vòng
+## Vòng tiếp theo: Vòng 11 — Tầng kiểm tra 2: danh sách ≥30 use case, tự chạy phần chạy được
 
-Phần giao diện chỉ chỉnh NHẸ, giữ nguyên bố cục và luồng (chọn file → tìm
-dòng → chọn AI → xem trước → chấp nhận). Mọi thay đổi phải qua test_gui.py
-trên Windows hoặc ghi rõ CHƯA kiểm tra trực quan (môi trường này headless,
-test_gui SKIP).
+Theo tầng 2 trong PROMPT_MUSE.md. Môi trường này không có Excel nên chỉ chạy
+được use case chạm đường thuần Python: preflight (từ chối macro/liên kết
+ngoài/công thức ngoài allowlist), inspect CSV (UTF-8/UTF-16, phân cách
+`,`/`;`/tab, ragged), inspect lenient qua fast reader, detect_header_row/
+select_header (banner, ô gộp mô phỏng bằng snapshot dict), preview_plan các
+action, validate_plan, key_value/normalized_keys (mã 00123, khóa trùng/trống,
+NFC/NFD), giới hạn 20.000 dòng/60 cột/400.000 ô.
 
 Làm:
-1. Soi code gui() trong app.py và lập danh sách kiểm chứng được bằng code:
-   - Nút nào chưa bị khóa khi `busy` (work() đã khóa run_button; kiểm tra
-     các nút Chấp nhận / Batch / Dừng và ô nhập còn lại).
-   - Tooltip: đã có cơ chế tooltip chưa; các tùy chọn khó hiểu (Tự chữa
-     lành, Lenient, auto_fallback) đã có giải thích chưa.
-   - Phím tắt: Enter/Ctrl+Enter chạy đề xuất? Esc đóng hộp thoại?
-   - Thứ tự Tab và focus ban đầu.
-2. Chỉ sửa những điểm thiếu rõ ràng, nhỏ, không đổi tên tính năng/luồng.
-   Mỗi sửa đổi: py_compile + suite logic đạt như trước; ghi rõ phần nào
-   CHƯA kiểm tra trực quan.
-3. Tổng kết 10 vòng (theo PROMPT): chấm lại 8 hạng mục của Bước 0, nêu điểm
-   nào tăng/giảm kèm bằng chứng, sắp lại backlog cho chặng tiếp theo
-   (Vòng 11+: tầng kiểm tra 2 — liệt kê ≥30 use case và tự chạy phần chạy
-   được; tách Lookup/Filter; hàng đợi Windows).
+1. Lập bảng ≥30 use case trong file mới `USECASES.md` (hoặc mục trong
+   UPGRADE_LOG): mỗi cái ghi đường chạy (hàm nào), kỳ vọng, trạng thái.
+2. Viết `test_usecases.py` chạy các use case chạy được; cái nào cần Excel
+   COM thì ghi rõ "CHƯA CHẠY ĐƯỢC — cần Windows" trong bảng, không bỏ qua
+   lặng lẽ.
+3. Lỗi thật phát hiện được → sửa tối thiểu + regression, như các vòng trước.
+4. Chạy toàn bộ suite cũ để bảo đảm không hồi quy. Commit, cập nhật log.
 
-## Hàng đợi Windows (chỉ làm được trên máy Windows có Excel)
-- Đo lại `benchmark.py` cho code hiện tại; tối ưu khởi động Excel COM nếu
-  số đo xác nhận nút thắt ~5 giây.
-- Chạy test_gui.py thật + kiểm tra trực quan các thay đổi Vòng 3/6/10.
-- Nghiệm thu DPAPI thật (test_security_privacy mục 16–17, test_router).
-
-## Dài hạn
-- Tách tiếp khối Lookup/Filter trong infer_smart_plan, `gui` (~890 dòng),
-  `prepare_sheets` (~261 dòng) theo cách cơ học từng khối như Vòng 7.
-- Tên riêng đứng một mình: cần từ điển/NER ngoài regex (Vòng 5 đã đo giới hạn).
+## Hàng đợi sau đó
+- Vòng 12+: tách Lookup/Filter trong infer_smart_plan; fuzz CSV/header;
+  mutation test bộ test hiện có.
+- Hàng đợi Windows (chỉ làm được trên máy Windows có Excel): đo lại
+  benchmark.py cho code hiện tại; chạy test_gui.py thật + kiểm tra trực quan
+  tooltip/phím tắt (Vòng 10) và messagebox DPAPI (Vòng 3); nghiệm thu DPAPI
+  thật (security mục 16–17, router mục 1/7).
 
 ## Câu hỏi chờ người dùng (ghi lại, vẫn làm việc khác — không chờ)
 - Chính sách mặc định mong muốn là Smart Router (có cloud) hay Ollama-only?
   Hiện code để người dùng chọn (mặc định config `smart_local`); tài liệu đã
   sửa đúng theo code, chưa đổi chính sách.
+- Nhánh `muse-upgrade` hiện có 11 commit (Bước 0 + Vòng 1–10) CHƯA được push
+  lên GitHub. Việc push cần người dùng xác nhận (đây là repo công khai).

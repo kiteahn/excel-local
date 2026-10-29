@@ -132,4 +132,29 @@ Tổng kiểm chứng được trên Linux: 79 + 61 + 28 + 6 = 174 check đạt.
 - Chuyển toàn bộ 14 file *.json kết quả/benchmark từ root vào `results/` bằng `git mv` (giữ lịch sử): acceptance, benchmark-before/after/final/ai, test-results (+v0.1), cli/gui/header/read-boundary/cleanup-test-results, logic-regression.
 - Cập nhật mọi nơi GHI các file này sang `results/` (tạo thư mục nếu thiếu): test_app.py, test_cli.py, test_gui.py, test_headers.py, test_read_boundary.py, benchmark.py, benchmark_ai.py, test_cleanup.ps1. README mục kiểm tra cũng trỏ sang `results/` và ghi chú benchmark cũ đo trên code cũ.
 - Quyết định giữ nguyên vị trí: `create_diverse_examples.py` và `generate_project_pdf.py` ở root — chuyển vào tools/ sẽ làm vỡ `import app`/`app.ROOT` và đường dẫn output theo `__file__`, rủi ro lớn hơn lợi ích cho 2 script phụ trợ; ghi rõ để vòng sau cân nhắc lại nếu muốn.
+
+### Vòng 10 — Giao diện nhẹ (VĐ-10) + TỔNG KẾT 10 VÒNG (2026-10-30)
+Phần giao diện (chỉnh nhẹ, không đổi bố cục/luồng/tên tính năng):
+- Soi code trước khi sửa: `work()` đã chặn thao tác chồng nhau bằng cờ busy + hộp thoại nhắc (mọi luồng Đọc/Đề xuất/Preview đều qua work()), nút Preview bị khóa khi chạy; nhưng CHƯA có tooltip nào, chưa có phím tắt nào, và nhãn quyền riêng tư ngay trong giao diện vẫn ghi tuyệt đối kiểu "Zero-Leakage / không bao giờ" (cùng lỗi VĐ-02).
+- Sửa: (1) thêm lớp `_ToolTip` tối thiểu (stdlib Tk) và gắn cho 3 nút chọn động cơ AI (giải thích rõ local/cloud khớp README), ô Tự chữa lành, ô Xuất bảng gọn, ô Xuất PDF, ô dự phòng Ollama trong Cài đặt, và nút Preview (nhấn mạnh cổng chấp nhận). (2) Ctrl+Enter trong ô yêu cầu = bấm "AI Phân tích & Lập đề xuất". (3) Nhãn quyền riêng tư trong giao diện viết lại có giới hạn, khớp tài liệu.
+- Tự soi lại bắt được lỗi của chính vòng này trước khi commit: `_ToolTip` ở cấp module nhưng `tk` được import lười bên trong `gui()` → sẽ NameError khi hover; đã sửa bằng import cục bộ trong `_show/_hide` và kiểm chứng bằng unit check widget giả (bind đăng ký đúng, TclError được nuốt êm).
+- Kiểm tra sau: cả 13 file test exit 0 trên Linux (test_gui vẫn SKIP vì headless). **CHƯA kiểm tra trực quan** các tooltip/phím tắt trên Windows — nằm trong hàng đợi Windows ở NEXT.
+
+#### Tổng kết 10 vòng — chấm lại điểm Bước 0
+| Hạng mục | Bước 0 | Sau vòng 10 | Bằng chứng |
+|---|---|---|---|
+| Độ đúng | 7 | 7 | Không đổi hành vi nghiệp vụ; mọi sửa đổi đều có test đối chứng đạt như trước |
+| Bảo mật / quyền riêng tư | 6 | 8 | Vá VĐ-11 (không ghi khóa thô), PrivacyGuard có số đo 53 mẫu (lọt bất ngờ 0), tài liệu + nhãn GUI hết ngôn ngữ tuyệt đối |
+| Cấu trúc code | 4 | 5 | infer_smart_plan 478→375 dòng, tách 2 hàm có tên rõ; gui/prepare_sheets còn nguyên — điểm tăng vừa phải, trung thực |
+| Xử lý lỗi | 5 | 6 | Thu hẹp 14/30 except có phân loại; 16 chỗ còn lại đã soi và ghi lý do giữ |
+| Test | 6 | 8 | 13/13 file chạy sạch đa nền (SKIP có lý do), thêm corpus PrivacyGuard 53 mẫu + regression VĐ-11 + benchmark phân giai đoạn; tổng check logic kiểm chứng trên Linux: 219 + corpus |
+| Hiệu năng | 5 | 6 | Có benchmark phân giai đoạn lặp lại được cho phần Python (tuyến tính, preview <0,3s ở 20k dòng); phần Excel COM vẫn chưa đo lại — chưa thể chấm cao hơn |
+| Giao diện | 5 | 6 | Có tooltip + phím tắt + nhãn đúng sự thật; chưa kiểm tra trực quan nên không chấm cao |
+| Tài liệu | 4 | 8 | README khớp hành vi thật về cloud/local, đúng phiên bản/số liệu, trỏ results/; còn release-notes cũ giữ nguyên tính lịch sử |
+
+#### Backlog chặng tiếp theo (ưu tiên giảm dần)
+1. Tầng 2 của PROMPT: liệt kê ≥30 use case và tự chạy phần chạy được trên Linux (CSV các biến thể qua inspect_csv/lenient, preflight từ chối macro/liên kết ngoài, giới hạn dòng/cột, khóa 00123...) — phần cần Excel ghi CHƯA CHẠY ĐƯỢC.
+2. Hàng đợi Windows: benchmark lại bản hiện tại, test_gui + kiểm tra trực quan, nghiệm thu DPAPI.
+3. Tách tiếp Lookup/Filter trong infer_smart_plan; gui; prepare_sheets.
+4. Fuzz đơn giản cho parser CSV/header và mutation test cho bộ test (chế độ không cạn việc).
 - Kiểm tra sau: chạy lại toàn bộ 13 file test — tất cả exit 0; root không còn file *.json; file kết quả mới sinh ra nằm trong `results/` (đã khôi phục nội dung kết quả đã commit để vòng này chỉ gồm việc di chuyển, không lẫn nội dung kết quả chạy trên Linux).
