@@ -21,6 +21,9 @@ def check(name, condition):
     print(f"  [PASS] {name}")
 
 def run_batch_tests():
+    if sys.platform != 'win32':
+        print("SKIP: test_batch_processing requires Windows + Excel Desktop (execute_batch runs each file through the PowerShell Excel bridge).")
+        return
     print("=== KIỂM THỬ XỬ LÝ HÀNG LOẠT (BATCH PROCESSING) - 0 AI TOKEN ===")
 
     with tempfile.TemporaryDirectory(dir=app.WORK) as td:

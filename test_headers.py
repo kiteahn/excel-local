@@ -1,5 +1,6 @@
 """Header-row diagnostics, empty margins and native Excel number formats."""
 import json
+import sys
 from pathlib import Path
 import tempfile
 import app
@@ -38,6 +39,9 @@ fails(duplicate,1,['Tên cột trùng','A1','B1'])
 checks.append('duplicate header identifies both addresses')
 fails(raw,100,['100','1 đến 3'])
 checks.append('out-of-range row keeps raw inspection available')
+if sys.platform != 'win32':
+    print(f'SKIP: native Excel part of test_headers requires Windows + Excel Desktop; {len(checks)} logic checks passed.')
+    raise SystemExit(0)
 with tempfile.TemporaryDirectory(dir=app.WORK) as private:
     directory=Path(private)
     source=directory/'source.xlsx'

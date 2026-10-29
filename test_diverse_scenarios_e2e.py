@@ -12,6 +12,9 @@ import ai_client
 EXAMPLES_DIR = app.ROOT / 'examples'
 
 def run_e2e_scenarios():
+    if sys.platform != 'win32':
+        print("SKIP: test_diverse_scenarios_e2e requires Windows + Excel Desktop (inspect_file/execute use the PowerShell Excel bridge).")
+        return
     print("=== CHẠY KIỂM THỬ END-TO-END TRÊN TẤT CẢ CÁC FILE MẪU THỰC TẾ ===")
     
     with tempfile.TemporaryDirectory(dir=app.WORK) as td:

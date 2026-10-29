@@ -1,5 +1,6 @@
 """Test single-file filter & extract: auto-header detection, natural language intent, preview, and Excel Desktop COM execution."""
 import json
+import sys
 from pathlib import Path
 import tempfile
 import app
@@ -13,6 +14,9 @@ def check(name, condition):
     print(f"  [PASS] {name}")
 
 def run_tests():
+    if sys.platform != 'win32':
+        print("SKIP: test_single_file_filter requires Windows + Excel Desktop (inspect_file uses the PowerShell Excel bridge).")
+        return
     print("=== Testing Single-File Intelligent Filter & Extract ===")
     sample_file = app.ROOT / 'examples' / '07_danh_sach_lop_can_su_co_banner.xlsx'
     assert sample_file.exists(), f"File {sample_file} must exist."

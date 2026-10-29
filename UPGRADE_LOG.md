@@ -84,3 +84,13 @@ Tổng kiểm chứng được trên Linux: 79 + 61 + 28 + 6 = 174 check đạt.
 - Sửa: (1) `ai_client.save_config`: trước khi ghi, kiểm tra mọi khóa khác rỗng (openai_api_key + từng provider_keys) đều có dạng mã hóa `dpapi:`; nếu không, raise RuntimeError tiếng Việt nói rõ nguyên nhân và cách xử lý, và KHÔNG ghi file. Tương thích ngược: `get_config` vẫn đọc được config cũ dạng thô như trước. (2) `app.py save_settings`: bắt RuntimeError → `messagebox.showerror` và giữ hộp thoại mở, không báo "đã lưu" sai. (3) test_router: trên nền tảng không có DPAPI, cài cipher mô phỏng đảo ngược được (base64 + tiền tố `dpapi:`) để vẫn kiểm được hợp đồng lưu/đọc; thêm mục 7 — regression test: giả lập DPAPI hỏng (protect trả plaintext) thì save_config phải raise và file config nguyên vẹn, không chứa khóa.
 - Sau khi sửa (Linux): test_router ĐẠT 7/7 mục (trước 6/6, chưa có regression); test_app 79/79; test_all_edge_cases 61/61; test_cli 6/6; py_compile app/ai_client/test_router OK; không tạo config.json trong repo.
 - Hạn chế ghi rõ: hành vi DPAPI thật vẫn chỉ kiểm chứng được trên Windows; test_gui chưa chạy được ở môi trường headless này nên thay đổi messagebox trong save_settings mới kiểm ở mức compile + đọc code, CHƯA kiểm tra trực quan/tương tác.
+
+### Vòng 4 — Skip rõ ràng theo nền tảng (VĐ-04) (2026-10-30)
+- Trước: 7/12 file test sập traceback trên máy không có Excel/PowerShell/DPAPI/display (xem bảng Bước 0), che tín hiệu hồi quy.
+- Sửa (chỉ file test, không đổi code sản phẩm, không bỏ check nào trên Windows):
+  - test_security_privacy: mục 16–17 (DPAPI) chỉ chạy khi probe DPAPI thật cho kết quả `dpapi:`, ngược lại in SKIP; các mục logic còn lại chạy mọi nơi.
+  - test_single_file_filter, test_batch_processing, test_diverse_scenarios_e2e: guard `sys.platform != 'win32'` ở đầu hàm chạy, in SKIP kèm lý do (Excel bridge), exit 0.
+  - test_headers: phần logic (7 check) chạy mọi nơi; phần native Excel được guard + in số check logic đã đạt.
+  - test_read_boundary: 2 check đối kháng (mock bridge) chạy mọi nơi; chỉ lượt đọc Excel thật cuối file được guard.
+  - test_gui: bắt `tk.TclError` khi không có display → in SKIP + hướng dẫn, exit 0.
+- Sau khi sửa (Linux): **cả 12/12 file test exit 0**. Check thuần logic đã kiểm chứng: test_app 79 + edge 61 + upgrades 28 + cli 6 + router 7 + security 38 = **219 check đạt**; phần bị SKIP đều in rõ lý do (5 check DPAPI của security khớp tổng 43 như README ghi cho Windows).

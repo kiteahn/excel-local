@@ -123,20 +123,24 @@ def run_tests():
     check('.gitignore protects .work directory', '.work/' in gi_content)
     check('.gitignore protects output directory', 'output/' in gi_content)
 
-    # 16. Windows DPAPI protection round-trip
-    test_key = 'sk-proj-SuperSecretKey1234567890'
-    enc_key = ai_client.dpapi_protect(test_key)
-    check('DPAPI ciphertext formatted', enc_key.startswith('dpapi:') and len(enc_key) > 50)
-    check('DPAPI plaintext recovered', ai_client.dpapi_unprotect(enc_key) == test_key)
+    # 16-17. Windows DPAPI checks: only runnable where DPAPI really exists.
+    if ai_client.dpapi_protect('probe').startswith('dpapi:'):
+        # 16. Windows DPAPI protection round-trip
+        test_key = 'sk-proj-SuperSecretKey1234567890'
+        enc_key = ai_client.dpapi_protect(test_key)
+        check('DPAPI ciphertext formatted', enc_key.startswith('dpapi:') and len(enc_key) > 50)
+        check('DPAPI plaintext recovered', ai_client.dpapi_unprotect(enc_key) == test_key)
 
-    # 17. Safe Config Storage: No plaintext API keys on disk
-    with patch.object(ai_client, 'CONFIG_FILE', app.WORK / 'test-config.json'):
-        ai_client.save_config({'openai_api_key': 'sk-test-secret-1234'})
-        disk_content = (app.WORK / 'test-config.json').read_text(encoding='utf-8')
-        check('Plaintext API key NOT on disk', 'sk-test-secret-1234' not in disk_content)
-        check('Encrypted key stored on disk', 'openai_api_key_enc' in disk_content and 'dpapi:' in disk_content)
-        read_back = ai_client.get_config()
-        check('API key recovered seamlessly in memory', read_back['openai_api_key'] == 'sk-test-secret-1234')
+        # 17. Safe Config Storage: No plaintext API keys on disk
+        with patch.object(ai_client, 'CONFIG_FILE', app.WORK / 'test-config.json'):
+            ai_client.save_config({'openai_api_key': 'sk-test-secret-1234'})
+            disk_content = (app.WORK / 'test-config.json').read_text(encoding='utf-8')
+            check('Plaintext API key NOT on disk', 'sk-test-secret-1234' not in disk_content)
+            check('Encrypted key stored on disk', 'openai_api_key_enc' in disk_content and 'dpapi:' in disk_content)
+            read_back = ai_client.get_config()
+            check('API key recovered seamlessly in memory', read_back['openai_api_key'] == 'sk-test-secret-1234')
+    else:
+        print('SKIP: sections 16-17 (DPAPI round-trip, encrypted config storage) require Windows DPAPI, not available on this platform.')
 
     # 18. Stale work directories garbage collection
     fake_stale = app.WORK / 'inspect-stale-test'
