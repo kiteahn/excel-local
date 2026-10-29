@@ -36,6 +36,16 @@ CASES = [
      ("lookup", "MSSV", "Ghi chú", "MSSV", "Họ tên")),
     ("Lấy Quê quán sang cột Địa chỉ", ["MSSV", "Địa chỉ"], ["MSSV", "Quê quán"],
      ("lookup", "MSSV", "Địa chỉ", "MSSV", "Quê quán")),
+    # VD-16 fixed in round 17: (a) an explicitly mentioned key that matches no
+    # column must not pass through as a bogus key (falls back to ID matching);
+    # (b) the natural split phrasing 'áp <col> lên' triggers lookup.
+    ("Đối chiếu theo mã nhân viên để lấy Phòng ban", ["Mã NV", "Họ tên"], ["Mã NV", "Phòng ban"],
+     ("lookup", "Mã NV", "", "Mã NV", "Phòng ban")),
+    ("Đối chiếu theo xyz123 để lấy Phòng ban", ["Mã NV", "Họ tên"], ["Mã NV", "Phòng ban"],
+     ("lookup", "Mã NV", "", "Mã NV", "Phòng ban")),
+    ("Áp TTVR lên cột VR", ["MSSV", "VR"], ["MSSV", "TTVR"],
+     ("lookup", "MSSV", "VR", "MSSV", "TTVR")),
+    ("Áp dụng công thức tính điểm", ["MSSV", "Điểm"], (), None),
     ("Tính tổng học phí của từng lớp", ["Lớp", "Học phí"], (), ("summary", "Lớp", "Học phí", "", "")),
     ("Cộng tổng tiền theo khoa", ["Khoa", "Tiền"], (), ("summary", "Khoa", "Tiền", "", "")),
     ("Thống kê số lượng theo nhóm", ["Nhóm", "Số lượng"], (), ("summary", "Nhóm", "Số lượng", "", "")),

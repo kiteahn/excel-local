@@ -897,7 +897,7 @@ def _lookup_plan(prompt: str, p_lower: str, source_columns, reference_columns) -
         'cán sự', 'lớp trưởng', 'tổ trưởng', 'bí thư', 'thủ quỹ', 'chỉ lấy',
         'file đơn lẻ', '1 file', 'đăng ký đơn', 'đăng ký team', 'đăng ký đội'
     ])
-    is_lookup = (reference_columns and any(w in p_lower for w in ['đối chiếu', 'tra cứu', 'vlookup', 'ghép', 'điền', 'kéo', 'lấy', 'bổ sung', 'chèn', 'áp lên', 'áp vào'])) or \
+    is_lookup = (reference_columns and (any(w in p_lower for w in ['đối chiếu', 'tra cứu', 'vlookup', 'ghép', 'điền', 'kéo', 'lấy', 'bổ sung', 'chèn', 'áp lên', 'áp vào']) or re.search(r'áp\s+\S+\s+(?:lên|vào)\b', p_lower))) or \
                 (not reference_columns and not is_filter_intent and any(w in p_lower for w in ['đối chiếu', 'tra cứu', 'vlookup', 'danh mục', 'tham chiếu']))
     if is_lookup:
         if not reference_columns:
@@ -981,6 +981,12 @@ def _lookup_plan(prompt: str, p_lower: str, source_columns, reference_columns) -
             cand_k = m_key.group(1).strip()
             sk = fuzzy_match_column(cand_k, avail_src)
             rk = fuzzy_match_column(cand_k, avail_ref)
+            # Same passthrough guard as VD-15: a fuzzy result that is not a
+            # real column is no match at all.
+            if sk not in avail_src:
+                sk = None
+            if rk not in avail_ref:
+                rk = None
             if sk and rk:
                 shared_key = (sk, rk)
             elif sk:
