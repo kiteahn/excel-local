@@ -294,6 +294,23 @@ def save_config(updates):
             prov_keys_enc[p_name] = dpapi_protect(p_plain) if p_plain else ''
     to_save['provider_keys_enc'] = prov_keys_enc
 
+    # Never persist a secret unencrypted: dpapi_protect() falls back to the
+    # plaintext input when DPAPI is unavailable or fails. Writing that to disk
+    # silently would leave API keys in the clear, so refuse to save instead.
+    unprotected = []
+    if plain_key and not to_save['openai_api_key_enc'].startswith('dpapi:'):
+        unprotected.append('openai_api_key')
+    for p_name, p_plain in (prov_keys.items() if isinstance(prov_keys, dict) else []):
+        if p_plain and not prov_keys_enc.get(p_name, '').startswith('dpapi:'):
+            unprotected.append(f'provider_keys[{p_name}]')
+    if unprotected:
+        raise RuntimeError(
+            'Không lưu cấu hình: Windows DPAPI không mã hóa được khóa API ('
+            + ', '.join(unprotected)
+            + '). Khóa sẽ bị ghi dạng thô nên thao tác bị hủy; hãy thử lại trên '
+            'tài khoản Windows hiện tại hoặc xóa khóa API trước khi lưu.'
+        )
+
     CONFIG_FILE.write_text(json.dumps(to_save, ensure_ascii=False, indent=2), encoding='utf-8')
     cfg['openai_api_key'] = plain_key
     cfg['provider_keys'] = prov_keys

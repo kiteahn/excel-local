@@ -1659,18 +1659,22 @@ def gui(smoke=False):
                 g_key = gemini_key_var.get().strip()
                 gr_key = groq_key_var.get().strip()
                 o_key = openai_key_var.get().strip()
-                ai_client.save_config({
-                    'provider': prov_var.get(),
-                    'auto_fallback': fallback_var.get(),
-                    'openai_api_key': o_key,
-                    'openai_model': model_var.get().strip(),
-                    'openai_base_url': url_var.get().strip(),
-                    'provider_keys': {
-                        'gemini': g_key,
-                        'groq': gr_key,
-                        'openai': o_key,
-                    }
-                })
+                try:
+                    ai_client.save_config({
+                        'provider': prov_var.get(),
+                        'auto_fallback': fallback_var.get(),
+                        'openai_api_key': o_key,
+                        'openai_model': model_var.get().strip(),
+                        'openai_base_url': url_var.get().strip(),
+                        'provider_keys': {
+                            'gemini': g_key,
+                            'groq': gr_key,
+                            'openai': o_key,
+                        }
+                    })
+                except RuntimeError as exc:
+                    messagebox.showerror('Không lưu được cấu hình', str(exc), parent=dlg)
+                    return
                 self.ai_provider.set(prov_var.get())
                 self.update_engine_badge()
                 dlg.destroy()

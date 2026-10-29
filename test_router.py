@@ -21,6 +21,17 @@ def run_tests():
     _tmp_config_dir = tempfile.TemporaryDirectory()
     ai_client.CONFIG_FILE = Path(_tmp_config_dir.name) / 'config.json'
     has_dpapi = ai_client.dpapi_protect('probe').startswith('dpapi:')
+    dpapi_simulated = False
+    if not has_dpapi:
+        # save_config() now refuses to persist unencrypted keys, so off Windows
+        # (where DPAPI does not exist) simulate a faithful reversible DPAPI
+        # cipher to exercise the same save/read contract. The real cipher is
+        # only verified on Windows.
+        import base64
+        ai_client.dpapi_protect = lambda s: '' if not s else 'dpapi:' + base64.b64encode(s.encode('utf-8')).decode('ascii')
+        ai_client.dpapi_unprotect = lambda c: base64.b64decode(c[6:].encode('ascii')).decode('utf-8') if c and c.startswith('dpapi:') else (c or '')
+        dpapi_simulated = True
+        print("NOTE: No Windows DPAPI on this platform; using a simulated reversible cipher for the config save/read checks.")
 
     print("=== 1. Test DPAPI Encryption for Provider Keys ===")
     raw_keys = {
@@ -35,15 +46,10 @@ def run_tests():
     })
     # Read the raw file on disk to verify no plaintext keys exist:
     raw_file = ai_client.CONFIG_FILE.read_text(encoding='utf-8')
-    if has_dpapi:
-        assert 'AIzaSyFakeGeminiKey123' not in raw_file, "Gemini key must not be in plaintext on disk!"
-        assert 'gsk_FakeGroqKey456' not in raw_file, "Groq key must not be in plaintext on disk!"
-        assert 'sk-FakeOpenAI789' not in raw_file, "OpenAI key must not be in plaintext on disk!"
-        print("PASS: All keys encrypted on disk with Windows DPAPI!")
-    else:
-        print("SKIP: Windows DPAPI is not available on this platform, so the "
-              "no-plaintext-on-disk check cannot run here. "
-              "NOTE: dpapi_protect() silently falls back to plaintext off Windows.")
+    assert 'AIzaSyFakeGeminiKey123' not in raw_file, "Gemini key must not be in plaintext on disk!"
+    assert 'gsk_FakeGroqKey456' not in raw_file, "Groq key must not be in plaintext on disk!"
+    assert 'sk-FakeOpenAI789' not in raw_file, "OpenAI key must not be in plaintext on disk!"
+    print("PASS: All keys encrypted on disk!" + (" (simulated cipher, non-Windows platform)" if dpapi_simulated else " (Windows DPAPI)"))
 
     reloaded_cfg = ai_client.get_config()
     assert reloaded_cfg['provider_keys']['gemini'] == 'AIzaSyFakeGeminiKey123'
@@ -135,10 +141,27 @@ def run_tests():
         assert plan['engine_used'] == 'Smart Heuristic Engine'
         print("PASS: Semantic Heuristic Rescue rescued the plan with zero network and zero daemons!")
 
+    print("\n=== 7. Test save_config Refuses To Persist Unencrypted Keys (VD-11) ===")
+    before = ai_client.CONFIG_FILE.read_text(encoding='utf-8') if ai_client.CONFIG_FILE.exists() else None
+    real_protect = ai_client.dpapi_protect
+    ai_client.dpapi_protect = lambda s: s  # simulate DPAPI failure: returns plaintext
+    try:
+        try:
+            ai_client.save_config({'provider_keys': {'gemini': 'AIzaSyShouldNeverHitDisk'}})
+            raise AssertionError("save_config must refuse to save when encryption fails!")
+        except RuntimeError as exc:
+            assert 'DPAPI' in str(exc)
+        after = ai_client.CONFIG_FILE.read_text(encoding='utf-8') if ai_client.CONFIG_FILE.exists() else None
+        assert after == before, "Config file must be left untouched when saving is refused!"
+        assert after is None or 'AIzaSyShouldNeverHitDisk' not in after
+        print("PASS: save_config raised a clear error and wrote nothing when DPAPI failed!")
+    finally:
+        ai_client.dpapi_protect = real_protect
+
     # Cleanup: the config used here lives in a temp directory and is discarded;
     # the real user config next to the code was never touched.
     _tmp_config_dir.cleanup()
-    print("\nAll 6 Smart Multi-Model Router architecture tests PASSED brilliantly!")
+    print("\nAll 7 Smart Multi-Model Router architecture tests PASSED brilliantly!")
 
 if __name__ == '__main__':
     run_tests()
