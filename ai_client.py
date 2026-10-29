@@ -563,10 +563,8 @@ def extract_requested_columns(prompt: str, source_columns: list[str], target: st
     return matched
 
 
-def infer_smart_plan(prompt: str, source_columns: list[str], reference_columns: list[str] = ()) -> dict | None:
-    """Fast semantic intent analyzer & Q&A handler for Vietnamese queries."""
-    p_lower = prompt.strip().lower()
-
+def _qa_clarify_plan(p_lower: str, source_columns, reference_columns) -> dict | None:
+    """Instant answers for informational/diagnostic questions (section 1 of infer_smart_plan)."""
     # 1. Informational, Educational & Diagnostic Q&A questions
     if any(q in p_lower for q in ['tại sao', 'vì sao', 'nguyên nhân']) and any(err in p_lower for err in ['#n/a', 'lỗi', 'không tìm thấy', 'na']):
         return {
@@ -610,6 +608,89 @@ def infer_smart_plan(prompt: str, source_columns: list[str], reference_columns: 
                 'Để bảo toàn dữ liệu gốc, hệ thống không tự xóa dòng trùng (chỉ đánh dấu KHOA_TRUNG để bạn rà soát). Biểu đồ và sắp xếp sẽ có ở bản kế tiếp.'
             )
         }
+
+    return None
+
+
+def _summary_plan(p_lower: str, source_columns) -> dict | None:
+    """Summary heuristics (section 3 of infer_smart_plan): total a numeric column per group."""
+    # 3. Summary Heuristics: tổng, cộng, thống kê, bao nhiêu, đếm
+    p_no_country = p_lower.replace('cộng hòa', '').replace('cong hoa', '')
+    is_summary = any(w in p_no_country for w in ['tổng', 'cộng', 'tính tổng', 'thống kê', 'bao nhiêu', 'đếm', 'sum', 'count'])
+    if is_summary:
+        group_col = None
+        val_col = None
+
+        def clean_cname(name: str) -> str:
+            return re.sub(r'[\(\[\{].*?[\)\]\}]', '', name).strip().lower()
+
+        # 1. Match columns explicitly mentioned in the user prompt with prefix phrases
+        for sc in source_columns:
+            sc_low = sc.strip().lower()
+            sc_clean = clean_cname(sc_low)
+            if any(w in p_lower for w in [f"theo {sc_low}", f"theo {sc_clean}", f"từng {sc_low}", f"từng {sc_clean}", f"mỗi {sc_low}", f"mỗi {sc_clean}", f"nhóm {sc_low}", f"nhóm {sc_clean}"]):
+                group_col = sc
+            elif any(w in p_lower for w in [f"tổng {sc_low}", f"tổng {sc_clean}", f"cộng {sc_low}", f"cộng {sc_clean}", f"tính {sc_low}", f"tính {sc_clean}", f"tính tổng {sc_low}", f"tính tổng {sc_clean}"]):
+                val_col = sc
+
+        # 2. Match columns whose name or clean name appears in user prompt
+        for sc in source_columns:
+            sc_low = sc.strip().lower()
+            sc_clean = clean_cname(sc_low)
+            if not group_col and (sc_clean in p_lower or sc_low in p_lower):
+                if any(k in sc_low for k in ['kho', 'lớp', 'khoa', 'nhóm', 'phòng', 'đơn vị', 'ngành', 'bộ môn']):
+                    group_col = sc
+            if not val_col and (sc_clean in p_lower or sc_low in p_lower):
+                if any(k in sc_low for k in ['tiền', 'phí', 'điểm', 'lượng', 'lương', 'thu nhập']):
+                    if not any(k in sc_low for k in ['hạng mục', 'loại', 'tên', 'mã']):
+                        val_col = sc
+
+        # 3. Heuristic fallback based on column semantic categories
+        if not group_col:
+            for sc in source_columns:
+                sc_low = sc.strip().lower()
+                if any(k in sc_low for k in ['lớp', 'khoa', 'nhóm', 'phòng', 'đơn vị', 'ngành', 'bộ môn', 'kho', 'chi nhánh', 'khu vực']):
+                    group_col = sc
+                    break
+            if not group_col:
+                group_col = find_synonym_match('nhóm', source_columns) or (source_columns[0] if source_columns else '')
+
+        if not val_col:
+            for sc in source_columns:
+                sc_low = sc.strip().lower()
+                if any(k in sc_low for k in ['số tiền', 'thành tiền', 'học phí', 'tiền', 'lương', 'thu nhập', 'số lượng', 'điểm', 'đơn giá']) and not any(k in sc_low for k in ['hạng mục', 'loại', 'tên', 'mã', 'ghi chú']):
+                    val_col = sc
+                    break
+            if not val_col:
+                for sc in source_columns:
+                    sc_low = sc.strip().lower()
+                    if any(k in sc_low for k in ['tiền', 'phí', 'học phí', 'điểm', 'lương', 'thu nhập', 'số lượng', 'thành tiền']):
+                        val_col = sc
+                        break
+            if not val_col:
+                val_col = find_synonym_match('tiền', source_columns) or find_synonym_match('điểm', source_columns)
+
+        if group_col and val_col and group_col != val_col:
+            return {
+                'action': 'summary',
+                'key': group_col,
+                'value': val_col,
+                'ref_key': '',
+                'ref_value': '',
+                'lenient_numbers': True,
+                'message': f"Tính tổng cột '{val_col}' theo từng nhóm '{group_col}'."
+            }
+
+    return None
+
+
+def infer_smart_plan(prompt: str, source_columns: list[str], reference_columns: list[str] = ()) -> dict | None:
+    """Fast semantic intent analyzer & Q&A handler for Vietnamese queries."""
+    p_lower = prompt.strip().lower()
+
+    qa_plan = _qa_clarify_plan(p_lower, source_columns, reference_columns)
+    if qa_plan is not None:
+        return qa_plan
 
     # 2. Lookup Heuristics: ghép, điền, kéo, lấy, vlookup, tra cứu, đối chiếu, áp lên
     is_filter_intent = any(w in p_lower for w in [
@@ -778,72 +859,9 @@ def infer_smart_plan(prompt: str, source_columns: list[str], reference_columns: 
                 'message': f"Đối chiếu cột '{shared_key[0]}' với '{shared_key[1]}' để lấy giá trị '{target_val}' từ danh mục{dest_msg}."
             }
 
-    # 3. Summary Heuristics: tổng, cộng, thống kê, bao nhiêu, đếm
-    p_no_country = p_lower.replace('cộng hòa', '').replace('cong hoa', '')
-    is_summary = any(w in p_no_country for w in ['tổng', 'cộng', 'tính tổng', 'thống kê', 'bao nhiêu', 'đếm', 'sum', 'count'])
-    if is_summary:
-        group_col = None
-        val_col = None
-
-        def clean_cname(name: str) -> str:
-            return re.sub(r'[\(\[\{].*?[\)\]\}]', '', name).strip().lower()
-
-        # 1. Match columns explicitly mentioned in the user prompt with prefix phrases
-        for sc in source_columns:
-            sc_low = sc.strip().lower()
-            sc_clean = clean_cname(sc_low)
-            if any(w in p_lower for w in [f"theo {sc_low}", f"theo {sc_clean}", f"từng {sc_low}", f"từng {sc_clean}", f"mỗi {sc_low}", f"mỗi {sc_clean}", f"nhóm {sc_low}", f"nhóm {sc_clean}"]):
-                group_col = sc
-            elif any(w in p_lower for w in [f"tổng {sc_low}", f"tổng {sc_clean}", f"cộng {sc_low}", f"cộng {sc_clean}", f"tính {sc_low}", f"tính {sc_clean}", f"tính tổng {sc_low}", f"tính tổng {sc_clean}"]):
-                val_col = sc
-
-        # 2. Match columns whose name or clean name appears in user prompt
-        for sc in source_columns:
-            sc_low = sc.strip().lower()
-            sc_clean = clean_cname(sc_low)
-            if not group_col and (sc_clean in p_lower or sc_low in p_lower):
-                if any(k in sc_low for k in ['kho', 'lớp', 'khoa', 'nhóm', 'phòng', 'đơn vị', 'ngành', 'bộ môn']):
-                    group_col = sc
-            if not val_col and (sc_clean in p_lower or sc_low in p_lower):
-                if any(k in sc_low for k in ['tiền', 'phí', 'điểm', 'lượng', 'lương', 'thu nhập']):
-                    if not any(k in sc_low for k in ['hạng mục', 'loại', 'tên', 'mã']):
-                        val_col = sc
-
-        # 3. Heuristic fallback based on column semantic categories
-        if not group_col:
-            for sc in source_columns:
-                sc_low = sc.strip().lower()
-                if any(k in sc_low for k in ['lớp', 'khoa', 'nhóm', 'phòng', 'đơn vị', 'ngành', 'bộ môn', 'kho', 'chi nhánh', 'khu vực']):
-                    group_col = sc
-                    break
-            if not group_col:
-                group_col = find_synonym_match('nhóm', source_columns) or (source_columns[0] if source_columns else '')
-
-        if not val_col:
-            for sc in source_columns:
-                sc_low = sc.strip().lower()
-                if any(k in sc_low for k in ['số tiền', 'thành tiền', 'học phí', 'tiền', 'lương', 'thu nhập', 'số lượng', 'điểm', 'đơn giá']) and not any(k in sc_low for k in ['hạng mục', 'loại', 'tên', 'mã', 'ghi chú']):
-                    val_col = sc
-                    break
-            if not val_col:
-                for sc in source_columns:
-                    sc_low = sc.strip().lower()
-                    if any(k in sc_low for k in ['tiền', 'phí', 'học phí', 'điểm', 'lương', 'thu nhập', 'số lượng', 'thành tiền']):
-                        val_col = sc
-                        break
-            if not val_col:
-                val_col = find_synonym_match('tiền', source_columns) or find_synonym_match('điểm', source_columns)
-
-        if group_col and val_col and group_col != val_col:
-            return {
-                'action': 'summary',
-                'key': group_col,
-                'value': val_col,
-                'ref_key': '',
-                'ref_value': '',
-                'lenient_numbers': True,
-                'message': f"Tính tổng cột '{val_col}' theo từng nhóm '{group_col}'."
-            }
+    summary_plan = _summary_plan(p_lower, source_columns)
+    if summary_plan is not None:
+        return summary_plan
 
     # 4. Clean Heuristics: làm sạch, chuẩn hóa, khoảng trắng, bỏ dấu cách
     is_clean = any(w in p_lower for w in ['làm sạch', 'chuẩn hóa', 'khoảng trắng', 'dấu cách', 'clean', 'trim'])

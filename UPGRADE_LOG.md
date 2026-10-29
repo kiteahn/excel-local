@@ -113,3 +113,11 @@ Tổng kiểm chứng được trên Linux: 79 + 61 + 28 + 6 = 174 check đạt.
 - Giữ nguyên 16 chỗ sau khi soi, có lý do: fallback DPAPI (đã có save_config chặn ghi thô từ Vòng 3), `load_xlsx_fast` trả None để rơi xuống đường Excel bridge, rollback xuất bản có re-raise, cách ly lỗi từng file trong batch (ghi vào báo cáo), callback tiến độ không được giết batch, ranh giới worker GUI/CLI (đều đưa lỗi ra giao diện), cascade router (ghi lỗi đã sanitize rồi chuyển provider), fallback Ollama → heuristic, `test_ai_connection` trả (False, thông báo).
 - Kiểm tra sau: toàn bộ suite đạt như trước — app 79, edge 61, upgrades 28, cli 6, router 7, security 38, privacy corpus 53 mẫu (0 lọt/0 che nhầm bất ngờ). `grep -c "except Exception"`: app.py 20→10, ai_client.py 10→6.
 - Lưu ý: 4 guard GUI mới chỉ kiểm ở mức compile + soi code (headless, test_gui SKIP như các vòng trước) — CHƯA kiểm tra trực quan.
+
+### Vòng 7 — Tách hàm dài đợt 1 (VĐ-06) (2026-10-30)
+- Mục tiêu: `ai_client.infer_smart_plan` 478 dòng. Tách thuần cơ học, 2 bước, test sau từng bước:
+  - Bước 1: khối Q&A đầu hàm (4 mẫu clarify: giải thích lỗi #N/A, đếm cột, hướng dẫn, tính năng chưa hỗ trợ) → hàm `_qa_clarify_plan(p_lower, source_columns, reference_columns)`.
+  - Bước 2: khối Summary Heuristics (tự chứa, chỉ phụ thuộc p_lower + source_columns) → hàm `_summary_plan(p_lower, source_columns)`.
+- Kết quả: infer_smart_plan còn 375 dòng; hai hàm mới 47 và 70 dòng. Không đổi thứ tự đánh giá điều kiện, không đổi nội dung message/plan.
+- Kiểm tra sau mỗi bước: router 7/7, security 38, app 79; sau bước 2 chạy thêm edge 61, upgrades 28, cli 6, privacy corpus — tất cả đạt như trước. Các test này chạm trực tiếp đường Q&A (router mục 3) và summary (router mục 5–6, heuristic rescue).
+- Còn lại cho đợt sau: khối Lookup (~150 dòng, nhiều biến trạng thái) và Filter (~170 dòng) trong infer_smart_plan; `app.gui` ~890 dòng và `prepare_sheets` ~261 dòng — tách khi có test GUI/Excel chạy được để giảm rủi ro, hoặc tách cơ học từng khối nhỏ như đợt này.

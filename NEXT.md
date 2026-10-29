@@ -1,29 +1,34 @@
 # NEXT — việc tiếp theo (cập nhật sau mỗi vòng)
 
-## Vòng tiếp theo: Vòng 7 — Tách hàm dài đợt 1 (VĐ-06, mục D của PROMPT)
+## Vòng tiếp theo: Vòng 8 — Đo hiệu năng phân giai đoạn (VĐ-07, mục F của PROMPT)
 
-Ứng viên đầu: `ai_client.infer_smart_plan` (~478 dòng). Nguyên tắc: KHÔNG đổi
-hành vi — tách thuần cơ học theo nhóm case, chạy test sau mỗi bước tách nhỏ;
-nếu một bước làm test đỏ thì hoàn tác bước đó.
+Nguyên tắc: chỉ giữ thay đổi khi số đo cải thiện thật và đối soát vẫn đúng;
+không bịa số. Môi trường này KHÔNG có Excel COM nên chỉ đo được phần thuần
+Python; phần bridge phải ghi "CHƯA ĐO ĐƯỢC ở đây" kèm cách đo trên Windows.
 
 Làm:
-1. Đọc toàn bộ infer_smart_plan, lập bản đồ các khối độc lập (Q&A giáo dục,
-   nhận diện lookup/summary/clean/filter, trích cột, đồng nghĩa...).
-2. Tách 1–2 khối rõ ràng nhất thành hàm module-level có tên mô tả, giữ chữ ký
-   và thứ tự đánh giá điều kiện y hệt.
-3. Kiểm tra sau mỗi bước: router 7, security 38, app 79, edge 61,
-   privacy corpus — phải đạt như trước (đây là các test chạm infer_smart_plan).
-4. Commit từng bước tách nếu đủ lớn; cập nhật UPGRADE_LOG (hàm mới, số dòng
-   trước/sau), NEXT chuyển sang Vòng 8 (hiệu năng).
+1. Đọc benchmark.py và benchmark_ai.py hiện có: đo cái gì, ghi ra đâu,
+   hash đã lệch code hiện tại ra sao (VĐ-07).
+2. Viết/chạy đo phân giai đoạn trên Linux cho phần đo được: đọc file bằng
+   `load_xlsx_fast` (nếu openpyxl có sẵn; nếu không, ghi rõ), parse CSV,
+   preview_plan thuần Python trên dữ liệu mẫu sinh trong bộ nhớ ở quy mô
+   100 / 1.000 / 5.000 / 20.000 dòng (lookup + summary). Ghi số thật vào
+   UPGRADE_LOG kèm cấu hình máy đo.
+3. Nếu thấy nút thắt thuần Python rõ ràng (vòng lặp bậc hai, chuẩn hóa lặp
+   lại...) thì sửa tối thiểu, đo trước/sau, chạy toàn bộ suite đối soát.
+   Không có nút thắt thì ghi kết luận "không có" — đó cũng là kết quả.
+4. Cập nhật benchmark-*.json hoặc tạo `results/` ghi chú số đo cũ đã hết hạn
+   (liên quan Vòng 9 dọn repo — phối hợp, đừng làm trùng).
+5. Commit, cập nhật log, NEXT sang Vòng 9.
 
 ## Hàng đợi sau đó
-- Vòng 8: VĐ-07 — đo hiệu năng phân giai đoạn (benchmark.py; tách phần đo
-  được trên Linux khỏi phần cần Excel COM; không nhận cải tiến nào không có
-  số đo trước/sau).
 - Vòng 9: VĐ-09 — dọn repo: gom *.json kết quả/benchmark vào `results/`,
   script phụ vào `tools/` (cập nhật đường dẫn ghi file trong test tương ứng).
 - Vòng 10: VĐ-10 giao diện nhẹ + vòng tổng kết 10 vòng (chấm lại điểm Bước 0,
   sắp lại backlog theo PROMPT).
+- Dài hạn: tách tiếp Lookup/Filter trong infer_smart_plan, `gui`,
+  `prepare_sheets`; đo phần Excel COM trên Windows; NER/từ điển cho tên
+  riêng đứng một mình (giới hạn PrivacyGuard đã đo ở Vòng 5).
 
 ## Câu hỏi chờ người dùng (ghi lại, vẫn làm việc khác — không chờ)
 - Chính sách mặc định mong muốn là Smart Router (có cloud) hay Ollama-only?
