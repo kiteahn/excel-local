@@ -304,14 +304,14 @@ def load_csv(path, strict_ragged=True):
                 continue
             if width is None:
                 width = len(row)
-            if len(row) != width:
-                if strict_ragged:
+            if strict_ragged:
+                if len(row) != width:
                     raise ValueError('Các dòng CSV có số cột khác nhau; cần sửa cấu trúc trước.')
-                else:
-                    if len(row) < width:
-                        row = row + [''] * (width - len(row))
-                    else:
-                        row = row[:width]
+            else:
+                # Lenient: never truncate a longer row (that silently drops
+                # data). Track the widest row and pad shorter rows at the end,
+                # so banner lines above the real header survive intact.
+                width = max(width, len(row))
             if not width or width > 60 or (len(rows) + 1) * width > 400000 or len(rows) >= 20001:
                 raise ValueError('CSV vượt giới hạn 20000 dòng dữ liệu / 60 cột / 400000 ô.')
             if any(len(value) > 32767 or re.search(r'[\x00-\x08\x0b\x0c\x0e-\x1f]', value) for value in row):
@@ -321,6 +321,9 @@ def load_csv(path, strict_ragged=True):
         raise ValueError('CSV có ô quá lớn hoặc dấu nháy/cấu trúc không hợp lệ.') from exc
     if not rows:
         raise ValueError('CSV rỗng.')
+    if not strict_ragged:
+        width = max(len(row) for row in rows)
+        rows = [row + [''] * (width - len(row)) for row in rows]
     return rows
 
 
@@ -455,7 +458,10 @@ def inspect_file(path, sheet='', header_row=1, lenient=False, auto_heal=False):
     metadata = preflight(path, lenient=lenient) if lenient else preflight(path)
     WORK.mkdir(exist_ok=True)
     if path.suffix.lower() == '.csv':
-        snapshot = {'sheets': ['CSV'], 'sheet': 'CSV', 'rows': load_csv(path, strict_ragged=not lenient), 'excel_version': None}
+        # Auto header detection needs tolerant parsing: banner lines above the
+        # header have fewer fields and must survive until detect_header_row.
+        tolerant = lenient or header_row in ('auto', 0)
+        snapshot = {'sheets': ['CSV'], 'sheet': 'CSV', 'rows': load_csv(path, strict_ragged=not tolerant), 'excel_version': None}
     elif lenient and path.suffix.lower() == '.xlsx':
         snapshot = load_xlsx_fast(path, sheet_name=sheet)
         if not snapshot:
