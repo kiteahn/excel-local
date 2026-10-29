@@ -203,5 +203,31 @@ Phần giao diện (chỉnh nhẹ, không đổi bố cục/luồng/tên tính n
 - Quét hàm chết theo AST + đối chiếu tham chiếu toàn repo: không có hàm top-level nào chết trong app.py/ai_client.py (4 hàm chỉ có 1 nơi gọi đều được xác minh là gọi thật, gồm test_ai_connection được GUI gọi).
 - Nhất quán tài liệu: khối "Kiểm tra" trong README còn ghi test_router 6 mục (thực tế 7 từ Vòng 3) và thiếu 5 file test mới — đã cập nhật đủ 17 file với số đếm khớp lần chạy thật.
 - Toàn bộ 17 file test vẫn exit 0 sau dọn dẹp.
+
+### Vòng 19 — Đối chiếu toàn bộ VĐ-01…17 và số liệu tổng kết (2026-10-30)
+
+Trạng thái từng vấn đề (đối chiếu log từ Bước 0 tới Vòng 18, không mục nào bị quên):
+
+| VĐ | Nội dung ngắn | Trạng thái |
+|---|---|---|
+| 01 | README mâu thuẫn cloud/local | Đã sửa (Vòng 1) |
+| 02 | Ngôn ngữ tuyệt đối về riêng tư | Đã sửa (Vòng 1; nhãn GUI ở Vòng 10) |
+| 03 | Đường dẫn cứng + test_router không hermetic | Đã sửa (Vòng 2) |
+| 04 | Test cần Windows không có skip | Đã sửa (Vòng 4) |
+| 05 | ~30 except Exception rộng | Thu hẹp 14/30 (Vòng 6); 16 chỗ còn lại giữ kèm lý do đã ghi — đóng ở mức chấp nhận |
+| 06 | Hàm quá dài | infer_smart_plan: xong (Vòng 7/13/14). prepare_sheets: đánh giá và không tách, có lý do (Vòng 17). gui ~909 dòng: CHƯA tách — việc còn mở lớn nhất về cấu trúc |
+| 07 | Benchmark lệch hash / chưa đo phân giai đoạn | Phần Python: đã đo (Vòng 8). Phần Excel COM: hàng đợi Windows |
+| 08 | Lệch số/phiên bản trong README | Đã sửa (Vòng 1; đồng bộ lại Vòng 18) |
+| 09 | File kết quả rải ở root | Đã gom vào results/ (Vòng 9) |
+| 10 | Tooltip/phím tắt/nhãn GUI | Code xong (Vòng 10); kiểm chứng trực quan: hàng đợi Windows |
+| 11 | save_config có thể ghi khóa API dạng thô | Đã vá (Vòng 3); nghiệm thu DPAPI thật: hàng đợi Windows |
+| 12 | CSV có banner bị từ chối/cắt dữ liệu | Đã vá (Vòng 11) |
+| 13 | README sai về encoding CSV | Đã sửa tài liệu (Vòng 12) |
+| 14 | Cột trùng NFC/NFD lọt qua | Đã vá (Vòng 12) |
+| 15 | Cột đích lookup 'bảng'/'file' | Đã vá (Vòng 16) |
+| 16 | Khóa ma m_key + cụm 'áp … lên' | Đã vá (Vòng 17); dư: từ 'cập nhật' chưa kích hoạt lookup — chấp nhận hiện trạng, có ghi |
+| 17 | Batch GUI: lambda giữ exc → NameError | Đã vá (Vòng 18); kiểm chứng trực quan: hàng đợi Windows |
+
+Số liệu đo thật tại vòng này: nhánh muse-upgrade có 19 commit (Bước 0 + Vòng 1–18) trên nền commit gốc 28f5679. app.py 2.264 → 2.330 dòng; ai_client.py 1.439 → 1.511 dòng (tăng do tách helper + guard + tooltip — độ dài hàm lớn nhất giảm mạnh dù tổng dòng tăng nhẹ). Suite: 17/17 file exit 0 trên Linux; cộng các bộ đếm đã in trong output thật: 79 (app) + 61 (edge) + 28 (upgrades) + 6 (cli) + 7 mục (router) + 38 (security, phần logic Linux) + 34 (usecases) + 20 (fuzz) + 28 (infer golden) + 8 (sanitize) + 53 mẫu (privacy corpus) + 24 (single-file) + 11 (headers) + 6 (diverse) + 10 (batch) + 2 (read boundary, phần Linux) ≈ **415 check logic đã kiểm chứng trên Linux**; phần cần Windows/Excel/DPAPI/display được SKIP có lý do, không tính là đạt.
 - Kiểm chứng mạnh hơn các đợt trước: ngoài toàn bộ suite liên quan (router 7, security 38, app 79, edge 61, usecases 34, fuzz 20, privacy corpus, upgrades 28, cli 6 — tất cả đạt), còn so sánh trực tiếp hành vi: nạp song song ai_client bản trước vòng này (từ git HEAD) và bản mới, chạy 15 prompt đại diện cho cả 5 nhánh (Q&A, lookup, summary, clean, filter, không khớp gì) — kết quả JSON giống hệt 15/15.
 - Kiểm tra sau: chạy lại toàn bộ 13 file test — tất cả exit 0; root không còn file *.json; file kết quả mới sinh ra nằm trong `results/` (đã khôi phục nội dung kết quả đã commit để vòng này chỉ gồm việc di chuyển, không lẫn nội dung kết quả chạy trên Linux).
