@@ -22,4 +22,6 @@ for name,function in [('before',before.ai_plan),('after',app.ai_plan),('repeat',
     results[name]=elapsed
     print(name,elapsed,flush=True)
 report=dict(seconds=results,model=ai_client.MODEL,ai_client_sha256=app.file_hash(app.ROOT/'ai_client.py'),scope='One request per case, CPU; cache is RAM-only and runtime/model checks still run')
-(app.ROOT/'benchmark-ai.json').write_text(json.dumps(report,indent=2),encoding='utf-8')
+results_dir = app.ROOT/'results'
+results_dir.mkdir(exist_ok=True)
+(results_dir/'benchmark-ai.json').write_text(json.dumps(report,indent=2),encoding='utf-8')

@@ -64,5 +64,7 @@ with tempfile.TemporaryDirectory(dir=app.WORK) as private:
     linked_result=app.inspect_file(linked['output'],linked['result_sheet'])
     check('lookup reads zero-padded code from original offset',linked['matched']==1 and linked_result['data'][0][0]=='00123' and linked_result['data'][0][2]=='00123')
 result=dict(passed=len(checks),checks=checks,scope='Header parser + native Excel read/write; synthetic files only',app_sha256=app.file_hash(app.ROOT/'app.py'))
-(app.ROOT/'header-test-results.json').write_text(json.dumps(result,indent=2),encoding='utf-8')
+results_dir = app.ROOT/'results'
+results_dir.mkdir(exist_ok=True)
+(results_dir/'header-test-results.json').write_text(json.dumps(result,indent=2),encoding='utf-8')
 print(json.dumps(result,indent=2))

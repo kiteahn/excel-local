@@ -1,37 +1,38 @@
 # NEXT — việc tiếp theo (cập nhật sau mỗi vòng)
 
-## Vòng tiếp theo: Vòng 9 — Dọn repo (VĐ-09, mục H của PROMPT)
+## Vòng tiếp theo: Vòng 10 — Giao diện nhẹ (VĐ-10, mục I) + Tổng kết 10 vòng
 
-Hiện trạng root repo có 15+ file *.json kết quả/benchmark nằm lẫn mã nguồn
-(acceptance-v0.2.json, benchmark-*.json, *-test-results.json,
-logic-regression-0.2.1.json) và script phụ (create_diverse_examples.py,
-generate_project_pdf.py, benchmark_ai.py).
+Phần giao diện chỉ chỉnh NHẸ, giữ nguyên bố cục và luồng (chọn file → tìm
+dòng → chọn AI → xem trước → chấp nhận). Mọi thay đổi phải qua test_gui.py
+trên Windows hoặc ghi rõ CHƯA kiểm tra trực quan (môi trường này headless,
+test_gui SKIP).
 
-Làm (cẩn thận — nhiều test GHI file kết quả theo đường dẫn cứng ở root):
-1. Liệt kê mọi nơi ghi/đọc các file này: `grep -rn "test-results\|benchmark-" --include="*.py" .`
-   và trong README/PROMPT.
-2. Tạo `results/` và chuyển các file kết quả/benchmark lịch sử vào đó bằng
-   `git mv`; cập nhật đường dẫn ghi trong các test tương ứng (test_app,
-   test_cli, test_gui, test_headers, test_read_boundary...) sang `results/`.
-   File nào là đầu vào test (không phải đầu ra) thì giữ nguyên vị trí.
-3. Script phụ: cân nhắc `tools/` cho create_diverse_examples.py và
-   generate_project_pdf.py — chỉ chuyển khi không có tham chiếu đường dẫn
-   nào vỡ; nếu rủi ro cao hơn lợi ích thì giữ nguyên và ghi lý do vào log.
-4. Kiểm tra: chạy lại toàn bộ suite trên Linux — tất cả exit 0 như Vòng 4,
-   và `git status` cho thấy file kết quả mới sinh ra nằm trong results/.
-5. Cập nhật README mục "Kiểm tra và mã nguồn" trỏ tới results/.
-6. Commit, cập nhật UPGRADE_LOG, NEXT sang Vòng 10.
+Làm:
+1. Soi code gui() trong app.py và lập danh sách kiểm chứng được bằng code:
+   - Nút nào chưa bị khóa khi `busy` (work() đã khóa run_button; kiểm tra
+     các nút Chấp nhận / Batch / Dừng và ô nhập còn lại).
+   - Tooltip: đã có cơ chế tooltip chưa; các tùy chọn khó hiểu (Tự chữa
+     lành, Lenient, auto_fallback) đã có giải thích chưa.
+   - Phím tắt: Enter/Ctrl+Enter chạy đề xuất? Esc đóng hộp thoại?
+   - Thứ tự Tab và focus ban đầu.
+2. Chỉ sửa những điểm thiếu rõ ràng, nhỏ, không đổi tên tính năng/luồng.
+   Mỗi sửa đổi: py_compile + suite logic đạt như trước; ghi rõ phần nào
+   CHƯA kiểm tra trực quan.
+3. Tổng kết 10 vòng (theo PROMPT): chấm lại 8 hạng mục của Bước 0, nêu điểm
+   nào tăng/giảm kèm bằng chứng, sắp lại backlog cho chặng tiếp theo
+   (Vòng 11+: tầng kiểm tra 2 — liệt kê ≥30 use case và tự chạy phần chạy
+   được; tách Lookup/Filter; hàng đợi Windows).
 
-## Hàng đợi sau đó
-- Vòng 10: VĐ-10 giao diện nhẹ (khóa nút khi busy — đã có một phần: run_button
-  bị disable trong work(); kiểm tra các nút còn lại, tooltip, phím tắt,
-  thứ tự Tab) + vòng tổng kết 10 vòng theo PROMPT (chấm lại điểm Bước 0,
-  sắp lại backlog).
-- Hàng đợi Windows (chỉ làm được trên máy Windows có Excel): đo lại
-  benchmark.py cho v0.3.1+, tối ưu khởi động Excel COM; chạy test_gui thật;
-  nghiệm thu DPAPI thật.
-- Dài hạn: tách tiếp Lookup/Filter trong infer_smart_plan, `gui`,
-  `prepare_sheets`; NER/từ điển cho tên riêng đứng một mình.
+## Hàng đợi Windows (chỉ làm được trên máy Windows có Excel)
+- Đo lại `benchmark.py` cho code hiện tại; tối ưu khởi động Excel COM nếu
+  số đo xác nhận nút thắt ~5 giây.
+- Chạy test_gui.py thật + kiểm tra trực quan các thay đổi Vòng 3/6/10.
+- Nghiệm thu DPAPI thật (test_security_privacy mục 16–17, test_router).
+
+## Dài hạn
+- Tách tiếp khối Lookup/Filter trong infer_smart_plan, `gui` (~890 dòng),
+  `prepare_sheets` (~261 dòng) theo cách cơ học từng khối như Vòng 7.
+- Tên riêng đứng một mình: cần từ điển/NER ngoài regex (Vòng 5 đã đo giới hạn).
 
 ## Câu hỏi chờ người dùng (ghi lại, vẫn làm việc khác — không chờ)
 - Chính sách mặc định mong muốn là Smart Router (có cloud) hay Ollama-only?

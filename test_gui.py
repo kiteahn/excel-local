@@ -91,5 +91,7 @@ if __name__=='__main__':
         print(f'SKIP: test_gui requires a display (Tk could not initialise: {exc}). Run on a desktop session or under a virtual display.')
         raise SystemExit(0)
     result=dict(passed=len(checks),checks=checks,scope='Actual Tk controls; Excel execution mocked')
-    (app.ROOT/'gui-test-results.json').write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding='utf-8')
+    results_dir = app.ROOT/'results'
+    results_dir.mkdir(exist_ok=True)
+    (results_dir/'gui-test-results.json').write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding='utf-8')
     print(json.dumps(result,ensure_ascii=False,indent=2))

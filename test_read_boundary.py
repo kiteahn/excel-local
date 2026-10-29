@@ -40,5 +40,7 @@ with tempfile.TemporaryDirectory(dir=app.WORK) as private:
         assert snapshot['headers']==['ID'] and snapshot['data']==[['001']] and snapshot['hash']==app.file_hash(source)
         checks.append('Verified one-column workbook reads in native Excel')
 result=dict(passed=len(checks),checks=checks,scope='Two adversarial swaps + one real Excel read; synthetic files only')
-(app.ROOT/'read-boundary-test-results.json').write_text(json.dumps(result,indent=2),encoding='utf-8')
+results_dir = app.ROOT/'results'
+results_dir.mkdir(exist_ok=True)
+(results_dir/'read-boundary-test-results.json').write_text(json.dumps(result,indent=2),encoding='utf-8')
 print(json.dumps(result,indent=2))

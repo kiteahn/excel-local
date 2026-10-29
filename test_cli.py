@@ -65,6 +65,8 @@ with tempfile.TemporaryDirectory(dir=app.WORK) as private:
         checks.append('CLI --batch-dir with --ai-prompt infers plan and executes batch')
 
 result=dict(passed=len(checks),checks=checks,scope='CLI gate; execution mocked')
-(app.ROOT/'cli-test-results.json').write_text(json.dumps(result,indent=2),encoding='utf-8')
+results_dir = app.ROOT/'results'
+results_dir.mkdir(exist_ok=True)
+(results_dir/'cli-test-results.json').write_text(json.dumps(result,indent=2),encoding='utf-8')
 print(json.dumps(result,indent=2))
 

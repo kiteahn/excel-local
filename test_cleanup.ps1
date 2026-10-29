@@ -51,7 +51,9 @@ try {
     if (Get-Process -Id $process.Id -ErrorAction SilentlyContinue) { throw 'Owned Excel survived cleanup' }
     $checks.Add('Exact owned Excel is stopped')
     $result = @{passed=$checks.Count; checks=$checks.ToArray(); scope='Native isolated Excel; no workbook or user data'}
-    $result | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $workspace 'cleanup-test-results.json') -Encoding UTF8
+    $resultsDir = Join-Path $workspace 'results'
+    New-Item -ItemType Directory -Force -Path $resultsDir | Out-Null
+    $result | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $resultsDir 'cleanup-test-results.json') -Encoding UTF8
     $result | ConvertTo-Json -Depth 5
 } finally {
     if ($null -ne $excel) {

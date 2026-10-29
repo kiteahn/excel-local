@@ -45,7 +45,8 @@ def main():
             phases[plan['action']] = report.get('timings',{})
     result = dict(label=args.label,rows=args.rows,seconds=measurements,formula_checks=checks,bridge_phases=phases,
                   app_sha256=app.file_hash(app.ROOT/'app.py'),bridge_sha256=app.file_hash(app.ROOT/'excel_bridge.ps1'))
-    path = app.ROOT/f'benchmark-{args.label}-{args.rows}.json'
+    path = app.ROOT/'results'/f'benchmark-{args.label}-{args.rows}.json'
+    path.parent.mkdir(exist_ok=True)
     path.write_text(json.dumps(result,indent=2),encoding='utf-8')
     print(path,flush=True)
 
