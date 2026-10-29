@@ -66,7 +66,7 @@ Máy đã kiểm tra: RAM khoảng 16 GB, i5-12450H, RTX 2050 VRAM 4 GB, Excel M
 
 ```powershell
 python -X utf8 test_single_file_filter.py # 24 bài test Lọc & Trích xuất file đơn lẻ, tự bỏ qua banner, cán sự & điểm số
-python -X utf8 test_router.py             # 6 bài kiểm tra Smart Multi-Model Router (9Router cascade & DPAPI)
+python -X utf8 test_router.py             # 7 mục kiểm tra Smart Multi-Model Router (cascade & DPAPI; mục DPAPI cần Windows)
 python -X utf8 test_all_edge_cases.py     # 61 bài test stress-test biên (Malformed, CSV, Unicode, Injection)
 python -X utf8 test_security_privacy.py   # 43 bài test bảo mật PII, DPAPI, cache, số âm, ngày tháng
 python -X utf8 test_upgrades.py           # 28 bài test tự chữa lành ô gộp, cột trùng, tiền tệ VN
@@ -78,6 +78,11 @@ python -X utf8 test_headers.py            # 11 bài test chẩn đoán tiêu đ�
 python -X utf8 test_read_boundary.py      # 3 bài test chống tráo file; lượt đọc Excel thật
 python -X utf8 test_diverse_scenarios_e2e.py # 6 kịch bản thực tế đại học/kế toán/kho vận E2E
 python -X utf8 test_batch_processing.py       # 10 bài test Xử lý hàng loạt (Batch Mode) 0-token
+python -X utf8 test_usecases.py           # 34 use case tầng 2 (USECASES.md): CSV/banner, khóa, tổng hợp, token, preflight
+python -X utf8 test_privacy_guard_cases.py # 53 mẫu đo Privacy Guard (33 PII + 20 không phải PII)
+python -X utf8 test_infer_golden.py       # 28 prompt vàng cho infer_smart_plan (ghim hành vi heuristic)
+python -X utf8 test_sanitize_plan.py      # 8 bài test sanitize_plan (ép clarify, fuzzy match cột)
+python -X utf8 test_fuzz_light.py         # 20 biến thể fuzz nhẹ cho parser CSV/header
 powershell -NoProfile -File test_cleanup.ps1 # 4 bài test dọn tiến trình Excel cô lập
 ```
 

@@ -1,5 +1,4 @@
 """Test single-file filter & extract: auto-header detection, natural language intent, preview, and Excel Desktop COM execution."""
-import json
 import sys
 from pathlib import Path
 import tempfile

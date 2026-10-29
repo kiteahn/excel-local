@@ -1,5 +1,4 @@
 """Script to generate the comprehensive, publication-grade PDF report for Excel Local Expert."""
-import os
 from pathlib import Path
 import subprocess
 import sys

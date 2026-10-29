@@ -7,19 +7,12 @@ if sys.stderr and hasattr(sys.stderr, 'reconfigure'):
     try: sys.stderr.reconfigure(encoding='utf-8', errors='replace')
     except Exception: pass
 
-import copy
 from decimal import Decimal
-import io
-import json
 from pathlib import Path
 import tempfile
 import unicodedata
-from unittest.mock import patch
-
 import ai_client
 import app
-from test_app import fixture
-
 PASSES = []
 FAILS = []
 

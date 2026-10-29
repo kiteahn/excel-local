@@ -12,7 +12,7 @@ if sys.stderr and hasattr(sys.stderr, 'reconfigure'):
 
 import json
 import tempfile
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 import ai_client
 
 def run_tests():

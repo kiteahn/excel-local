@@ -11,7 +11,6 @@ import json
 from pathlib import Path
 import re
 import tempfile
-import xml.etree.ElementTree as ET
 import zipfile
 import app
 import ai_client

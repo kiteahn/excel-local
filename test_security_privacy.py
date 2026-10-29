@@ -8,9 +8,6 @@ if sys.stderr and hasattr(sys.stderr, 'reconfigure'):
     except Exception: pass
 
 from decimal import Decimal
-import json
-from pathlib import Path
-import re
 from unittest.mock import patch
 
 import ai_client

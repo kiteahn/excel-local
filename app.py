@@ -16,7 +16,6 @@ import argparse
 import collections
 import csv
 import datetime
-import difflib
 import hashlib
 import io
 import json
@@ -2200,7 +2199,12 @@ def gui(smoke=False):
                     summary = execute_batch(b_path, reference_path=ref_path, plan=plan, export_pdf=export_pdf, on_progress=on_prog)
                     self.window.after(0, lambda: _done(summary, None))
                 except Exception as exc:
-                    self.window.after(0, lambda: _done(None, str(exc)))
+                    # Bind the message NOW: Python deletes the except target
+                    # when the block ends (PEP 3110), so a late-running lambda
+                    # referencing exc would raise NameError and the batch
+                    # error would never be shown (VD-17).
+                    msg = str(exc)
+                    self.window.after(0, lambda msg=msg: _done(None, msg))
 
             def _done(summary, err):
                 close_btn.configure(state='normal')
