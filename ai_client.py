@@ -864,14 +864,33 @@ def _filter_plan(prompt: str, p_lower: str, source_columns) -> dict | None:
     return None
 
 
-def infer_smart_plan(prompt: str, source_columns: list[str], reference_columns: list[str] = ()) -> dict | None:
-    """Fast semantic intent analyzer & Q&A handler for Vietnamese queries."""
-    p_lower = prompt.strip().lower()
+def _clean_plan(p_lower: str, source_columns) -> dict | None:
+    """Clean heuristics (section 4 of infer_smart_plan): trim + NFC-normalise a text column."""
+    # 4. Clean Heuristics: làm sạch, chuẩn hóa, khoảng trắng, bỏ dấu cách
+    is_clean = any(w in p_lower for w in ['làm sạch', 'chuẩn hóa', 'khoảng trắng', 'dấu cách', 'clean', 'trim'])
+    if is_clean:
+        clean_col = None
+        for sc in source_columns:
+            if sc.strip().lower() in p_lower or any(w in p_lower for w in sc.strip().lower().split() if len(w) >= 3):
+                clean_col = sc
+                break
+        if not clean_col:
+            clean_col = find_synonym_match('tên', source_columns) or (source_columns[0] if source_columns else '')
+        if clean_col:
+            return {
+                'action': 'clean',
+                'key': clean_col,
+                'value': '',
+                'ref_key': '',
+                'ref_value': '',
+                'message': f"Làm sạch khoảng trắng thừa và chuẩn hóa Unicode cột '{clean_col}'."
+            }
 
-    qa_plan = _qa_clarify_plan(p_lower, source_columns, reference_columns)
-    if qa_plan is not None:
-        return qa_plan
+    return None
 
+
+def _lookup_plan(prompt: str, p_lower: str, source_columns, reference_columns) -> dict | None:
+    """Lookup heuristics (section 2 of infer_smart_plan): cross-file key matching."""
     # 2. Lookup Heuristics: ghép, điền, kéo, lấy, vlookup, tra cứu, đối chiếu, áp lên
     is_filter_intent = any(w in p_lower for w in [
         'lọc', 'filter', 'trích xuất', 'lấy ra', 'lấy riêng', 'tách riêng',
@@ -1039,29 +1058,28 @@ def infer_smart_plan(prompt: str, source_columns: list[str], reference_columns: 
                 'message': f"Đối chiếu cột '{shared_key[0]}' với '{shared_key[1]}' để lấy giá trị '{target_val}' từ danh mục{dest_msg}."
             }
 
+    return None
+
+
+def infer_smart_plan(prompt: str, source_columns: list[str], reference_columns: list[str] = ()) -> dict | None:
+    """Fast semantic intent analyzer & Q&A handler for Vietnamese queries."""
+    p_lower = prompt.strip().lower()
+
+    qa_plan = _qa_clarify_plan(p_lower, source_columns, reference_columns)
+    if qa_plan is not None:
+        return qa_plan
+
+    lookup_plan = _lookup_plan(prompt, p_lower, source_columns, reference_columns)
+    if lookup_plan is not None:
+        return lookup_plan
+
     summary_plan = _summary_plan(p_lower, source_columns)
     if summary_plan is not None:
         return summary_plan
 
-    # 4. Clean Heuristics: làm sạch, chuẩn hóa, khoảng trắng, bỏ dấu cách
-    is_clean = any(w in p_lower for w in ['làm sạch', 'chuẩn hóa', 'khoảng trắng', 'dấu cách', 'clean', 'trim'])
-    if is_clean:
-        clean_col = None
-        for sc in source_columns:
-            if sc.strip().lower() in p_lower or any(w in p_lower for w in sc.strip().lower().split() if len(w) >= 3):
-                clean_col = sc
-                break
-        if not clean_col:
-            clean_col = find_synonym_match('tên', source_columns) or (source_columns[0] if source_columns else '')
-        if clean_col:
-            return {
-                'action': 'clean',
-                'key': clean_col,
-                'value': '',
-                'ref_key': '',
-                'ref_value': '',
-                'message': f"Làm sạch khoảng trắng thừa và chuẩn hóa Unicode cột '{clean_col}'."
-            }
+    clean_plan = _clean_plan(p_lower, source_columns)
+    if clean_plan is not None:
+        return clean_plan
 
     filter_plan = _filter_plan(prompt, p_lower, source_columns)
     if filter_plan is not None:

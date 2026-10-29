@@ -174,5 +174,11 @@ Phần giao diện (chỉnh nhẹ, không đổi bố cục/luồng/tên tính n
 ### Vòng 13 — Tách khối Filter khỏi infer_smart_plan (VĐ-06 đợt 2) (2026-10-30)
 - Kiểm tra phụ thuộc trước khi tách: khối Filter (mục 5, 175 dòng) chỉ dùng `prompt`, `p_lower`, `source_columns` và hàm module `extract_requested_columns` — không dính biến cục bộ của các khối khác. Tách thành `_filter_plan(prompt, p_lower, source_columns)`.
 - infer_smart_plan: 375 → 204 dòng (từ 478 dòng ban đầu qua 2 đợt tách: _qa_clarify_plan 47, _summary_plan 70, _filter_plan 178).
+
+### Vòng 14 — Tách nốt Clean + Lookup; VĐ-06 hoàn tất (2026-10-30)
+- Tách khối Clean (20 dòng) thành `_clean_plan` và khối Lookup (167 dòng) thành `_lookup_plan` theo cùng mẫu cơ học. Ba đầu vào của Lookup đều là tham số của infer_smart_plan nên khối tự chứa hoàn toàn — không cần truyền thêm trạng thái.
+- **infer_smart_plan: 478 dòng ban đầu → 25 dòng điều phối** + 5 helper: _qa_clarify_plan 47, _lookup_plan 170, _summary_plan 70, _clean_plan 23, _filter_plan 178. VĐ-06 đóng.
+- Thêm `test_infer_golden.py`: 20 prompt vàng phủ cả 5 nhánh + trường hợp không khớp. Kiểm chứng hai chiều: bộ vàng đạt trên bản MỚI và trên bản TRƯỚC khi tách (lấy từ git HEAD) — 20/20 giống hệt, chứng minh cả 3 đợt tách (Vòng 7/13/14) không đổi hành vi. Toàn bộ 16 file test exit 0.
+- Ghi nhận **VĐ-15 (Nhẹ — chất lượng gợi ý, chưa sửa)**: prompt "Điền tên sinh viên sang bảng này" cho lookup value='bảng' (regex cột đích bắt từ sau "sang"). Đây là hành vi có từ trước, đã ghim trong test vàng kèm chú thích; sửa heuristic là thay đổi hành vi nên cần vòng riêng có kiểm chứng riêng, không gộp vào vòng tách hàm.
 - Kiểm chứng mạnh hơn các đợt trước: ngoài toàn bộ suite liên quan (router 7, security 38, app 79, edge 61, usecases 34, fuzz 20, privacy corpus, upgrades 28, cli 6 — tất cả đạt), còn so sánh trực tiếp hành vi: nạp song song ai_client bản trước vòng này (từ git HEAD) và bản mới, chạy 15 prompt đại diện cho cả 5 nhánh (Q&A, lookup, summary, clean, filter, không khớp gì) — kết quả JSON giống hệt 15/15.
 - Kiểm tra sau: chạy lại toàn bộ 13 file test — tất cả exit 0; root không còn file *.json; file kết quả mới sinh ra nằm trong `results/` (đã khôi phục nội dung kết quả đã commit để vòng này chỉ gồm việc di chuyển, không lẫn nội dung kết quả chạy trên Linux).

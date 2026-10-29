@@ -1,34 +1,34 @@
 # NEXT — việc tiếp theo (cập nhật sau mỗi vòng)
 
-## Vòng tiếp theo: Vòng 14 — Tách nốt khối Clean + đánh giá khối Lookup trong infer_smart_plan
+## Vòng tiếp theo: Vòng 15 — Mutation test đợt 2 cho ai_client.py
 
-infer_smart_plan còn 204 dòng: khối Lookup (mục 2, ~150 dòng, nhiều biến
-trạng thái target_dest/target_val/shared_key) và khối Clean (mục 4, ~25 dòng).
+Đợt 1 (Vòng 12) phủ app.py. Đợt này phủ ai_client.py, dùng quy trình đã
+rút kinh nghiệm: khôi phục bằng BẢN SAO FILE + đối chiếu byte, xác minh đột
+biến áp dụng thật bằng diff trước khi chạy suite.
 
-Làm:
-1. Tách khối Clean trước (nhỏ, ít rủi ro) thành `_clean_plan(p_lower,
-   source_columns)` theo đúng mẫu các vòng 7/13; kiểm chứng bằng suite +
-   so sánh song song bản cũ/mới trên bộ prompt (giữ lại script so sánh ở
-   /tmp hoặc viết thành file test_equivalence_infer.py trong repo với
-   ~20 prompt — cách này bền hơn cho các vòng sau).
-2. Khối Lookup: đọc kỹ luồng biến; nếu tách được theo các tiểu khối 2a/2b/2c
-   (cột đích / cột giá trị / khóa chung) mà không phải truyền quá 4-5 tham
-   số thì tách từng tiểu khối; nếu không, ghi rõ lý do giữ nguyên vào log
-   thay vì tách gượng.
-3. Kiểm tra: toàn bộ 15 file test exit 0 như các vòng trước.
-4. Commit, cập nhật UPGRADE_LOG, NEXT sang Vòng 15 (prepare_sheets hoặc
-   mutation đợt 2 cho ai_client).
+Đột biến ứng viên (chọn 5–6):
+1. PrivacyGuard EMAIL_REGEX: bỏ phần domain → bộ corpus 53 mẫu phải đỏ.
+2. sanitize_plan: cho phép action lạ đi qua → test_security phải đỏ.
+3. build_local_fallback_plan / cascade: đảo thứ tự ưu tiên provider.
+4. parse model JSON: bỏ bước gác sanitize (chỉ nếu có điểm chèn rõ ràng).
+5. _lookup_plan: đổi điều kiện `reference_columns and ...` thành `or`.
+6. redact_for_cloud: bỏ một lớp thay thế (ví dụ không che số tài khoản).
+
+Quy trình mỗi đột biến: sao lưu file → áp dụng → xác minh diff → chạy suite
+liên quan (router, security, privacy corpus, infer golden, usecases, app)
+→ ghi BẮT/LỌT → khôi phục + đối chiếu byte. Đột biến lọt → bổ sung test
+trong cùng vòng rồi chạy lại xác nhận bị bắt.
 
 ## Hàng đợi sau đó
-- Mutation đợt 2 cho ai_client.py (PrivacyGuard, sanitize_plan, cascade
-  router) — khôi phục bằng bản sao file, đối chiếu byte (bài học Vòng 12).
-- Tách prepare_sheets (~261 dòng), gui (~890 dòng) khi test đủ phủ.
+- Vòng 16: xử lý VĐ-15 (lookup value='bảng') nếu phân tích cho thấy sửa an
+  toàn: thêm prompt vàng cho các mẫu "điền/sang/áp" và sửa regex cột đích.
+- Vòng 17+: tách prepare_sheets (~261 dòng, app.py) theo mẫu có test vàng;
+  gui (~890 dòng) sau cùng.
 - Tổng kết vòng 20 theo PROMPT (mỗi 10 vòng).
-- Quyết định chờ người dùng: '500.000' (USECASES.md UC-20b); chính sách
-  cloud/local mặc định.
-- Hàng đợi Windows: UC-32/33/35/36; benchmark lại; test_gui + kiểm tra trực
-  quan Vòng 10; nghiệm thu DPAPI thật.
+- Quyết định chờ người dùng: '500.000' (UC-20b); cloud/local mặc định.
+- Hàng đợi Windows: UC-32/33/35/36; benchmark lại; test_gui + trực quan
+  Vòng 10; nghiệm thu DPAPI thật.
 
 ## Câu hỏi chờ người dùng (ghi lại, vẫn làm việc khác — không chờ)
-- Nhánh `muse-upgrade`: 14 commit (Bước 0 + Vòng 1–13), CHƯA push — cần
+- Nhánh `muse-upgrade`: 15 commit (Bước 0 + Vòng 1–14), CHƯA push — cần
   người dùng xác nhận mới push lên GitHub (repo công khai).
