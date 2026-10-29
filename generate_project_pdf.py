@@ -4,7 +4,7 @@ from pathlib import Path
 import subprocess
 import sys
 
-OUTPUT_DIR = Path(r"d:\Excel\excel-local\output")
+OUTPUT_DIR = Path(__file__).resolve().parent / "output"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 HTML_PATH = OUTPUT_DIR / "project_review.html"
 PDF_PATH = OUTPUT_DIR / "Excel_Local_Expert_Bao_Cao_Danh_Gia_Toan_Dien.pdf"

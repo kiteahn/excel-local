@@ -11,10 +11,17 @@ if sys.stderr and hasattr(sys.stderr, 'reconfigure'):
     except Exception: pass
 
 import json
+import tempfile
 from unittest.mock import patch, MagicMock
 import ai_client
 
 def run_tests():
+    # Hermetic: redirect the config file to a temp directory so the tests never
+    # touch (or depend on) the real user config next to the code, on any machine.
+    _tmp_config_dir = tempfile.TemporaryDirectory()
+    ai_client.CONFIG_FILE = Path(_tmp_config_dir.name) / 'config.json'
+    has_dpapi = ai_client.dpapi_protect('probe').startswith('dpapi:')
+
     print("=== 1. Test DPAPI Encryption for Provider Keys ===")
     raw_keys = {
         'gemini': 'AIzaSyFakeGeminiKey123',
@@ -27,11 +34,16 @@ def run_tests():
         'openai_api_key': 'sk-LegacyKey'
     })
     # Read the raw file on disk to verify no plaintext keys exist:
-    raw_file = Path(r'd:\Excel\excel-local\config.json').read_text(encoding='utf-8')
-    assert 'AIzaSyFakeGeminiKey123' not in raw_file, "Gemini key must not be in plaintext on disk!"
-    assert 'gsk_FakeGroqKey456' not in raw_file, "Groq key must not be in plaintext on disk!"
-    assert 'sk-FakeOpenAI789' not in raw_file, "OpenAI key must not be in plaintext on disk!"
-    print("PASS: All keys encrypted on disk with Windows DPAPI!")
+    raw_file = ai_client.CONFIG_FILE.read_text(encoding='utf-8')
+    if has_dpapi:
+        assert 'AIzaSyFakeGeminiKey123' not in raw_file, "Gemini key must not be in plaintext on disk!"
+        assert 'gsk_FakeGroqKey456' not in raw_file, "Groq key must not be in plaintext on disk!"
+        assert 'sk-FakeOpenAI789' not in raw_file, "OpenAI key must not be in plaintext on disk!"
+        print("PASS: All keys encrypted on disk with Windows DPAPI!")
+    else:
+        print("SKIP: Windows DPAPI is not available on this platform, so the "
+              "no-plaintext-on-disk check cannot run here. "
+              "NOTE: dpapi_protect() silently falls back to plaintext off Windows.")
 
     reloaded_cfg = ai_client.get_config()
     assert reloaded_cfg['provider_keys']['gemini'] == 'AIzaSyFakeGeminiKey123'
@@ -123,12 +135,9 @@ def run_tests():
         assert plan['engine_used'] == 'Smart Heuristic Engine'
         print("PASS: Semantic Heuristic Rescue rescued the plan with zero network and zero daemons!")
 
-    # Cleanup mock test keys
-    ai_client.save_config({
-        'provider': 'smart',
-        'provider_keys': {},
-        'openai_api_key': ''
-    })
+    # Cleanup: the config used here lives in a temp directory and is discarded;
+    # the real user config next to the code was never touched.
+    _tmp_config_dir.cleanup()
     print("\nAll 6 Smart Multi-Model Router architecture tests PASSED brilliantly!")
 
 if __name__ == '__main__':
