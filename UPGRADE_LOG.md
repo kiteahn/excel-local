@@ -270,5 +270,11 @@ Việc còn dở, nói thẳng:
 - Phát hiện phụ: phụ đề hộp thoại Cài đặt AI vẫn còn câu tuyệt đối "mã hóa DPAPI an toàn tuyệt đối" (sót từ Vòng 1/10) — đã sửa thành câu có phạm vi, kèm ghi rõ mặc định local.
 - README cập nhật cả hai quyết định. Suite: 19/19 file exit 0.
 - Quyết định 3 của người dùng: tự push nhánh — Muse không push; gói bundle/zip xuất lại sau vòng này.
+
+### Vòng 24 — Mutation đợt 4: các cổng giới hạn còn lại (2026-10-30)
+- 5 đột biến: M4-5 (bỏ điều kiện phần nguyên ≠ 0 của vn_dot_thousands) bị bắt ngay bởi test_policy_defaults. Bốn đột biến LỌT, đều là các cổng giới hạn chưa từng có test: M4-1 bỏ kiểm tra hash file nguồn sau khi đọc trong inspect_file; M4-2 nới giới hạn file 80MB → 800MB; M4-3 bỏ giới hạn chuỗi 2000 ký tự trong validate_plan; M4-4 bỏ giới hạn 10.000 thành phần ZIP trong preflight.
+- Bổ sung `test_safety_limits.py` (6 check: file sparse 81MB bị từ chối / đúng 80MB được nhận; XLSX +10.001 thành phần rác bị từ chối; chuỗi 2001 ký tự bị từ chối / 2000 được nhận; giả lập file bị sửa giữa lúc đọc CSV bằng load_csv đã vá → inspect_file phát hiện qua hash). Chạy lại: cả 4 đột biến đều bị bắt.
+- Tổng 4 đợt mutation: 20 đột biến, 20 bị bắt sau khi bổ sung test cho ca lọt. Rà soát tĩnh lại bằng pyflakes sau khi cài lại (VM reset làm mất gói): sạch.
+- Suite: 20/20 file test exit 0. Việc làm được trên Linux theo chỉ đạo đã cạn: phần còn lại là nghiệm thu Windows (danh sách đầy đủ đã chuyển vào NEXT.md).
 - Kiểm chứng mạnh hơn các đợt trước: ngoài toàn bộ suite liên quan (router 7, security 38, app 79, edge 61, usecases 34, fuzz 20, privacy corpus, upgrades 28, cli 6 — tất cả đạt), còn so sánh trực tiếp hành vi: nạp song song ai_client bản trước vòng này (từ git HEAD) và bản mới, chạy 15 prompt đại diện cho cả 5 nhánh (Q&A, lookup, summary, clean, filter, không khớp gì) — kết quả JSON giống hệt 15/15.
 - Kiểm tra sau: chạy lại toàn bộ 13 file test — tất cả exit 0; root không còn file *.json; file kết quả mới sinh ra nằm trong `results/` (đã khôi phục nội dung kết quả đã commit để vòng này chỉ gồm việc di chuyển, không lẫn nội dung kết quả chạy trên Linux).
