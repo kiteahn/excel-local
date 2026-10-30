@@ -331,3 +331,6 @@ Việc còn dở, nói thẳng:
 - Nhóm 1: 20/20 lệnh exit 0; 437 check đếm được và 6 kịch bản đa dạng hoàn tất. Nhóm 2: 50/50 check; nhóm 3: 4/4 lệnh, 114 check (97 integration, 14 GUI, 3 read-boundary). Benchmark COM 1.000 dòng ghi tại `results/benchmark-current-1000.json`.
 - DPAPI thật, mặc định Ollama, `500.000` bật/tắt đều được xác nhận bằng test. Mở workbook kết quả read-only trong Excel xác nhận W-1: không có Sheet1 mặc định. PDF của integration test được render và xem; bảng hiển thị đầy đủ, không cắt/chồng.
 - Một số luồng UI cần người dùng xác nhận còn trong `NEXT.md`; không ghi đạt khi chưa quan sát. Test thay đổi fixtures/results đã được khôi phục. Excel process do batch, benchmark và W-1 inspection sinh ra đã được xác định theo PID/path/start time, dọn theo PID và không còn tiến trình mồ côi.
+
+### Tiếp tục kiểm tra UI theo yêu cầu (2026-10-30)
+- Computer Use không khởi tạo được (`trusted Node process exited unexpectedly`, lặp lại sau reset kernel). UC-33 được hoãn trước khi tạo workbook test vì phát hiện một tiến trình Excel mở từ bên ngoài; không tương tác với cửa sổ/workbook đó. Cập nhật `NEXT.md`; các xác nhận giao diện vẫn chờ.

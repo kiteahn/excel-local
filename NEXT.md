@@ -14,11 +14,11 @@
 ## Câu hỏi cho chủ sản phẩm — CẦN NGƯỜI XÁC NHẬN
 
 - UC-32: chạy trọn luồng trong app và xem sheet kết quả/Kiem_tra/biên bản. W-1 riêng đã kiểm bằng Excel trên output của integration test: không có Sheet1 trống.
-- UC-33: mở sẵn workbook trong Excel rồi thử Đọc; xác nhận thông báo file đang khóa.
+- UC-33: CHƯA CHẠY. Cần thử bằng workbook tự sinh trong phiên test riêng. Bài dừng trước khi tạo file vì đã có Excel người dùng mở; không tương tác với tiến trình đó.
 - UC-35: xác nhận file có ô #DIV/0! bị từ chối rõ ràng.
 - UC-36: PDF integration test đã được render và xem; bảng không cắt/chồng. Xác nhận thêm PDF xuất từ luồng app nếu cần.
 - Tooltip/phím tắt: xác nhận tooltip hai nút và Ctrl+Enter chạy Đề xuất.
-- Hộp lỗi Batch: thử thư mục có file bảng tính hỏng và xác nhận hộp báo lỗi tử tế.
+- Hộp lỗi Batch: thử thư mục có file bảng tính hỏng và xác nhận hộp báo lỗi tử tế. UI chưa quan sát được do computer-use node_repl lỗi khi khởi tạo.
 
 
 ## Đã kiểm chứng bằng script
@@ -27,6 +27,11 @@
 - Ollama mặc định và giá trị 500.000 bật/tắt: test_policy_defaults.py P-01..P-05, P-11..P-12 đạt.
 - GUI: test_gui.py 14/14; test_app integration 97/97, test_read_boundary 3/3. Benchmark COM đã chạy, số liệu trong cycles/CYCLE-00.md và results/benchmark-current-1000.json.
 
+
+## Giới hạn thao tác UI hiện tại
+
+- Computer Use không khởi tạo được: 	rusted Node process exited unexpectedly, kể cả sau reset. Không tiếp tục tự động hóa UI khi chưa có runtime hoạt động.
+- Hiện có một phiên Excel mở từ bên ngoài bài test; không tương tác hoặc đóng phiên đó.
 
 ## Điều kiện dừng và nhánh
 

@@ -647,3 +647,8 @@ EXIT CODE: 0
 Post-test cleanup note: `benchmark.py` left Excel PID 30932 running. There was no Excel process before the benchmark; PID, executable path and start time matched a process created during that test. Stopped only PID 30932 and verified no Excel process remained.
 
 Post-check cleanup note: opening the integration result read-only for W-1 left Excel PID 16784 running. There was no Excel process before that check; the process path and start time matched the check. Stopped only PID 16784 and verified no Excel process remained.
+
+## Tiếp tục sau yêu cầu người dùng
+
+- Thử khởi tạo Computer Use để xác nhận các mục giao diện; node_repl báo `trusted Node process exited unexpectedly` cả trước và sau reset kernel, nên không điều khiển UI.
+- Chuẩn bị thử UC-33 bằng workbook tổng hợp, nhưng trước khi tạo file phát hiện một tiến trình Excel đã mở từ bên ngoài lượt test. Không mở/đọc/đóng hay tương tác với workbook đó; UC-33 vẫn chờ phiên test riêng không có Excel người dùng mở.
