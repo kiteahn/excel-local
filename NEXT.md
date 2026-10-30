@@ -1,29 +1,32 @@
 # NEXT — việc tiếp theo (cập nhật sau mỗi vòng)
 
-## Trạng thái: đã hoàn thành mốc TỔNG KẾT 20 VÒNG (xem UPGRADE_LOG.md)
+## Trạng thái: mốc 20 vòng + Vòng 21 (mutation đợt 3) + Vòng 22 (fuzz đợt 2) đã xong
 
-Nhánh `muse-upgrade`: 22 commit (Bước 0 + Vòng 1–21), CHƯA push.
+Nhánh `muse-upgrade`: 23 commit (Bước 0 + Vòng 1–22), CHƯA push.
+Gói bàn giao cho nghiệm thu Windows đã xuất kèm vòng 22 (git bundle + zip
++ bản hướng dẫn WINDOWS_ACCEPTANCE.md) — nằm ngoài repo, người dùng tải về.
 
-## Hướng tiếp theo nếu chạy tiếp (theo thứ tự giá trị)
+## ĐIỀU KIỆN CHẶN (chỉ đạo người dùng 2026-10-30)
+- **KHÔNG tách gui() cho tới khi người dùng báo kết quả test trên Windows.**
+- Thứ tự khi có kết quả Windows: (1) ghi kết quả vào UPGRADE_LOG (mục
+  nghiệm thu Windows: integration, UC-32/33/35/36, benchmark, tooltip,
+  hộp lỗi batch, DPAPI); (2) sửa các lỗi phát hiện trên Windows trước;
+  (3) sau đó mới xét tách gui() theo panel.
 
-1. **Nghiệm thu Windows (giá trị cao nhất, cần máy Windows của người dùng):**
-   chạy trên máy có Excel — test_app.py --integration, UC-32/33/35/36 trong
-   USECASES.md, benchmark.py đo lại, test_gui.py + nhìn trực tiếp tooltip
-   (Vòng 10) và hộp lỗi batch (VĐ-17), test_security_privacy mục DPAPI.
-   Kết quả (đạt/không) cần được ghi bổ sung vào UPGRADE_LOG.
-2. **Tách gui() có kiểm chứng** — chỉ sau khi có test_gui chạy thật ở mục 1:
-   tách theo panel (nguồn/tham chiếu, đề xuất, xem trước, batch, settings)
-   với test vàng hành vi nếu khả thi.
-3. **Vòng lặp bảo trì nhẹ từ Linux** (làm được ngay, giá trị giảm dần):
-   mutation đợt 3 cho app.py ĐÃ XONG ở Vòng 21 (5/5 sau khi thêm SEC-01/02);
-   còn lại: fuzz đợt 2 cho detect_header_row/select_header trên snapshot
-   dict; rà soát các except giữ lại ở VĐ-05 khi có tín hiệu lỗi mới.
+## Việc làm được từ Linux trong lúc chờ (giá trị giảm dần)
+- Rà soát các `except Exception` còn giữ ở VĐ-05 khi có tín hiệu lỗi mới.
+- Chuẩn bị sẵn bản nháp tách gui() dạng đọc-hiểu (sơ đồ panel/luồng sự
+  kiện) mà KHÔNG sửa code — chỉ khi người dùng yêu cầu.
 
-## Câu hỏi chờ người dùng (ghi lại, vẫn làm việc khác — không chờ)
-- Push nhánh `muse-upgrade` (22 commit) lên GitHub chưa? Repo công khai
-  nên cần xác nhận rõ ràng.
-- Chính sách mặc định: Smart Router (có cloud) hay Ollama-only?
-- '500.000' một dấu chấm = 500 nghìn hay 500 thập phân? (USECASES UC-20b)
+## Câu hỏi chờ người dùng quyết định (đã trình bày đầy đủ phương án ở lượt 2026-10-30)
+1. Chính sách động cơ mặc định: giữ `smart_local` (đề xuất) / cloud-first /
+   local-only tuyệt đối.
+2. '500.000' trong chế độ lenient: giữ nghĩa thập phân (đề xuất A) / hiểu
+   là phân nhóm nghìn kiểu VN có điều kiện (B) / theo ngữ cảnh tên cột (C).
+
+## Câu hỏi khác
+- Push nhánh lên GitHub: chưa được xác nhận; thay vào đó người dùng đã
+  nhận gói bundle/zip để tự nghiệm thu (lượt 2026-10-30).
 
 ## Điều kiện dừng
 - File `STOP.txt` ở thư mục gốc repo (kiểm tra sau mỗi vòng — tới nay
