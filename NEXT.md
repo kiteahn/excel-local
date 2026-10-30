@@ -1,43 +1,41 @@
 # NEXT — việc tiếp theo (cập nhật sau mỗi vòng)
 
 ## Trạng thái tổng (2026-10-30)
-- Nhánh `muse-upgrade`: 27 commit (Bước 0 + Vòng 1–26), CHƯA push —
+- Nhánh `muse-upgrade`: 29 commit (Bước 0 + Vòng 1–28), CHƯA push —
   người dùng TỰ push, Muse không push.
-- Chế độ không cạn việc ĐANG BẬT theo chỉ đạo người dùng 2026-10-30:
-  tiếp tục các vòng Linux cho tới khi có STOP.txt hoặc chứng minh được
-  không còn việc có giá trị (nêu lý do từng mục).
+- Chế độ không cạn việc ĐANG BẬT theo chỉ đạo người dùng 2026-10-30.
 - **ĐÓNG BĂNG tách gui()** cho tới khi người dùng báo kết quả Windows.
+- VĐ đã phát hiện tới nay: VĐ-01…18 (VĐ-18 vá ở Vòng 28).
 
-## Vòng tiếp theo: Vòng 28 — Use case bất thường đợt 2
-Chạy qua prepare_sheets/validate_plan/inspect (phần thuần Python):
-sheet tên rất dài/ký tự lạ trong snapshot; CSV chỉ có dòng header (0 dòng
-dữ liệu → phải báo rõ); nguồn và tham chiếu là CÙNG một snapshot (tự đối
-chiếu); filter với selected_columns chứa cột không tồn tại (validate phải
-chặn); lookup đồng thời có khóa trùng ở tham chiếu và khóa thiếu ở nguồn
-(stats duplicate/missing đếm đúng); clean trên cột toàn số (changed=0,
-không phá giá trị); summary khi mọi khóa nhóm đều trống (phải từ chối);
-filter điều kiện số trên cột chữ (phải từ chối rõ ràng). Ca nào lộ lỗi
-thật → vá tối thiểu + regression; ca đúng thiết kế → ghim vào
-test_usecases.py đợt 2 (tên tiền tố UC2-).
+## Vòng tiếp theo: Vòng 29 — Mutation đợt 6
+Mục tiêu còn lại chưa mutation:
+1. formula_preflight: bỏ kiểm tra hàm nguy hiểm (ví dụ INDIRECT/WEBSERVICE)
+   trong công thức — kiểm tra test nào bắt (security/preflight qua file
+   XLSX chứa công thức lạ, dựng bằng cách sửa XML trong zip).
+2. read_xml: bỏ chặn DTD ở tầng read_xml trực tiếp (M3-5 mới phủ tầng
+   preflight) — test_fuzz_xlsx X-11 phải bắt.
+3. execute_batch: đột biến ở khâu tổng hợp báo cáo (succeeded đếm sai)
+   nếu kiểm tra được bằng mock bridge trên Linux; không được thì ghi rõ
+   lý do để lại Windows.
+4. Điều kiện lọc số trong prepare filter: đổi '>=' thành '>' ở nhánh so
+   sánh — test_usecases UC-18/UC2-07b phải bắt.
+Đột biến lọt → bổ sung test trong cùng vòng.
 
-## Hàng đợi Linux sau đó (theo thứ tự)
-- Vòng 29: mutation đợt 6 (formula_preflight qua read_xml trực tiếp,
-  execute_batch phần kiểm tra đầu vào, bridge payload sanitize nếu có
-  điểm kiểm tra thuần Python).
-- Vòng 30: tổng kết 30 vòng (mốc phụ): chấm lại nhanh, đối chiếu VĐ,
-  đếm lại tổng số check.
+## Hàng đợi Linux sau đó
+- Vòng 30: TỔNG KẾT 30 VÒNG (mốc phụ): chấm lại 8 hạng mục, đối chiếu
+  VĐ-01…18, đếm lại tổng check từ output thật, liệt kê việc còn lại kèm
+  lý do giá trị giảm dần (chuẩn bị cho khả năng người dùng dừng vòng lặp).
+- Vòng 31+: rà soát excel_bridge.ps1 bằng đọc tĩnh (không chạy được
+  PowerShell ở đây — chỉ đọc và ghi nhận, sửa cú pháp hiển nhiên nếu có);
+  kiểm tra examples/ còn khớp hành vi hiện tại (chạy create_diverse_examples
+  vào thư mục tạm và inspect thử vài file).
 
-## NGHIỆM THU WINDOWS (chờ người dùng — danh sách đầy đủ ở bản trước của
-## file này và trong WINDOWS_ACCEPTANCE.md của gói bàn giao)
-Tóm tắt: Bước 1 chạy 17 lệnh test không cần Excel (số đạt kỳ vọng đã ghi
-trong WINDOWS_ACCEPTANCE.md, cộng thêm test_policy_defaults 12,
-test_safety_limits 6, test_fuzz_headers 15); Bước 2 test_router +
-test_security_privacy với DPAPI thật (kỳ vọng 7/7 và 43/43); Bước 3
-test_app.py --integration (97 bài, Excel thật), test_gui.py, benchmark.py;
-Bước 4 tám mục kiểm tra thủ công (luồng UC-32, file bị khóa UC-33, ô lỗi
-UC-35, PDF UC-36, tooltip/Ctrl+Enter, cài đặt + DPAPI, hộp lỗi batch
-VĐ-17, số học vn_dot_thousands); Bước 5 báo lại output + kết quả để ghi
-vào UPGRADE_LOG trước khi xét tách gui().
+## NGHIỆM THU WINDOWS (chờ người dùng)
+Danh sách đầy đủ trong WINDOWS_ACCEPTANCE.md của gói bàn giao và bản
+trước của file này: 17+ lệnh test theo 3 nhóm (không Excel / DPAPI /
+Excel thật với số đạt kỳ vọng), 8 mục kiểm tra thủ công, và phần cần báo
+lại. Sau khi có kết quả: ghi vào UPGRADE_LOG, sửa lỗi Windows trước,
+rồi mới xét tách gui().
 
 ## Điều kiện dừng vòng lặp
 - File `STOP.txt` ở thư mục gốc repo (kiểm tra sau mỗi vòng — tới nay

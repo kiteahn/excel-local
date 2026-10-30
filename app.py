@@ -677,10 +677,19 @@ def validate_plan(plan, source, reference=None, allow_clarify=False):
         if sel:
             raw_candidates = [c.strip() for c in re.split(r'[,;\n]', str(sel)) if c.strip()]
             resolved = []
+            unresolved = []
             for c in raw_candidates:
                 matched_c = c if c in source['headers'] else ai_client.fuzzy_match_column(c, source['headers'])
-                if matched_c in source['headers'] and matched_c not in resolved:
-                    resolved.append(matched_c)
+                if matched_c in source['headers']:
+                    if matched_c not in resolved:
+                        resolved.append(matched_c)
+                else:
+                    unresolved.append(c)
+            if unresolved:
+                # VD-18: silently dropping an unresolvable selected column
+                # hides typos from the user; key/ref columns are hard
+                # errors, so selected columns are held to the same rule.
+                raise ValueError(f'Cột trích xuất "{unresolved[0]}" không tồn tại trong nguồn.')
             if resolved:
                 plan['selected_columns'] = ', '.join(resolved)
                 plan['ref_key'] = plan['selected_columns']

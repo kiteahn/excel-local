@@ -294,3 +294,9 @@ Việc còn dở, nói thẳng:
 - Suite: 21/21 file test exit 0.
 - Kiểm chứng mạnh hơn các đợt trước: ngoài toàn bộ suite liên quan (router 7, security 38, app 79, edge 61, usecases 34, fuzz 20, privacy corpus, upgrades 28, cli 6 — tất cả đạt), còn so sánh trực tiếp hành vi: nạp song song ai_client bản trước vòng này (từ git HEAD) và bản mới, chạy 15 prompt đại diện cho cả 5 nhánh (Q&A, lookup, summary, clean, filter, không khớp gì) — kết quả JSON giống hệt 15/15.
 - Kiểm tra sau: chạy lại toàn bộ 13 file test — tất cả exit 0; root không còn file *.json; file kết quả mới sinh ra nằm trong `results/` (đã khôi phục nội dung kết quả đã commit để vòng này chỉ gồm việc di chuyển, không lẫn nội dung kết quả chạy trên Linux).
+
+### Vòng 28 — Use case bất thường đợt 2: phát hiện và vá VĐ-18 (2026-10-30)
+- Thêm `test_usecases2.py` (10 check): CSV chỉ có header, tự đối chiếu với chính mình, filter selected_columns lạ, lookup vừa trùng vừa thiếu khóa, clean trên cột số, summary toàn khóa trống, tên sheet 100+ ký tự, lookup thiếu ref_value.
+- **VĐ-18 (Trung bình — độ đúng/trải nghiệm): validate_plan âm thầm LOẠI BỎ cột trích xuất không tồn tại khỏi plan filter** thay vì báo lỗi — đánh máy sai tên cột ('Cot Khong Co') bị nuốt, người dùng nhận kết quả thiếu cột mà không biết; trong khi cột khóa/cột giá trị ở các action khác đều là lỗi cứng. Đã vá: cột không phân giải được (sau fuzzy) → ValueError nêu rõ tên cột; tên viết thiếu dấu vẫn fuzzy về cột thật bình thường. UC2-03 là regression test.
+- Một kỳ vọng bị dữ kiện bác bỏ (ghi như UC-26 trước đây): UC2-07 tưởng filter '>= 8' trên cột chữ phải lỗi — thực tế hành vi là "ô chữ = không khớp điều kiện" kiểu autofilter của Excel, kết quả hiện rõ qua filtered_rows trong stats. Ghim hành vi thật (UC2-07/07b) thay vì ép sửa.
+- Suite: 22/22 file test exit 0 (VĐ-18 không làm đỏ test cũ nào — các plan hợp lệ không đổi hành vi).
