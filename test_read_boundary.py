@@ -20,6 +20,16 @@ with tempfile.TemporaryDirectory(dir=app.WORK) as private:
     directory=Path(private)
     source=directory/'source.xlsx'
     fixture(source,{'Data':[['ID'],['001']]})
+    owner_file=source.with_name('~$'+source.name)
+    owner_file.touch()
+    try:
+        try: app.inspect_file(source)
+        except ValueError as error:
+            assert 'đang được mở trong Excel' in str(error)
+            checks.append('Excel owner file blocks reading with a clear error')
+        else: raise AssertionError('Workbook marked open by Excel was read anyway')
+    finally:
+        owner_file.unlink(missing_ok=True)
     with patch.object(app,'bridge',side_effect=AssertionError('Unverified workbook reached Excel')):
         def changed_copy(incoming,outgoing):
             fixture(outgoing,{'Data':[['ID'],['changed']]})

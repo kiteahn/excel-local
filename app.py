@@ -456,6 +456,9 @@ def select_header(snapshot, header_row, auto_heal=False):
 
 def inspect_file(path, sheet='', header_row=1, lenient=False, auto_heal=False):
     path = Path(path).resolve(strict=True)
+    if path.suffix.lower() in ('.xlsx', '.xlsm') and path.with_name('~$' + path.name).exists():
+        # shortcut: stale Excel owner files also block reads; add process-level detection if false positives matter.
+        raise ValueError('Tệp đang được mở trong Excel. Hãy đóng tệp rồi thử lại.')
     before = file_hash(path)
     metadata = preflight(path, lenient=lenient) if lenient else preflight(path)
     WORK.mkdir(exist_ok=True)

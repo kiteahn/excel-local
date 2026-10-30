@@ -334,3 +334,9 @@ Việc còn dở, nói thẳng:
 
 ### Tiếp tục kiểm tra UI theo yêu cầu (2026-10-30)
 - Computer Use không khởi tạo được (`trusted Node process exited unexpectedly`, lặp lại sau reset kernel). UC-33 được hoãn trước khi tạo workbook test vì phát hiện một tiến trình Excel mở từ bên ngoài; không tương tác với cửa sổ/workbook đó. Cập nhật `NEXT.md`; các xác nhận giao diện vẫn chờ.
+
+### UC-33 fix + handoff (2026-10-30)
+- Probe synthetic workbook open in actual Excel found `inspect_file` returned data instead of the required locked-file message. Excel created sibling owner marker `~$source.xlsx`.
+- Added minimal owner-marker guard for `.xlsx/.xlsm` and a regression check in `test_read_boundary.py`. Actual post-fix Excel probe now blocks with a clear Vietnamese message; `test_read_boundary.py` 4/4.
+- Re-ran group 1 (20/20 commands, 437 counted checks + 6 scenarios), group 2 (50/50 checks), and post-fix group 3 integration 97/97, GUI 14/14, read-boundary 4/4. Did not rerun COM benchmark after code change per user's instruction to stop at handoff; existing result is pre-fix.
+- Direct UI checks remain pending because Computer Use screenshot did not match the target window; no app input was sent. Handoff state is in `NEXT.md`. Known shortcut: a stale `~$` marker can block an unlocked file; remove only after confirming Excel is closed.

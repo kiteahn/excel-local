@@ -1,39 +1,24 @@
-# NEXT — việc tiếp theo
+# NEXT — bàn giao Chu kỳ 0
 
 ## Trạng thái (2026-10-30)
-- Chu kỳ 0 trên Windows đã chạy trong checkout cô lập nhánh muse-upgrade, commit a9a1c5a.
-- Các bài test tự động nhóm 1–3 đều đạt khi chạy Excel COM ngoài sandbox. Lần chạy trong sandbox bị E_ACCESSDENIED; ngoài sandbox chạy thành công.
-- Kết quả đầy đủ và output nguyên văn: cycles/CYCLE-00.md.
-- Không chuyển sang chu kỳ 1 và không tách gui() cho tới khi Windows acceptance hoàn tất.
 
-## Việc tiếp theo
-1. Hoàn tất các xác nhận UI còn lại trước khi kết luận Chu kỳ 0 sạch.
-2. Nếu có thay đổi trong lần kiểm tra thủ công, thêm regression test, chạy lại suite liên quan và ghi output; sau mỗi test tích hợp kiểm tra không còn tiến trình Excel do test tạo.
-3. Hoàn tất các kiểm tra thủ công bên dưới; không báo đạt khi chưa quan sát.
+- Làm việc trên checkout cô lập nhánh `muse-upgrade`, commit nền `a9a1c5a`.
+- Đã sửa UC-33: `inspect_file` chặn workbook `.xlsx/.xlsm` có owner marker `~$` với thông báo tiếng Việt rõ ràng. Regression được thêm vào `test_read_boundary.py`.
+- Sau sửa: nhóm 1 20/20 lệnh, 437 check có bộ đếm và 6 kịch bản; nhóm 2 50/50; nhóm 3 đã rerun integration 97/97, GUI 14/14, read-boundary 4/4. Benchmark COM sau sửa chưa rerun theo yêu cầu dừng tại handoff; baseline trước sửa ở `results/benchmark-current-1000.json`.
+- Kết quả/đầu ra nguyên văn: `cycles/CYCLE-00.md`. UC-33 probe mở workbook synthetic bằng Excel thật và xác nhận app chặn đọc.
+- Chu kỳ 0 chưa đóng vì còn xác nhận UI trực tiếp. Không qua Chu kỳ 1 trước khi xác nhận các mục bên dưới.
 
-## Câu hỏi cho chủ sản phẩm — CẦN NGƯỜI XÁC NHẬN
+## Bước bàn giao
 
-- UC-32: chạy trọn luồng trong app và xem sheet kết quả/Kiem_tra/biên bản. W-1 riêng đã kiểm bằng Excel trên output của integration test: không có Sheet1 trống.
-- UC-33: CHƯA CHẠY. Cần thử bằng workbook tự sinh trong phiên test riêng. Bài dừng trước khi tạo file vì đã có Excel người dùng mở; không tương tác với tiến trình đó.
-- UC-35: xác nhận file có ô #DIV/0! bị từ chối rõ ràng.
-- UC-36: PDF integration test đã được render và xem; bảng không cắt/chồng. Xác nhận thêm PDF xuất từ luồng app nếu cần.
-- Tooltip/phím tắt: xác nhận tooltip hai nút và Ctrl+Enter chạy Đề xuất.
-- Hộp lỗi Batch: thử thư mục có file bảng tính hỏng và xác nhận hộp báo lỗi tử tế. UI chưa quan sát được do computer-use node_repl lỗi khi khởi tạo.
+1. Khi Computer Use chụp đúng cửa sổ app, hoàn tất UC-32 trong app, xem biên bản/sheets; W-1 đã kiểm riêng, không có `Sheet1` mặc định.
+2. Xem thông báo UI cho UC-33 và UC-35; lõi kiểm tra UC-33 và từ chối công thức lỗi đã qua test.
+3. Xác nhận tooltip Ollama/Preview, `Ctrl+Enter` đề xuất, và hộp lỗi Batch với file hỏng.
+4. PDF integration đã render/xem: không cắt/chồng, mẫu ngắn nên có khoảng trắng lớn. Có thể xác nhận thêm luồng bật PDF trong app.
+5. Sau UI check, chạy benchmark COM sau sửa nếu còn thời gian, ghi kết quả; rồi mới đóng Chu kỳ 0 và bắt đầu Chu kỳ 1.
 
+## Giới hạn/rủi ro đã biết
 
-## Đã kiểm chứng bằng script
-
-- DPAPI thật: test_router.py 7/7 và test_security_privacy.py 43/43 đạt.
-- Ollama mặc định và giá trị 500.000 bật/tắt: test_policy_defaults.py P-01..P-05, P-11..P-12 đạt.
-- GUI: test_gui.py 14/14; test_app integration 97/97, test_read_boundary 3/3. Benchmark COM đã chạy, số liệu trong cycles/CYCLE-00.md và results/benchmark-current-1000.json.
-
-
-## Giới hạn thao tác UI hiện tại
-
-- Computer Use không khởi tạo được: 	rusted Node process exited unexpectedly, kể cả sau reset. Không tiếp tục tự động hóa UI khi chưa có runtime hoạt động.
-- Hiện có một phiên Excel mở từ bên ngoài bài test; không tương tác hoặc đóng phiên đó.
-
-## Điều kiện dừng và nhánh
-
-- Nếu STOP.txt xuất hiện ở thư mục gốc, dừng ngay và kiểm tra lại sau mỗi bước lớn.
-- Không push; việc push nhánh muse-upgrade thuộc về chủ sản phẩm.
+- Computer Use trả screenshot không khớp target app (hiển thị cửa sổ Codex/Chrome), nên chưa gửi click/typing. Không dùng ảnh đó làm bằng chứng UI.
+- Guard UC-33 dựa vào owner file Excel `~$`; file khóa cũ còn sót sau crash có thể chặn đọc nhầm. Nếu gặp, xác nhận Excel đã đóng trước khi xóa file khóa.
+- Tại thời điểm ghi handoff không còn Excel process do test. Không đóng hoặc tương tác với Excel của người dùng.
+- Không push nhánh; việc push thuộc chủ sản phẩm. Nếu `STOP.txt` xuất hiện, dừng theo prompt.
