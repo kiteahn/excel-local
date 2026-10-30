@@ -135,8 +135,14 @@ def run():
         src = snap(['Group', 'Amount'], [['A', '1.234.567'], ['A', '2.500.000'], ['B', '100']])
         _, _, st = app.prepare_sheets(src, None, {'action': 'summary', 'key': 'Group', 'value': 'Amount', 'lenient_numbers': True}, 't')
         check('UC-20 tong tien VN dang 1.234.567 o che do lenient', Decimal(st['independent_total']) == Decimal('3734667'))
-        check('UC-20b mot dau cham + 3 so duoc hieu la thap phan (500.000 -> 500)',
-              app.parse_lenient_number('500.000') == Decimal('500'))
+        # UC-20b (decided 2026-10-30): '500.000' is governed by the
+        # vn_dot_thousands setting - ON (default) reads 500000, OFF reads 500.
+        # Full coverage lives in test_policy_defaults.py; here we pin the OFF
+        # reading explicitly so this file does not depend on ambient config.
+        check('UC-20b 500.000 voi tuy chon vn_dot_thousands=TAT -> thap phan 500',
+              app.parse_lenient_number('500.000', dot_thousands=False) == Decimal('500'))
+        check('UC-20c 500.000 voi tuy chon vn_dot_thousands=BAT -> 500 nghin',
+              app.parse_lenient_number('500.000', dot_thousands=True) == Decimal('500000'))
         rejects('UC-21 so dang 1,234 bi tu choi o che do chat',
                 lambda: app.prepare_sheets(snap(['G', 'V'], [['A', '1,234']]), None, {'action': 'summary', 'key': 'G', 'value': 'V'}, 't'))
         rejects('UC-22 tong vuot 1e14 bi tu choi',

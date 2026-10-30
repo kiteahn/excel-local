@@ -245,7 +245,8 @@ PROVIDER_PROFILES = {
 
 def get_config():
     defaults = {
-        'provider': 'smart_local',  # 'smart_local' (0-token local first), 'smart' (cloud cascade), 'openai', 'gemini', 'groq', 'openrouter', 'ollama', 'heuristic'
+        'provider': 'ollama',  # User decision 2026-10-30: default is the local Ollama engine only; cloud modes ('smart', 'smart_local', single providers) are opt-in via Settings.
+        'vn_dot_thousands': True,  # User decision 2026-10-30: in lenient parsing, '500.000' (dot + exactly 3 digits) means 500000; can be turned off in Settings.
         'openai_api_key': '',
         'openai_model': 'gpt-4o-mini',
         'openai_base_url': 'https://api.openai.com/v1',
@@ -1355,7 +1356,7 @@ def request_plan(prompt, source_columns, reference_columns=(), provider=None, ap
         return final_plan
 
     cfg = get_config()
-    chosen_provider = provider or cfg.get('provider', 'smart_local')
+    chosen_provider = provider or cfg.get('provider', 'ollama')
     candidates = get_active_candidates(cfg, requested_provider=chosen_provider, api_key=api_key, model=model, base_url=base_url)
 
     # 3b. Smart Local-First (0-Token Mode) or Heuristic Mode, or Smart mode when no cloud keys:

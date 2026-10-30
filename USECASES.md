@@ -26,7 +26,8 @@ Cập nhật: Vòng 11 (2026-10-30). "Đã chạy" = có check trong
 | UC-18 | Lọc điều kiện số >= 8 | Đúng số dòng | Đã chạy — đạt |
 | UC-19 | Lọc "khác rỗng" | Mọi dòng có giá trị | Đã chạy — đạt |
 | UC-20 | Tổng tiền VN '1.234.567' + '2.500.000' (lenient) | Tổng Decimal đúng 3.734.667 | Đã chạy — đạt |
-| UC-20b | '500.000' một dấu chấm | Hiểu là thập phân 500 (quy ước hiện tại, xem ghi chú) | Đã chạy — đạt, ghi nhận mơ hồ |
+| UC-20b | '500.000' một dấu chấm, tùy chọn vn_dot_thousands TẮT | Hiểu là thập phân 500 | Đã chạy — đạt |
+| UC-20c | '500.000' một dấu chấm, tùy chọn BẬT (mặc định) | Hiểu là 500.000 = 500 nghìn | Đã chạy — đạt (test_policy_defaults P-04..P-12) |
 | UC-21 | Số dạng '1,234' ở chế độ chặt | Bị từ chối | Đã chạy — đạt |
 | UC-22 | Tổng vượt 10^14 | Bị từ chối | Đã chạy — đạt |
 | UC-23 | Tổng có số âm | Cộng đúng | Đã chạy — đạt |
@@ -45,9 +46,10 @@ Cập nhật: Vòng 11 (2026-10-30). "Đã chạy" = có check trong
 | UC-35 | Ô lỗi Excel (#DIV/0!) sau tính lại | Bị từ chối | CHƯA CHẠY ĐƯỢC — cần Excel thật (có trong integration) |
 | UC-36 | Xuất PDF và kiểm tra bố cục | PDF đúng bố cục | CHƯA CHẠY ĐƯỢC — cần Windows + kiểm tra trực quan |
 
-Ghi chú UC-20b: '500.000' mơ hồ giữa "500 nghìn đồng" (quen dùng trong văn
-bản tiền VN) và "500,000" thập phân. Parser lenient hiện chọn nghĩa thập
-phân cho mẫu MỘT dấu chấm; mẫu nhiều dấu chấm (1.234.567) được hiểu là phân
-nhóm nghìn. Đây là lựa chọn thiết kế đã có từ trước, được ghi nhận ở đây để
-người dùng/lượt sau quyết định có đổi hay không — vòng 11 không tự ý đổi
-hành vi số học.
+Ghi chú UC-20b/UC-20c: '500.000' mơ hồ giữa "500 nghìn đồng" (quen dùng
+trong văn bản tiền VN) và "500" thập phân. **Người dùng đã quyết định ngày
+2026-10-30**: đây là tùy chọn cài đặt `vn_dot_thousands` (checkbox trong
+Cài đặt AI), mặc định BẬT — một dấu chấm + đúng 3 chữ số sau dấu chấm được
+hiểu là phân nhóm nghìn (500.000 → 500000); TẮT thì giữ nghĩa thập phân.
+Số có phần nguyên 0 ('0.500') luôn là thập phân. Mẫu nhiều dấu chấm
+(1.234.567) luôn là phân nhóm nghìn, không phụ thuộc tùy chọn.

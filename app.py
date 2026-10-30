@@ -540,7 +540,18 @@ def normalized_keys(snapshot, col, allow_dates=False):
     return [key_value(row[col], format_at(snapshot, i, col), allow_dates=allow_dates) for i, row in enumerate(snapshot['data'])]
 
 
-def parse_lenient_number(value, allow_blank_zero=True):
+def _vn_dot_thousands():
+    """Setting: in lenient parsing, treat '500.000' (one dot + exactly 3
+    digits after it) as a VN thousands-grouped integer (500000).
+    User decision 2026-10-30; stored in config as 'vn_dot_thousands',
+    default True, switchable in AI Settings."""
+    try:
+        return bool(ai_client.get_config().get('vn_dot_thousands', True))
+    except (OSError, ValueError, RuntimeError):
+        return True
+
+
+def parse_lenient_number(value, allow_blank_zero=True, dot_thousands=None):
     if value is None or value == '':
         if allow_blank_zero:
             return Decimal(0)
@@ -600,6 +611,12 @@ def parse_lenient_number(value, allow_blank_zero=True):
             if any(len(p) != 3 for p in parts[1:]):
                 raise ValueError(f'Định dạng dấu chấm không hợp lệ: "{value}".')
             cleaned = cleaned.replace('.', '')
+        elif (dot_thousands if dot_thousands is not None else _vn_dot_thousands()) \
+                and len(parts[1]) == 3 and parts[0] not in ('', '0'):
+            # '500.000' with exactly 3 digits after the single dot reads as a
+            # thousands group in VN money writing (setting vn_dot_thousands).
+            # '0.500' stays a decimal (integer part 0) either way.
+            cleaned = parts[0] + parts[1]
     try:
         res = Decimal(cleaned)
         if is_negative:
@@ -611,9 +628,9 @@ def parse_lenient_number(value, allow_blank_zero=True):
     return res
 
 
-def number(value, lenient=False):
+def number(value, lenient=False, dot_thousands=None):
     if lenient:
-        return parse_lenient_number(value)
+        return parse_lenient_number(value, dot_thousands=dot_thousands)
     if value is None or value == '' or isinstance(value, bool):
         raise ValueError('Cột tổng hợp có ô trống/TRUE/FALSE; v1 không tự đổi thành 0.')
     if isinstance(value, str) and not re.fullmatch(r'[+-]?\d+(?:\.\d+)?', value.strip()):
@@ -713,6 +730,7 @@ def prepare_sheets(source, reference, plan, token):
     key_col = source['headers'].index(plan['key'])
     allow_dates = bool(plan.get('allow_dates', False))
     lenient_nums = bool(plan.get('lenient_numbers', False))
+    dot_thousands = _vn_dot_thousands() if lenient_nums else None
     keys = normalized_keys(source, key_col, allow_dates=allow_dates) if action not in ('clean', 'filter') else []
     rows = [list(row) for row in source['data']]
     if not rows:
@@ -832,14 +850,14 @@ def prepare_sheets(source, reference, plan, token):
         for row, key in zip(rows, keys):
             if not key:
                 raise ValueError('Cột nhóm có khóa trống; cần xử lý rõ trước khi tổng hợp.')
-            val_num = number(row[value_col], lenient=lenient_nums)
+            val_num = number(row[value_col], lenient=lenient_nums, dot_thousands=dot_thousands)
             totals[key] += val_num
             counts[key] += 1
             grouped[key].append(float(val_num))
         headers = ['Nhom_chuan_hoa', 'So_dong', 'Tong']
         rows = []
         for i, key in enumerate(totals, 2):
-            number(totals[key], lenient=lenient_nums)
+            number(totals[key], lenient=lenient_nums, dot_thousands=dot_thousands)
             rows.append([key, None, None])
             first = len(table) + 1
             table.extend([key, value] for value in grouped[key])
@@ -1370,7 +1388,7 @@ def gui(smoke=False):
             self.current_step = 1
 
             cfg = ai_client.get_config()
-            self.ai_provider = tk.StringVar(value=cfg.get('provider', 'smart'))
+            self.ai_provider = tk.StringVar(value=cfg.get('provider', 'ollama'))
 
             window.title('Excel Local Expert · Trợ Lý Bảng Tính Cục Bộ & AI v0.3.1')
             window.protocol('WM_DELETE_WINDOW', self.close)
@@ -1439,6 +1457,9 @@ def gui(smoke=False):
             engine_box = ttk.Frame(controls)
             engine_box.pack(fill='x', pady=(0, 4))
             ttk.Label(engine_box, text='Động cơ AI:').pack(side='left', padx=(0, 8))
+            rb_ollama = ttk.Radiobutton(engine_box, text='🦙 Ollama Cục bộ (Mặc định)', variable=self.ai_provider, value='ollama', command=self.save_engine_choice)
+            rb_ollama.pack(side='left', padx=(0, 12))
+            _ToolTip(rb_ollama, 'Động cơ mặc định theo quyết định 2026-10-30: chỉ chạy Ollama trên máy của bạn, không gửi gì lên cloud. Cloud là tùy chọn bạn tự bật ở các nút bên cạnh hoặc trong Cài đặt AI.')
             rb_local_first = ttk.Radiobutton(engine_box, text='⚡ Siêu tốc 0-Token (Cục bộ ➔ Cloud khi cần)', variable=self.ai_provider, value='smart_local', command=self.save_engine_choice)
             rb_local_first.pack(side='left', padx=(0, 12))
             _ToolTip(rb_local_first, 'Ưu tiên xử lý ngay trên máy (không tốn token). Chỉ khi yêu cầu phức tạp mới gọi Cloud bằng khóa bạn đã cấu hình.')
@@ -1607,7 +1628,7 @@ def gui(smoke=False):
             f.pack(fill='both', expand=True)
 
             ttk.Label(f, text='⚡ Cấu hình Smart Multi-Model Router', font=('Segoe UI', 13, 'bold'), foreground='#0d6efd').pack(anchor='w', pady=(0, 2))
-            ttk.Label(f, text='🔒 Khóa API được mã hóa bằng Windows DPAPI an toàn tuyệt đối. Hệ thống tự động luân phiên giữa các model khi hết hạn mức (quota) hoặc sự cố kết nối, và tự động chuyển về Ollama Offline khi mất mạng.', font=('Segoe UI', 8, 'italic'), foreground='#198754', wraplength=610).pack(anchor='w', pady=(0, 8))
+            ttk.Label(f, text='🔒 Khóa API được mã hóa bằng Windows DPAPI (phạm vi người dùng hiện tại). Khi bạn BẬT chế độ cloud, hệ thống luân phiên giữa các model khi hết hạn mức (quota) hoặc sự cố kết nối, và chuyển về Ollama Offline khi mất mạng nếu bạn bật dự phòng. Mặc định chỉ chạy Ollama cục bộ.', font=('Segoe UI', 8, 'italic'), foreground='#198754', wraplength=610).pack(anchor='w', pady=(0, 8))
 
             top_frame = ttk.LabelFrame(f, text='Chế độ hoạt động', padding=8)
             top_frame.pack(fill='x', pady=(0, 8))
@@ -1616,14 +1637,21 @@ def gui(smoke=False):
             row_top.pack(fill='x', pady=2)
             ttk.Label(row_top, text='Động cơ ưu tiên:').pack(side='left', padx=(0, 8))
 
-            prov_var = tk.StringVar(value=cfg.get('provider', 'smart_local'))
-            prov_cb = ttk.Combobox(row_top, textvariable=prov_var, values=['smart_local', 'smart', 'heuristic', 'gemini', 'groq', 'openai', 'openrouter', 'ollama'], state='readonly', width=16)
+            prov_var = tk.StringVar(value=cfg.get('provider', 'ollama'))
+            prov_cb = ttk.Combobox(row_top, textvariable=prov_var, values=['ollama', 'smart_local', 'smart', 'heuristic', 'gemini', 'groq', 'openai', 'openrouter'], state='readonly', width=16)
             prov_cb.pack(side='left', padx=(0, 16))
 
             fallback_var = tk.BooleanVar(value=cfg.get('auto_fallback', True))
             cb_fallback = ttk.Checkbutton(row_top, text='Tự động dự phòng Ollama khi mất mạng', variable=fallback_var)
             cb_fallback.pack(side='left')
             _ToolTip(cb_fallback, 'Khi các Cloud model lỗi/hết quota, tự chuyển xuống Ollama chạy trên máy của bạn (cần đã cài runtime và model).')
+
+            row_num = ttk.Frame(top_frame)
+            row_num.pack(fill='x', pady=2)
+            dot_var = tk.BooleanVar(value=cfg.get('vn_dot_thousands', True))
+            cb_dot = ttk.Checkbutton(row_num, text='Số dạng 500.000 hiểu là 500 nghìn (chế độ đọc số nới lỏng)', variable=dot_var)
+            cb_dot.pack(side='left')
+            _ToolTip(cb_dot, 'Quyết định 2026-10-30: khi BẬT, số có MỘT dấu chấm và đúng 3 chữ số sau dấu chấm (500.000, 12.345) được hiểu là phân nhóm nghìn kiểu VN. TẮT thì giữ nghĩa thập phân quốc tế (500.000 = 500). Số 0.xxx luôn là thập phân. Chỉ áp dụng khi kế hoạch bật đọc số nới lỏng (lenient).')
 
             keys_frame = ttk.LabelFrame(f, text='Quản lý Khóa API các Nhà cung cấp (Tự động xoay vòng)', padding=8)
             keys_frame.pack(fill='x', pady=(0, 8))
@@ -1720,6 +1748,7 @@ def gui(smoke=False):
                     ai_client.save_config({
                         'provider': prov_var.get(),
                         'auto_fallback': fallback_var.get(),
+                        'vn_dot_thousands': dot_var.get(),
                         'openai_api_key': o_key,
                         'openai_model': model_var.get().strip(),
                         'openai_base_url': url_var.get().strip(),
