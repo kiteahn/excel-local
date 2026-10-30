@@ -1,20 +1,23 @@
 # NEXT — việc tiếp theo (cập nhật sau mỗi vòng)
 
 ## Trạng thái tổng (2026-10-30)
-- Nhánh `muse-upgrade`: 30 commit (Bước 0 + Vòng 1–29), CHƯA push —
+- Nhánh `muse-upgrade`: 31 commit (Bước 0 + Vòng 1–30), CHƯA push —
   người dùng TỰ push, Muse không push.
 - Chế độ không cạn việc ĐANG BẬT theo chỉ đạo người dùng 2026-10-30.
 - **ĐÓNG BĂNG tách gui()** cho tới khi người dùng báo kết quả Windows.
 - VĐ đã phát hiện tới nay: VĐ-01…18 (VĐ-18 vá ở Vòng 28).
 
-## Vòng tiếp theo: Vòng 30 — TỔNG KẾT 30 VÒNG (mốc phụ)
-1. Chấm lại 8 hạng mục theo thang Bước 0, có đối chiếu trước/sau.
-2. Đối chiếu bảng VĐ-01…18: trạng thái từng mục (đã vá / đã ghim test /
-   còn chờ Windows).
-3. Đếm lại tổng số check từ output chạy thật của toàn bộ 23 file test.
-4. Liệt kê việc Linux còn lại kèm đánh giá giá trị giảm dần + lý do,
-   để người dùng quyết định dừng hay đi tiếp (Vòng 31+: đọc tĩnh
-   excel_bridge.ps1; kiểm tra examples/ khớp hành vi hiện tại).
+## Vòng tiếp theo: Vòng 31 — Đọc tĩnh excel_bridge.ps1 + kiểm tra examples/
+1. Đọc toàn bộ excel_bridge.ps1 (không chạy được PowerShell trên VM):
+   tìm lỗi cú pháp hiển nhiên, tên biến dùng trước khi gán, đường dẫn
+   cứng, thông điệp lỗi khó hiểu; chỉ sửa lỗi CHẮC CHẮN, còn lại ghi
+   nhận vào UPGRADE_LOG để đối chiếu khi nghiệm thu Windows.
+2. Chạy create_diverse_examples.py vào thư mục tạm, inspect thử 2–3
+   file ví dụ bằng đường CSV/fast-reader để chắc examples chưa thối
+   so với hành vi hiện tại.
+3. Sau vòng này: nếu không phát hiện việc giá trị mới, vòng lặp chuyển
+   sang trạng thái chờ (nghiệm thu Windows / chỉ đạo mới / STOP.txt),
+   theo đúng tiêu chí dừng người dùng đã đặt.
 
 ## NGHIỆM THU WINDOWS (chờ người dùng)
 Danh sách đầy đủ trong WINDOWS_ACCEPTANCE.md của gói bàn giao và bản
