@@ -324,3 +324,10 @@ Việc còn dở, nói thẳng:
   - W-3: giới hạn inspect phía bridge (20001 dòng gồm header, 60 cột, 400.000 ô) nhất quán với cổng phía Python.
 - examples/: kiểm tra 4 file mẫu ĐI KÈM REPO (2 XLSX có banner, 1 CSV, 1 XLSX kế toán) bằng inspect lenient + tự dò header — cả 4 cho header và số dòng đúng, chưa thối so với hành vi hiện tại. Sự cố quy trình đã xử lý: lần chạy thử create_diverse_examples.py ghi đè một phần examples/ TRƯỚC khi chết vì thiếu powershell.exe (script sinh ví dụ bằng Excel thật) — đã khôi phục nguyên trạng bằng git checkout và kiểm tra lại trên bản gốc; bài học: không chạy script sinh ví dụ trên VM này.
 - Kết luận vòng lặp theo tiêu chí người dùng đặt: sau vòng này, việc Linux còn lại chỉ là (c)/(d) giá trị thấp đã nêu ở Vòng 30 — vòng lặp chuyển trạng thái CHỜ: nghiệm thu Windows, STOP.txt, hoặc chỉ đạo mới.
+
+### Chu kỳ 0 — Nghiệm thu nền Windows (2026-10-30)
+- Chạy đủ danh sách nhóm 1–3 từ checkout cô lập nhánh `muse-upgrade` tại commit `a9a1c5a`; log nguyên văn và các lần retry ở `cycles/CYCLE-00.md`.
+- Lần chạy trong sandbox bị Excel COM từ chối (`0x80070005`); chạy lại ngoài sandbox thì thành công. Không có bằng chứng lỗi sản phẩm, không sửa code.
+- Nhóm 1: 20/20 lệnh exit 0; 437 check đếm được và 6 kịch bản đa dạng hoàn tất. Nhóm 2: 50/50 check; nhóm 3: 4/4 lệnh, 114 check (97 integration, 14 GUI, 3 read-boundary). Benchmark COM 1.000 dòng ghi tại `results/benchmark-current-1000.json`.
+- DPAPI thật, mặc định Ollama, `500.000` bật/tắt đều được xác nhận bằng test. Mở workbook kết quả read-only trong Excel xác nhận W-1: không có Sheet1 mặc định. PDF của integration test được render và xem; bảng hiển thị đầy đủ, không cắt/chồng.
+- Một số luồng UI cần người dùng xác nhận còn trong `NEXT.md`; không ghi đạt khi chưa quan sát. Test thay đổi fixtures/results đã được khôi phục. Excel process do batch, benchmark và W-1 inspection sinh ra đã được xác định theo PID/path/start time, dọn theo PID và không còn tiến trình mồ côi.

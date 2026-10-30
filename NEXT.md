@@ -1,28 +1,34 @@
-# NEXT — việc tiếp theo (cập nhật sau mỗi vòng)
+# NEXT — việc tiếp theo
 
-## Trạng thái tổng (2026-10-30)
-- Nhánh `muse-upgrade`: 32 commit (Bước 0 + Vòng 1–31), CHƯA push —
-  người dùng TỰ push, Muse không push.
-- **Vòng lặp ở trạng thái CHỜ** (kết luận Vòng 30–31): việc Linux có
-  giá trị đã làm hết — 23 file test/499 check, mutation 30/30, fuzz 3
-  mảng, rà soát tĩnh 2 đợt, đọc tĩnh cả bridge PowerShell, đối chiếu
-  README/examples. Việc còn lại trên Linux chỉ là giá trị thấp (mutation
-  đợt 7 cho nhánh infer phụ; fuzz CSV seed dài hạn) — không tự chạy tiếp
-  trừ khi người dùng yêu cầu.
-- **ĐÓNG BĂNG tách gui()** cho tới khi người dùng báo kết quả Windows.
+## Trạng thái (2026-10-30)
+- Chu kỳ 0 trên Windows đã chạy trong checkout cô lập nhánh muse-upgrade, commit a9a1c5a.
+- Các bài test tự động nhóm 1–3 đều đạt khi chạy Excel COM ngoài sandbox. Lần chạy trong sandbox bị E_ACCESSDENIED; ngoài sandbox chạy thành công.
+- Kết quả đầy đủ và output nguyên văn: cycles/CYCLE-00.md.
+- Không chuyển sang chu kỳ 1 và không tách gui() cho tới khi Windows acceptance hoàn tất.
 
-## Việc đang chờ (theo thứ tự ưu tiên)
-1. **Nghiệm thu Windows bởi người dùng** — danh sách đầy đủ trong
-   WINDOWS_ACCEPTANCE.md của gói bàn giao (đã xuất lại ở commit mới
-   nhất): 3 nhóm lệnh test (không Excel / DPAPI / Excel thật, kèm số
-   đạt kỳ vọng), 8 mục kiểm tra thủ công — gồm cả điểm W-1 của Vòng 31
-   (nhìn danh sách sheet trong file kết quả của UC-32 xem có sheet
-   trống mặc định không). Báo lại output + mục nào không đạt.
-2. Sau khi có kết quả Windows: ghi vào UPGRADE_LOG mục "Nghiệm thu
-   Windows", sửa lỗi phát hiện TRƯỚC, rồi mới xét tách gui().
-3. Người dùng tự push nhánh muse-upgrade (quyết định 2026-10-30).
+## Việc tiếp theo
+1. Hoàn tất các xác nhận UI còn lại trước khi kết luận Chu kỳ 0 sạch.
+2. Nếu có thay đổi trong lần kiểm tra thủ công, thêm regression test, chạy lại suite liên quan và ghi output; sau mỗi test tích hợp kiểm tra không còn tiến trình Excel do test tạo.
+3. Hoàn tất các kiểm tra thủ công bên dưới; không báo đạt khi chưa quan sát.
 
-## Điều kiện dừng vòng lặp
-- File `STOP.txt` ở thư mục gốc repo (kiểm tra sau mỗi vòng — tới nay
-  chưa từng xuất hiện). Vòng lặp hiện chờ việc ở mục trên, không tự
-  sinh vòng mới.
+## Câu hỏi cho chủ sản phẩm — CẦN NGƯỜI XÁC NHẬN
+
+- UC-32: chạy trọn luồng trong app và xem sheet kết quả/Kiem_tra/biên bản. W-1 riêng đã kiểm bằng Excel trên output của integration test: không có Sheet1 trống.
+- UC-33: mở sẵn workbook trong Excel rồi thử Đọc; xác nhận thông báo file đang khóa.
+- UC-35: xác nhận file có ô #DIV/0! bị từ chối rõ ràng.
+- UC-36: PDF integration test đã được render và xem; bảng không cắt/chồng. Xác nhận thêm PDF xuất từ luồng app nếu cần.
+- Tooltip/phím tắt: xác nhận tooltip hai nút và Ctrl+Enter chạy Đề xuất.
+- Hộp lỗi Batch: thử thư mục có file bảng tính hỏng và xác nhận hộp báo lỗi tử tế.
+
+
+## Đã kiểm chứng bằng script
+
+- DPAPI thật: test_router.py 7/7 và test_security_privacy.py 43/43 đạt.
+- Ollama mặc định và giá trị 500.000 bật/tắt: test_policy_defaults.py P-01..P-05, P-11..P-12 đạt.
+- GUI: test_gui.py 14/14; test_app integration 97/97, test_read_boundary 3/3. Benchmark COM đã chạy, số liệu trong cycles/CYCLE-00.md và results/benchmark-current-1000.json.
+
+
+## Điều kiện dừng và nhánh
+
+- Nếu STOP.txt xuất hiện ở thư mục gốc, dừng ngay và kiểm tra lại sau mỗi bước lớn.
+- Không push; việc push nhánh muse-upgrade thuộc về chủ sản phẩm.
