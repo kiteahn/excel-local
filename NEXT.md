@@ -1,31 +1,28 @@
 # NEXT — việc tiếp theo (cập nhật sau mỗi vòng)
 
 ## Trạng thái tổng (2026-10-30)
-- Nhánh `muse-upgrade`: 31 commit (Bước 0 + Vòng 1–30), CHƯA push —
+- Nhánh `muse-upgrade`: 32 commit (Bước 0 + Vòng 1–31), CHƯA push —
   người dùng TỰ push, Muse không push.
-- Chế độ không cạn việc ĐANG BẬT theo chỉ đạo người dùng 2026-10-30.
+- **Vòng lặp ở trạng thái CHỜ** (kết luận Vòng 30–31): việc Linux có
+  giá trị đã làm hết — 23 file test/499 check, mutation 30/30, fuzz 3
+  mảng, rà soát tĩnh 2 đợt, đọc tĩnh cả bridge PowerShell, đối chiếu
+  README/examples. Việc còn lại trên Linux chỉ là giá trị thấp (mutation
+  đợt 7 cho nhánh infer phụ; fuzz CSV seed dài hạn) — không tự chạy tiếp
+  trừ khi người dùng yêu cầu.
 - **ĐÓNG BĂNG tách gui()** cho tới khi người dùng báo kết quả Windows.
-- VĐ đã phát hiện tới nay: VĐ-01…18 (VĐ-18 vá ở Vòng 28).
 
-## Vòng tiếp theo: Vòng 31 — Đọc tĩnh excel_bridge.ps1 + kiểm tra examples/
-1. Đọc toàn bộ excel_bridge.ps1 (không chạy được PowerShell trên VM):
-   tìm lỗi cú pháp hiển nhiên, tên biến dùng trước khi gán, đường dẫn
-   cứng, thông điệp lỗi khó hiểu; chỉ sửa lỗi CHẮC CHẮN, còn lại ghi
-   nhận vào UPGRADE_LOG để đối chiếu khi nghiệm thu Windows.
-2. Chạy create_diverse_examples.py vào thư mục tạm, inspect thử 2–3
-   file ví dụ bằng đường CSV/fast-reader để chắc examples chưa thối
-   so với hành vi hiện tại.
-3. Sau vòng này: nếu không phát hiện việc giá trị mới, vòng lặp chuyển
-   sang trạng thái chờ (nghiệm thu Windows / chỉ đạo mới / STOP.txt),
-   theo đúng tiêu chí dừng người dùng đã đặt.
-
-## NGHIỆM THU WINDOWS (chờ người dùng)
-Danh sách đầy đủ trong WINDOWS_ACCEPTANCE.md của gói bàn giao và bản
-trước của file này: 17+ lệnh test theo 3 nhóm (không Excel / DPAPI /
-Excel thật với số đạt kỳ vọng), 8 mục kiểm tra thủ công, và phần cần báo
-lại. Sau khi có kết quả: ghi vào UPGRADE_LOG, sửa lỗi Windows trước,
-rồi mới xét tách gui().
+## Việc đang chờ (theo thứ tự ưu tiên)
+1. **Nghiệm thu Windows bởi người dùng** — danh sách đầy đủ trong
+   WINDOWS_ACCEPTANCE.md của gói bàn giao (đã xuất lại ở commit mới
+   nhất): 3 nhóm lệnh test (không Excel / DPAPI / Excel thật, kèm số
+   đạt kỳ vọng), 8 mục kiểm tra thủ công — gồm cả điểm W-1 của Vòng 31
+   (nhìn danh sách sheet trong file kết quả của UC-32 xem có sheet
+   trống mặc định không). Báo lại output + mục nào không đạt.
+2. Sau khi có kết quả Windows: ghi vào UPGRADE_LOG mục "Nghiệm thu
+   Windows", sửa lỗi phát hiện TRƯỚC, rồi mới xét tách gui().
+3. Người dùng tự push nhánh muse-upgrade (quyết định 2026-10-30).
 
 ## Điều kiện dừng vòng lặp
 - File `STOP.txt` ở thư mục gốc repo (kiểm tra sau mỗi vòng — tới nay
-  chưa từng xuất hiện).
+  chưa từng xuất hiện). Vòng lặp hiện chờ việc ở mục trên, không tự
+  sinh vòng mới.
