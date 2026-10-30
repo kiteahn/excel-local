@@ -78,11 +78,15 @@ python -X utf8 test_headers.py            # 11 bài test chẩn đoán tiêu đ�
 python -X utf8 test_read_boundary.py      # 3 bài test chống tráo file; lượt đọc Excel thật
 python -X utf8 test_diverse_scenarios_e2e.py # 6 kịch bản thực tế đại học/kế toán/kho vận E2E
 python -X utf8 test_batch_processing.py       # 10 bài test Xử lý hàng loạt (Batch Mode) 0-token
-python -X utf8 test_usecases.py           # 34 use case tầng 2 (USECASES.md): CSV/banner, khóa, tổng hợp, token, preflight
+python -X utf8 test_usecases.py           # 37 use case tầng 2 (USECASES.md): CSV/banner, khóa, tổng hợp, token, preflight
 python -X utf8 test_privacy_guard_cases.py # 53 mẫu đo Privacy Guard (33 PII + 20 không phải PII)
 python -X utf8 test_infer_golden.py       # 28 prompt vàng cho infer_smart_plan (ghim hành vi heuristic)
-python -X utf8 test_sanitize_plan.py      # 8 bài test sanitize_plan (ép clarify, fuzzy match cột)
-python -X utf8 test_fuzz_light.py         # 20 biến thể fuzz nhẹ cho parser CSV/header
+python -X utf8 test_sanitize_plan.py      # 12 bài test sanitize_plan + khóa cache của plan (ép clarify, fuzzy match cột)
+python -X utf8 test_fuzz_light.py         # 20 biến thể fuzz nhẹ cho parser CSV
+python -X utf8 test_fuzz_headers.py       # 15 biến thể fuzz cho detect_header_row/select_header
+python -X utf8 test_fuzz_xlsx.py          # 12 biến thể fuzz cho đường đọc XLSX thuần Python (cần openpyxl, tự SKIP nếu thiếu)
+python -X utf8 test_policy_defaults.py    # 12 bài test quyết định chính sách 2026-10-30 (mặc định Ollama, vn_dot_thousands)
+python -X utf8 test_safety_limits.py      # 6 bài test giới hạn an toàn (80MB, 10.000 thành phần ZIP, chuỗi 2000 ký tự, hash sau đọc)
 powershell -NoProfile -File test_cleanup.ps1 # 4 bài test dọn tiến trình Excel cô lập
 ```
 

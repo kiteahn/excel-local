@@ -8,25 +8,24 @@
   không còn việc có giá trị (nêu lý do từng mục).
 - **ĐÓNG BĂNG tách gui()** cho tới khi người dùng báo kết quả Windows.
 
-## Vòng tiếp theo: Vòng 27 — Rà soát tĩnh đợt 2 + đối chiếu README ↔ code
-1. pyflakes toàn bộ file .py + py_compile; xử lý mọi cảnh báo mới.
-2. Đối chiếu README ↔ code: bổ sung 3 file test còn thiếu vào mục Kiểm
-   tra (test_fuzz_headers, test_policy_defaults, test_safety_limits,
-   test_fuzz_xlsx), kiểm mọi con số đếm còn lại trong README (số bài
-   test từng file so với output chạy thật vòng này).
-3. Quét các hằng số giới hạn bị lặp giữa app.py/ai_client.py (2000 ký
-   tự, 8000 ký tự prompt...) — chỉ ghi nhận, không refactor khi không
-   có lỗi.
+## Vòng tiếp theo: Vòng 28 — Use case bất thường đợt 2
+Chạy qua prepare_sheets/validate_plan/inspect (phần thuần Python):
+sheet tên rất dài/ký tự lạ trong snapshot; CSV chỉ có dòng header (0 dòng
+dữ liệu → phải báo rõ); nguồn và tham chiếu là CÙNG một snapshot (tự đối
+chiếu); filter với selected_columns chứa cột không tồn tại (validate phải
+chặn); lookup đồng thời có khóa trùng ở tham chiếu và khóa thiếu ở nguồn
+(stats duplicate/missing đếm đúng); clean trên cột toàn số (changed=0,
+không phá giá trị); summary khi mọi khóa nhóm đều trống (phải từ chối);
+filter điều kiện số trên cột chữ (phải từ chối rõ ràng). Ca nào lộ lỗi
+thật → vá tối thiểu + regression; ca đúng thiết kế → ghim vào
+test_usecases.py đợt 2 (tên tiền tố UC2-).
 
 ## Hàng đợi Linux sau đó (theo thứ tự)
-- Vòng 28: use case bất thường đợt 2 (sheet tên lạ/rất dài, CSV chỉ có
-  header, file nguồn = file tham chiếu cùng một file, filter với
-  selected_columns không tồn tại, lookup khóa trùng + thiếu đồng thời,
-  clean trên cột số, summary nhóm toàn khóa trống...).
-- Vòng 29: mutation đợt 6 cho phần còn lại (formula_preflight, read_xml
-  DTD đã có M3-5 ở tầng preflight — thử ở tầng read_xml trực tiếp,
-  execute_batch phần thuần logic nếu có điểm kiểm tra được).
-- Vòng 30: tổng kết 30 vòng (mốc phụ).
+- Vòng 29: mutation đợt 6 (formula_preflight qua read_xml trực tiếp,
+  execute_batch phần kiểm tra đầu vào, bridge payload sanitize nếu có
+  điểm kiểm tra thuần Python).
+- Vòng 30: tổng kết 30 vòng (mốc phụ): chấm lại nhanh, đối chiếu VĐ,
+  đếm lại tổng số check.
 
 ## NGHIỆM THU WINDOWS (chờ người dùng — danh sách đầy đủ ở bản trước của
 ## file này và trong WINDOWS_ACCEPTANCE.md của gói bàn giao)
