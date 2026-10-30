@@ -51,6 +51,20 @@ def run():
     out = ai_client.sanitize_plan({'action': 'clean', 'key': 'Họ tên'}, ['Họ tên'], [])
     ok('S-08 cac truong bat buoc duoc dien mac dinh', all(k in out for k in ('action', 'key', 'value', 'ref_key', 'ref_value', 'message')))
 
+    print('--- Plan cache key (round 25, M5-1) ---')
+    k_a = ai_client.get_plan_cache_key('tinh tong', ('Lớp', 'Học phí'), ())
+    k_b = ai_client.get_plan_cache_key('tinh tong', ('Khoa', 'Tiền'), ())
+    ok('C-01 cache key khac nhau khi cot nguon khac nhau (M5-1)', k_a != k_b)
+    k_c = ai_client.get_plan_cache_key('tinh tong', ('Học phí', 'Lớp'), ())
+    ok('C-02 cache key khong phu thuoc thu tu cot', k_a == k_c)
+    k_d = ai_client.get_plan_cache_key('tinh tong', ('Lớp', 'Học phí'), ('MSSV',))
+    ok('C-03 cache key khac nhau khi cot tham chieu khac nhau', k_a != k_d)
+
+    p1 = ai_client.request_plan('Đối chiếu MSSV để lấy Họ tên (cachetest25)', ['MSSV'], ['MSSV', 'Họ tên'], provider='heuristic')
+    p2 = ai_client.request_plan('Đối chiếu MSSV để lấy Họ tên (cachetest25)', ['MaSV'], ['MaSV', 'Que quan'], provider='heuristic')
+    ok('C-04 request_plan khong dung lai plan cache cua bo cot khac',
+       p1.get('action') == 'lookup' and p2.get('key') == 'MaSV' and p2.get('ref_value') == 'Que quan')
+
     print(f'\nAll {len(CHECKS)} sanitize_plan checks passed.')
 
 if __name__ == '__main__':

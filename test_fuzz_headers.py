@@ -81,6 +81,11 @@ def run():
     kind, res = outcome(lambda: app.detect_header_row([[None, None], ['A', 'B'], ['1', '2']]))
     ok('H-14 dong dau toan None: detect bo qua toi dong chu', kind == 'value' and res == 2)
 
+    # M5-4 regression (round 25): the +25 "has data below" bonus must be what
+    # makes row 1 win here; without it row 3 (a footer-like row) would win.
+    kind, res = outcome(lambda: app.detect_header_row([['MSSV', 'Họ tên'], ['001', 'An'], ['Lớp', 'Khoa', 'X1']]))
+    ok('H-15 diem thuong du lieu ben duoi quyet dinh dong header that (M5-4)', kind == 'value' and res == 1)
+
     print(f'\nAll {len(CHECKS)} header-fuzz checks passed (no unexpected exception types).')
 
 if __name__ == '__main__':
