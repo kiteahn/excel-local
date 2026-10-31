@@ -16,3 +16,6 @@
 - **Chu kỳ 2 (2026-10-31)** — tách `open_ai_settings()` thành
   `open_ai_settings_dialog()` cấp module, không đổi giao diện/hành vi. Refactor
   thuần túy nên giữ số 0.3.2; bằng chứng trong `cycles/CYCLE-02.md`.
+- **Chu kỳ 3 (2026-10-31)** — tách `review()` thành `review_plan_dialog()` cấp
+  module, không đổi luồng xem trước/chấp nhận. Refactor thuần túy, giữ 0.3.2;
+  bằng chứng trong `cycles/CYCLE-03.md`.

@@ -1551,6 +1551,113 @@ def open_ai_settings_dialog(app, tk, ttk, messagebox):
     dlg.geometry(f'{width}x{height}')
 
 
+def review_plan_dialog(app, source, reference, plan, preview, export_pdf,
+                       tk, ttk, messagebox, filedialog):
+    """Review/approve dialog, extracted from gui() in Cycle 3.
+
+    Behaviour is unchanged: same badges, table, token re-check and buttons.
+    """
+    dialog = tk.Toplevel(app.window)
+    dialog.title('Kiểm tra kết quả dự kiến · Chưa thực hiện')
+    dialog.transient(app.window)
+    dialog.geometry(f'{min(1080, app.window.winfo_screenwidth() - 60)}x{min(680, app.window.winfo_screenheight() - 80)}')
+    dialog.grab_set()
+
+    frame = ttk.Frame(dialog, padding=16)
+    frame.pack(fill='both', expand=True)
+    ttk.Label(frame, text='Kiểm tra trước khi chấp nhận và thực thi', font=('Segoe UI', 15, 'bold'), foreground='#0d6efd').pack(anchor='w')
+
+    # Summary Badges
+    stats = preview.get('stats', {})
+    badge_bar = ttk.Frame(frame)
+    badge_bar.pack(fill='x', pady=(6, 4))
+
+    def add_badge(parent, label, val, bg='#e9ecef', fg='#212529'):
+        card = tk.Label(parent, text=f"{label}: {val}", font=('Segoe UI', 9, 'bold'), bg=bg, fg=fg, padx=8, pady=3, relief='solid', borderwidth=1)
+        card.pack(side='left', padx=(0, 8))
+
+    if plan['action'] == 'lookup':
+        add_badge(badge_bar, '✓ Khớp', stats.get('matched', 0), bg='#d1e7dd', fg='#0f5132')
+        add_badge(badge_bar, '⚠ Thiếu / Trống', stats.get('missing', 0), bg='#fff3cd', fg='#664d03')
+        add_badge(badge_bar, '⚡ Khóa trùng', stats.get('duplicate', 0), bg='#f8d7da', fg='#842029')
+    elif plan['action'] == 'summary':
+        add_badge(badge_bar, '📊 Số nhóm', stats.get('groups', 0), bg='#cfe2ff', fg='#084298')
+        add_badge(badge_bar, '💰 Tổng dự kiến', stats.get('independent_total', 0), bg='#d1e7dd', fg='#0f5132')
+    elif plan['action'] == 'clean':
+        add_badge(badge_bar, '🧹 Ô làm sạch', stats.get('changed_cells', 0), bg='#d1e7dd', fg='#0f5132')
+    elif plan['action'] == 'filter':
+        add_badge(badge_bar, '🎯 Dòng trích xuất', f"{stats.get('filtered_rows', 0)} / {stats.get('source_rows', 0)} dòng", bg='#d1e7dd', fg='#0f5132')
+        add_badge(badge_bar, '🔍 Tiêu chí', stats.get('criteria', ''), bg='#cfe2ff', fg='#084298')
+    add_badge(badge_bar, '🔍 Công thức đối soát', preview.get('formula_checks', 0), bg='#e2e3e5', fg='#41464b')
+
+    labels = {'source_rows': 'Dòng nguồn', 'filtered_rows': 'Dòng trích xuất', 'criteria': 'Tiêu chí lọc', 'matched': 'Khớp', 'missing': 'Thiếu / khóa trống', 'duplicate': 'Khóa trùng trên nguồn', 'reference_duplicate_keys': 'Khóa trùng trong danh mục', 'blank_keys': 'Khóa trống', 'groups': 'Số nhóm', 'independent_total': 'Tổng dự kiến', 'changed_cells': 'Ô được làm sạch'}
+    details = [plan.get('message', ''), f'Nguồn: {source["path"]} · Sheet {source["sheet"]}', f'Thao tác: {dict(lookup="Đối chiếu", summary="Tổng hợp", clean="Làm sạch", filter="Lọc & Trích xuất")[plan["action"]]}; Cột nguồn: {plan["key"]}']
+    if plan['action'] == 'lookup':
+        details.append(f'Danh mục: {plan["ref_key"]}; Trả về: {plan["ref_value"]}')
+    if plan['action'] == 'summary':
+        details.append('Cột cộng: ' + plan['value'])
+    if plan['action'] == 'filter':
+        details.append('Tiêu chí lọc: ' + str(plan.get('value', '')))
+    details += [f'{labels.get(key, key)}: {value}' for key, value in preview['stats'].items() if key != 'action']
+    details += [f'Công thức sẽ đối soát: {preview["formula_checks"]}; Xuất PDF: {"Có" if export_pdf else "Không"}', preview['scope'], preview['status']]
+
+    text = tk.Text(frame, height=5, wrap='word', font=('Segoe UI', 9))
+    text.pack(fill='x', pady=6)
+    text.insert('1.0', '\n'.join(filter(None, details)))
+    text.configure(state='disabled')
+
+    ttk.Label(frame, text='Mẫu kết quả dự kiến (Tối đa 10 dòng đầu):', font=('Segoe UI', 9, 'bold')).pack(anchor='w')
+    table_frame = ttk.Frame(frame)
+    table_frame.pack(fill='both', expand=True, pady=6)
+    ids = [f'c{i}' for i in range(len(preview['columns']))]
+    table = ttk.Treeview(table_frame, columns=ids, show='headings', height=8)
+    for column, label in zip(ids, preview['columns']):
+        table.heading(column, text=label)
+        table.column(column, width=150, minwidth=100, stretch=False)
+    for row in preview['sample_rows']:
+        table.insert('', 'end', values=['' if value is None else str(value)[:200] for value in row])
+    horizontal = ttk.Scrollbar(table_frame, orient='horizontal', command=table.xview)
+    vertical = ttk.Scrollbar(table_frame, orient='vertical', command=table.yview)
+    table.configure(xscrollcommand=horizontal.set, yscrollcommand=vertical.set)
+    table.grid(row=0, column=0, sticky='nsew')
+    horizontal.grid(row=1, column=0, sticky='ew')
+    vertical.grid(row=0, column=1, sticky='ns')
+    table_frame.rowconfigure(0, weight=1)
+    table_frame.columnconfigure(0, weight=1)
+
+    buttons = ttk.Frame(frame)
+    buttons.pack(fill='x', pady=(6, 0))
+    def cancel():
+        dialog.destroy()
+        app.status.set('Chưa chấp nhận. Bạn có thể sửa yêu cầu hoặc các cột.')
+        app.set_step(2)
+    def accept():
+        try:
+            app.current('source', source)
+            app.current('reference', reference)
+            if preview_plan(source, reference, plan, export_pdf)['approval_token'] != preview['approval_token']:
+                raise ValueError('Kết quả dự kiến đã đổi; cần kiểm tra lại.')
+        except (ValueError, OSError) as error:
+            dialog.destroy()
+            messagebox.showerror('Bản xem trước hết hiệu lực', str(error))
+            return
+        dialog.destroy()
+        app.perform(source, reference, plan, export_pdf, preview['approval_token'])
+    def apply_batch():
+        b_dir = filedialog.askdirectory(title='Chọn thư mục chứa các file cần chạy hàng loạt theo kế hoạch này')
+        if not b_dir:
+            return
+        dialog.destroy()
+        ref_path = reference['path'] if reference else None
+        app.start_batch_run(b_dir, ref_path, plan, export_pdf)
+
+    ttk.Button(buttons, name='cancel', text='Chưa chấp nhận · Sửa yêu cầu', command=cancel).pack(side='left')
+    ttk.Button(buttons, name='approve', text='Chấp nhận và thực hiện', style='Highlight.TButton', command=accept).pack(side='right')
+    ttk.Button(buttons, text='📂 Áp dụng hàng loạt cho Thư mục…', command=apply_batch).pack(side='right', padx=8)
+    dialog.protocol('WM_DELETE_WINDOW', cancel)
+    app.status.set('Đang chờ chấp nhận; chưa tạo workbook hoặc PDF.')
+
+
 def gui(smoke=False):
     import tkinter as tk
     from tkinter import ttk, filedialog, messagebox
@@ -2091,105 +2198,9 @@ def gui(smoke=False):
             self.review(source, reference, plan, preview, export_pdf)
 
         def review(self, source, reference, plan, preview, export_pdf):
-            dialog = tk.Toplevel(self.window)
-            dialog.title('Kiểm tra kết quả dự kiến · Chưa thực hiện')
-            dialog.transient(self.window)
-            dialog.geometry(f'{min(1080, self.window.winfo_screenwidth() - 60)}x{min(680, self.window.winfo_screenheight() - 80)}')
-            dialog.grab_set()
-
-            frame = ttk.Frame(dialog, padding=16)
-            frame.pack(fill='both', expand=True)
-            ttk.Label(frame, text='Kiểm tra trước khi chấp nhận và thực thi', font=('Segoe UI', 15, 'bold'), foreground='#0d6efd').pack(anchor='w')
-
-            # Summary Badges
-            stats = preview.get('stats', {})
-            badge_bar = ttk.Frame(frame)
-            badge_bar.pack(fill='x', pady=(6, 4))
-
-            def add_badge(parent, label, val, bg='#e9ecef', fg='#212529'):
-                card = tk.Label(parent, text=f"{label}: {val}", font=('Segoe UI', 9, 'bold'), bg=bg, fg=fg, padx=8, pady=3, relief='solid', borderwidth=1)
-                card.pack(side='left', padx=(0, 8))
-
-            if plan['action'] == 'lookup':
-                add_badge(badge_bar, '✓ Khớp', stats.get('matched', 0), bg='#d1e7dd', fg='#0f5132')
-                add_badge(badge_bar, '⚠ Thiếu / Trống', stats.get('missing', 0), bg='#fff3cd', fg='#664d03')
-                add_badge(badge_bar, '⚡ Khóa trùng', stats.get('duplicate', 0), bg='#f8d7da', fg='#842029')
-            elif plan['action'] == 'summary':
-                add_badge(badge_bar, '📊 Số nhóm', stats.get('groups', 0), bg='#cfe2ff', fg='#084298')
-                add_badge(badge_bar, '💰 Tổng dự kiến', stats.get('independent_total', 0), bg='#d1e7dd', fg='#0f5132')
-            elif plan['action'] == 'clean':
-                add_badge(badge_bar, '🧹 Ô làm sạch', stats.get('changed_cells', 0), bg='#d1e7dd', fg='#0f5132')
-            elif plan['action'] == 'filter':
-                add_badge(badge_bar, '🎯 Dòng trích xuất', f"{stats.get('filtered_rows', 0)} / {stats.get('source_rows', 0)} dòng", bg='#d1e7dd', fg='#0f5132')
-                add_badge(badge_bar, '🔍 Tiêu chí', stats.get('criteria', ''), bg='#cfe2ff', fg='#084298')
-            add_badge(badge_bar, '🔍 Công thức đối soát', preview.get('formula_checks', 0), bg='#e2e3e5', fg='#41464b')
-
-            labels = {'source_rows': 'Dòng nguồn', 'filtered_rows': 'Dòng trích xuất', 'criteria': 'Tiêu chí lọc', 'matched': 'Khớp', 'missing': 'Thiếu / khóa trống', 'duplicate': 'Khóa trùng trên nguồn', 'reference_duplicate_keys': 'Khóa trùng trong danh mục', 'blank_keys': 'Khóa trống', 'groups': 'Số nhóm', 'independent_total': 'Tổng dự kiến', 'changed_cells': 'Ô được làm sạch'}
-            details = [plan.get('message', ''), f'Nguồn: {source["path"]} · Sheet {source["sheet"]}', f'Thao tác: {dict(lookup="Đối chiếu", summary="Tổng hợp", clean="Làm sạch", filter="Lọc & Trích xuất")[plan["action"]]}; Cột nguồn: {plan["key"]}']
-            if plan['action'] == 'lookup':
-                details.append(f'Danh mục: {plan["ref_key"]}; Trả về: {plan["ref_value"]}')
-            if plan['action'] == 'summary':
-                details.append('Cột cộng: ' + plan['value'])
-            if plan['action'] == 'filter':
-                details.append('Tiêu chí lọc: ' + str(plan.get('value', '')))
-            details += [f'{labels.get(key, key)}: {value}' for key, value in preview['stats'].items() if key != 'action']
-            details += [f'Công thức sẽ đối soát: {preview["formula_checks"]}; Xuất PDF: {"Có" if export_pdf else "Không"}', preview['scope'], preview['status']]
-
-            text = tk.Text(frame, height=5, wrap='word', font=('Segoe UI', 9))
-            text.pack(fill='x', pady=6)
-            text.insert('1.0', '\n'.join(filter(None, details)))
-            text.configure(state='disabled')
-
-            ttk.Label(frame, text='Mẫu kết quả dự kiến (Tối đa 10 dòng đầu):', font=('Segoe UI', 9, 'bold')).pack(anchor='w')
-            table_frame = ttk.Frame(frame)
-            table_frame.pack(fill='both', expand=True, pady=6)
-            ids = [f'c{i}' for i in range(len(preview['columns']))]
-            table = ttk.Treeview(table_frame, columns=ids, show='headings', height=8)
-            for column, label in zip(ids, preview['columns']):
-                table.heading(column, text=label)
-                table.column(column, width=150, minwidth=100, stretch=False)
-            for row in preview['sample_rows']:
-                table.insert('', 'end', values=['' if value is None else str(value)[:200] for value in row])
-            horizontal = ttk.Scrollbar(table_frame, orient='horizontal', command=table.xview)
-            vertical = ttk.Scrollbar(table_frame, orient='vertical', command=table.yview)
-            table.configure(xscrollcommand=horizontal.set, yscrollcommand=vertical.set)
-            table.grid(row=0, column=0, sticky='nsew')
-            horizontal.grid(row=1, column=0, sticky='ew')
-            vertical.grid(row=0, column=1, sticky='ns')
-            table_frame.rowconfigure(0, weight=1)
-            table_frame.columnconfigure(0, weight=1)
-
-            buttons = ttk.Frame(frame)
-            buttons.pack(fill='x', pady=(6, 0))
-            def cancel():
-                dialog.destroy()
-                self.status.set('Chưa chấp nhận. Bạn có thể sửa yêu cầu hoặc các cột.')
-                self.set_step(2)
-            def accept():
-                try:
-                    self.current('source', source)
-                    self.current('reference', reference)
-                    if preview_plan(source, reference, plan, export_pdf)['approval_token'] != preview['approval_token']:
-                        raise ValueError('Kết quả dự kiến đã đổi; cần kiểm tra lại.')
-                except (ValueError, OSError) as error:
-                    dialog.destroy()
-                    messagebox.showerror('Bản xem trước hết hiệu lực', str(error))
-                    return
-                dialog.destroy()
-                self.perform(source, reference, plan, export_pdf, preview['approval_token'])
-            def apply_batch():
-                b_dir = filedialog.askdirectory(title='Chọn thư mục chứa các file cần chạy hàng loạt theo kế hoạch này')
-                if not b_dir:
-                    return
-                dialog.destroy()
-                ref_path = reference['path'] if reference else None
-                self.start_batch_run(b_dir, ref_path, plan, export_pdf)
-
-            ttk.Button(buttons, name='cancel', text='Chưa chấp nhận · Sửa yêu cầu', command=cancel).pack(side='left')
-            ttk.Button(buttons, name='approve', text='Chấp nhận và thực hiện', style='Highlight.TButton', command=accept).pack(side='right')
-            ttk.Button(buttons, text='📂 Áp dụng hàng loạt cho Thư mục…', command=apply_batch).pack(side='right', padx=8)
-            dialog.protocol('WM_DELETE_WINDOW', cancel)
-            self.status.set('Đang chờ chấp nhận; chưa tạo workbook hoặc PDF.')
+            review_plan_dialog(app=self, source=source, reference=reference, plan=plan,
+                               preview=preview, export_pdf=export_pdf,
+                               tk=tk, ttk=ttk, messagebox=messagebox, filedialog=filedialog)
 
         def open_batch_dialog(self):
             b_dir = filedialog.askdirectory(title='Chọn thư mục chứa các bảng tính cần xử lý hàng loạt')

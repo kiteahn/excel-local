@@ -1,6 +1,6 @@
 # ROADMAP — Excel Local Expert
 
-Cập nhật: 2026-10-31, sau khi đóng Chu kỳ 2 (tách hộp Cài đặt AI khỏi `gui()`).
+Cập nhật: 2026-10-31, sau khi đóng Chu kỳ 3 (tách hộp kiểm tra/chấp nhận khỏi `gui()`).
 Thứ tự ưu tiên của sản phẩm: đúng > an toàn/riêng tư > dễ bảo trì > hiệu năng >
 trải nghiệm > tính năng mới. Mỗi mục chỉ vào chu kỳ khi có tiêu chí đo được.
 
@@ -19,14 +19,15 @@ danh sách, 2 known hit có ghi chú; mutation 5 chỗ đều bị bắt.
 
 Known còn lại (chấp nhận, đã đo): tên 2 từ; tên dân tộc không bắt đầu bằng họ Kinh.
 
-## P1 — Dễ bảo trì (trọng tâm Chu kỳ 2)
+## P1 — Dễ bảo trì (trọng tâm Chu kỳ 2–4)
 
 | # | Vấn đề | Số đo | Hướng |
 |---|--------|-------|-------|
-| M-1 | `gui()` còn 793 dòng (App lồng trong hàm) | `app.py` (AST) | Tách từng khối ra hàm cấp module, mỗi lát một commit, `test_gui` + `test_ui_acceptance` phải xanh |
+| M-1 | `gui()` còn 697 dòng (App lồng trong hàm) | `app.py` (AST) | Tách từng khối ra hàm cấp module, mỗi lát một commit, `test_gui` + `test_ui_acceptance` phải xanh |
 | M-2 | `open_ai_settings()` ~155 dòng | ĐÓNG Chu kỳ 2 | Đã thành `open_ai_settings_dialog()`; 141 chuỗi giữ nguyên, UI test 48/48 |
-| M-3 | `review()` ~100 dòng | `app.py` | Lát cắt tiếp theo (Chu kỳ 3): `review_plan_dialog()` |
-| M-4 | `infer_smart_plan` ~478 dòng, `prepare_sheets` ~261 dòng | `app.py` | Tách theo nhánh thuật toán, golden test `test_infer_golden` bảo vệ |
+| M-3 | `review()` ~100 dòng | ĐÓNG Chu kỳ 3 | Đã thành `review_plan_dialog()`; 172 chuỗi giữ nguyên, `test_gui` 14/14 |
+| M-4 | `prepare_sheets` 262 dòng (không phải `infer_smart_plan`: hàm này đã chỉ còn 25 dòng sau các vòng trước) | `app.py` (AST) | Lát cắt tiếp theo (Chu kỳ 4): tách theo nhánh `lookup`/`summary`/`clean`/`filter`, `test_app` + `test_usecases` bảo vệ |
+| M-6 | `ai_client._lookup_plan` 180 dòng, `_filter_plan` 178 dòng | `ai_client.py` (AST) | Tách sau M-4, dùng `test_infer_golden` (28 prompt vàng) |
 | M-5 | ~30 `except Exception` rộng | `app.py`, `ai_client.py` | Thu hẹp dần, mỗi chỗ một test |
 
 ## P2 — Hiệu năng (số đo 1.000 dòng, `results/benchmark-current-1000.json`)
