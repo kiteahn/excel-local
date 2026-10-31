@@ -1,4 +1,4 @@
-# Excel Local Expert (v0.3.1)
+# Excel Local Expert (v0.3.2)
 
 Ứng dụng Windows xử lý bảng tính với Smart Multi-Model Router (luân phiên các nhà cung cấp người dùng đã cấu hình khóa: Google Gemini, Groq Cloud, OpenAI/OpenRouter hoặc endpoint tương thích, và Ollama Local), tính năng tự chữa lành ô gộp/tiêu đề và đối soát độc lập bằng native Excel Desktop. Người dùng tự chọn động cơ: chế độ cục bộ (heuristic/Ollama) không gửi gì ra ngoài; chế độ cloud gửi **tên cột và câu yêu cầu đã qua bước che PII bằng regex** tới nhà cung cấp đã chọn — không gửi dữ liệu hàng (xem mục "Bảo mật & quyền riêng tư" để biết giới hạn).
 
@@ -54,7 +54,7 @@ Máy đã kiểm tra: RAM khoảng 16 GB, i5-12450H, RTX 2050 VRAM 4 GB, Excel M
 
 ## Bảo mật & quyền riêng tư (mô tả đúng hành vi code, kèm giới hạn)
 
-1. **Che PII bằng regex (Privacy Guard):** Trước khi gọi bất kỳ động cơ AI nào (cloud hoặc Ollama), hệ thống quét câu yêu cầu bằng biểu thức chính quy và che các mẫu nhận diện được: CCCD (12 số), CMND (9 số), SĐT VN (+84, 03x-09x), email, số tài khoản ngân hàng, mã số thuế, mật khẩu, một số mẫu tên riêng. **Giới hạn (đã đo bằng bộ 53 mẫu trong `test_privacy_guard_cases.py`):** đây là regex nên KHÔNG bảo đảm che hết — tên riêng đứng một mình, không kèm từ xưng hô (sinh viên/cô/anh...) thì không nhận diện được; định dạng lạ có thể lọt; ngược lại chuỗi số 9 chữ số (MSSV/số tiền) có thể bị che nhầm thành CMND và mã 13 chữ số thành số tài khoản. Đừng gõ thông tin định danh thật vào ô yêu cầu.
+1. **Che PII bằng regex + ngữ cảnh (Privacy Guard):** Trước khi gọi bất kỳ động cơ AI nào (cloud hoặc Ollama), hệ thống quét câu yêu cầu và che CCCD (12 số), CMND (9 số), SĐT VN (+84, 03x-09x), email, số tài khoản ngân hàng, mã số thuế, mật khẩu, cùng tên riêng có từ xưng hô hoặc tên đứng một mình từ 3 từ trở lên bắt đầu bằng họ Việt phổ biến. **Giới hạn (đã đo bằng bộ 80 mẫu PII + 37 mẫu không phải PII trong `test_privacy_guard_cases.py`, 0 rò lọt/0 che nhầm ngoài danh sách đã ghi):** đây vẫn là regex nên không bảo đảm che hết — tên chỉ 2 từ, tên dân tộc không bắt đầu bằng họ Kinh, hoặc định dạng lạ có thể lọt; tên đường/phố trùng họ người được loại trừ bằng danh sách và từ chỉ địa danh, nhưng có thể còn sót. Ngược lại, số 9 chữ số đứng sau đơn vị tiền, sau MSSV/mã sinh viên, và mã 13 chữ số sau chữ "mã" (trừ ngữ cảnh tài khoản/ngân hàng) được giữ nguyên thay vì che. Đừng gõ thông tin định danh thật vào ô yêu cầu.
 2. **Bảo vệ tiêu đề cột (Column Pseudonymization):** Tiêu đề cột chứa dữ liệu nhạy cảm được thay thế bằng bí danh `[COT_BAO_MAT_i]` khi gọi API và hoàn nguyên cục bộ khi nhận kết quả.
 3. **Mã hóa khóa API bằng Windows DPAPI:** Khóa OpenAI API Key được mã hóa bằng chuẩn Windows Data Protection API (DPAPI). Không lưu văn bản thô trên ổ đĩa; chỉ tài khoản Windows hiện tại mới có thể giải mã.
 4. **Bộ nhớ đệm kế hoạch cục bộ (Local Plan Cache):** Yêu cầu lặp lại cùng ý định được phục vụ ngay từ RAM trong 0ms, không phát sinh bất kỳ kết nối mạng nào ra ngoài (Zero Egress).
@@ -82,7 +82,7 @@ python -X utf8 test_batch_processing.py       # 10 bài test Xử lý hàng lo�
 python -X utf8 test_usecases.py           # 37 use case tầng 2 (USECASES.md): CSV/banner, khóa, tổng hợp, token, preflight
 python -X utf8 test_usecases2.py          # 10 use case bất thường (khóa thiếu, kế hoạch sai, dữ liệu lạ)
 python -X utf8 test_batch_summary.py      # 6 bài test tổng hợp theo lô và chặn thiếu danh mục
-python -X utf8 test_privacy_guard_cases.py # 53 mẫu đo Privacy Guard (33 PII + 20 không phải PII)
+python -X utf8 test_privacy_guard_cases.py # 117 mẫu đo Privacy Guard (80 PII + 37 không phải PII)
 python -X utf8 test_infer_golden.py       # 28 prompt vàng cho infer_smart_plan (ghim hành vi heuristic)
 python -X utf8 test_sanitize_plan.py      # 12 bài test sanitize_plan + khóa cache của plan (ép clarify, fuzzy match cột)
 python -X utf8 test_fuzz_light.py         # 20 biến thể fuzz nhẹ cho parser CSV
@@ -115,4 +115,4 @@ python -X utf8 app.py --source "examples/ho-so-mau.xlsx" --reference "examples/d
 
 Sau khi kiểm tra JSON, lưu đúng đối tượng `preview.plan` thành `plan.json`. Chạy lại cùng nguồn/sheet/hàng tiêu đề và tùy chọn PDF, dùng `--plan plan.json --approve TOKEN`, với TOKEN là `preview.approval_token` đã xem. Thay đổi bất kỳ thành phần được chấp nhận sẽ bị từ chối và cần xem trước lại. `--ref-header-row` hỗ trợ hàng tiêu đề riêng cho danh mục.
 
-Khởi động ứng dụng bằng `start.cmd` hoặc `python app.py` để trải nghiệm phiên bản **v0.3.1** với đầy đủ các nâng cấp mới nhất.
+Khởi động ứng dụng bằng `start.cmd` hoặc `python app.py` để trải nghiệm phiên bản **v0.3.2** với đầy đủ các nâng cấp mới nhất.

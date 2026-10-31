@@ -1402,7 +1402,7 @@ def gui(smoke=False):
             cfg = ai_client.get_config()
             self.ai_provider = tk.StringVar(value=cfg.get('provider', 'ollama'))
 
-            window.title('Excel Local Expert · Trợ Lý Bảng Tính Cục Bộ & AI v0.3.1')
+            window.title('Excel Local Expert · Trợ Lý Bảng Tính Cục Bộ & AI v0.3.2')
             window.protocol('WM_DELETE_WINDOW', self.close)
             width = min(1160, window.winfo_screenwidth() - 60)
             height = min(900, window.winfo_screenheight() - 80)

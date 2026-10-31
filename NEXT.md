@@ -1,46 +1,48 @@
-# NEXT — bàn giao sau Chu kỳ 0, mở Chu kỳ 1
+# NEXT — bàn giao sau Chu kỳ 1, mở Chu kỳ 2
 
 ## Trạng thái (2026-10-31)
 
-- Nhánh `muse-upgrade`, không push. Chu kỳ 0 **ĐÓNG**: nghiệm thu Windows đủ 3 nhóm
-  test và nghiệm thu giao diện bằng ảnh chụp thật (`results/ui-shots/`).
-- Đã sửa 4 lỗi bố cục phát hiện bằng ảnh (UI-01..UI-04, chi tiết trong
-  `cycles/CYCLE-00.md`): hàng động cơ bị cắt, hộp Cài đặt AI cắt nút, thanh đáy cửa
-  sổ chính bị cắt, chip gợi ý/checkbox bị bóp. Thêm `test_ui_acceptance.py` 48 check.
-- Test sau sửa: nhóm 1 21/21 lệnh, nhóm 2 7/7 + 43/43, nhóm 3 integration 97/97,
-  GUI 14/14, read-boundary 4/4. Benchmark 1.000 dòng: inspect 4,05s, lookup 6,28s,
-  summary 6,13s, clean 5,31s.
-- Đã lập `ROADMAP.md`, `RELEASES.md`, `cycles/CYCLE-01.md` (Pha 1 xong).
+- Nhánh `muse-upgrade`, **không push**. Chu kỳ 1 **ĐÓNG**: PrivacyGuard chính xác
+  hơn, phát hành cục bộ **0.3.2**.
+- Đã bịt 2 ca lọt tên đứng một mình; bỏ che nhầm số tiền 9 chữ số, MSSV 9 chữ số,
+  mã 13 chữ số; sửa thêm lỗi ăn dấu cách sau SĐT/STK có phân cách.
+- Bộ đo `test_privacy_guard_cases.py`: **80 PII + 37 non-PII**, 0 rò lọt / 0 che
+  nhầm ngoài danh sách, **2 known hit** có ghi chú (tên 2 từ; tên dân tộc).
+- Mutation 5 chỗ cho luật mới: cả 5 bị bắt (4/4/3 che nhầm, 14 lọt tên).
+- Hồi quy: `test_security_privacy` 43/43, `test_router` 7/7,
+  `test_app --integration` 97/97, `test_usecases` 37/37,
+  `test_all_edge_cases` 61/61, `test_gui` 14/14.
+- Tài liệu: `cycles/CYCLE-01.md` (kết quả thật), `release-notes-0.3.2.md`,
+  `RELEASES.md`, `ROADMAP.md` (S-1..S-4 đóng), README cập nhật số mẫu/giới hạn.
 
 ## Việc tiếp theo (thứ tự)
 
-1. **Pha 2 — Chu kỳ 1:** sửa PrivacyGuard theo `cycles/CYCLE-01.md`:
-   bịt 2 ca lọt tên đứng một mình; bỏ che nhầm số tiền 9 chữ số, mã 13 chữ số,
-   MSSV 9 chữ số; mở bộ đo lên >= 80 PII + >= 30 non-PII. Kiểm tra bằng
-   `python -X utf8 test_privacy_guard_cases.py` (0 rò rỉ/0 che nhầm ngoài known)
-   rồi chạy `test_security_privacy.py`, `test_router.py`, `test_app.py`,
-   `test_usecases.py`.
-2. **Pha 3/4:** QA + thử như người dùng với bộ mẫu mở rộng; ghi kết quả vào
-   `cycles/CYCLE-01.md`. Mutation 5 chỗ cho luật mới.
-3. **Pha 5/6:** nếu đạt, tăng phiên bản 0.3.2 (sửa hành vi người dùng thấy: che PII
-   chính xác hơn), viết `release-notes-0.3.2.md`, cập nhật README/USECASES/RELEASES,
-   tag cục bộ `v0.3.2`.
-4. **Pha 7:** chấm lại 8 hạng mục, cập nhật ROADMAP, mở Chu kỳ 2 (lát cắt `gui()`
-   đầu tiên: `open_ai_settings`, có `test_gui` + `test_ui_acceptance` bảo vệ).
+1. **Pha 2 — Chu kỳ 2:** tách `open_ai_settings()` khỏi `gui()` theo
+   `cycles/CYCLE-02.md`. Một commit di chuyển thuần túy, không đổi chuỗi giao diện.
+2. **Pha 3/4 — Chu kỳ 2:** mở hộp thoại thật bằng Tk để xác nhận không NameError,
+   không cắt nút; chạy `test_gui`, `test_ui_acceptance`, `test_app --integration`.
+   Mutation nhẹ: bỏ một tham số `tk/ttk` truyền vào để chắc test bắt được.
+3. **Pha 5/6 — Chu kỳ 2:** không tăng phiên bản (chỉ refactor, không đổi hành vi);
+   ghi vào RELEASES mục "chu kỳ không tăng phiên bản".
+4. **Pha 7:** chấm lại, cập nhật ROADMAP; chu kỳ 3 dự kiến tách `review()` (M-3).
 
-## Câu hỏi cho chủ sản phẩm
+## Quyết định đã chốt trong Chu kỳ 1
 
-1. **Che tên riêng đứng một mình**: đề xuất dùng từ điển họ Việt + >= 3 từ Title
-   Case, loại trừ địa danh. Ưu: bịt lỗ hổng PII thật. Nhược: có thể che nhầm tên
-   đường/phố hiếm gặp. Đề xuất: làm, đo trên mẫu không phải PII.
-2. **Phiên bản 0.3.2** cho thay đổi PrivacyGuard: đề xuất tăng (hành vi người dùng
-   thấy), không đổi định dạng file xuất. Nếu bạn muốn gộp vào 0.4.0 cùng tính năng
-   mới thì ghi vào NEXT khi chạy lượt sau.
+1. **Che tên đứng một mình:** đã làm theo đề xuất (từ điển họ + 3–4 từ Title Case
+   + loại trừ địa danh). Hai giới hạn chấp nhận: tên 2 từ và tên dân tộc không
+   thuộc họ Kinh.
+2. **Phiên bản:** đã tăng **0.3.2** vì thay đổi hành vi người dùng thấy (che PII
+   khác đi). Nếu chủ sản phẩm muốn gộp vào 0.4.0 cùng tính năng mới, ghi lại để
+   đổi số ở lượt sau; tag `v0.3.2` là tag cục bộ, có thể xóa nếu đổi quyết định.
 
 ## Giới hạn/rủi ro đã biết
-- Ảnh UI chụp bằng GDI sau khi `lift()`; nếu cửa sổ bị app khác che, ảnh sẽ sai —
-  script không còn trong repo, chỉ giữ ảnh bằng chứng.
-- `test_headers.py` từng timeout COM một lần rồi đạt khi chạy lại; nếu lặp lại 3 lần
-  liền thì ghi BLOCKER.
+
+- PrivacyGuard vẫn là regex: tên 2 từ, tên dân tộc, định dạng lạ có thể lọt; tên
+  đường trùng họ người ngoài danh sách loại trừ có thể bị che nhầm. Chưa đo trên
+  câu người dùng thật, chưa gọi cloud thật.
+- Chưa đo lại benchmark sau thay đổi PrivacyGuard (prompt ngắn, chưa có số).
+- `test_headers.py` từng timeout COM một lần rồi đạt khi chạy lại; nếu lặp lại 3
+  lần liền thì ghi BLOCKER.
 - Guard UC-33 dựa trên owner file `~$`; file khóa sót sau crash có thể chặn nhầm.
-- Không push; `STOP.txt` không tồn tại tại thời điểm bàn giao (đã kiểm tra).
+- Ảnh UI chụp bằng GDI sau `lift()`; nếu cửa sổ bị app khác che, ảnh sẽ sai.
+- Không push; kiểm tra `STOP.txt` trước mỗi chu kỳ.
