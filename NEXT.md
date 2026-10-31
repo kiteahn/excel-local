@@ -1,39 +1,35 @@
-# NEXT — bàn giao sau Chu kỳ 1, mở Chu kỳ 2
+# NEXT — bàn giao sau Chu kỳ 2, mở Chu kỳ 3
 
 ## Trạng thái (2026-10-31)
 
-- Nhánh `muse-upgrade`, **không push**. Chu kỳ 1 **ĐÓNG**: PrivacyGuard chính xác
-  hơn, phát hành cục bộ **0.3.2**.
-- Đã bịt 2 ca lọt tên đứng một mình; bỏ che nhầm số tiền 9 chữ số, MSSV 9 chữ số,
-  mã 13 chữ số; sửa thêm lỗi ăn dấu cách sau SĐT/STK có phân cách.
-- Bộ đo `test_privacy_guard_cases.py`: **80 PII + 37 non-PII**, 0 rò lọt / 0 che
-  nhầm ngoài danh sách, **2 known hit** có ghi chú (tên 2 từ; tên dân tộc).
-- Mutation 5 chỗ cho luật mới: cả 5 bị bắt (4/4/3 che nhầm, 14 lọt tên).
-- Hồi quy: `test_security_privacy` 43/43, `test_router` 7/7,
+- Nhánh `muse-upgrade`, **không push**. Chu kỳ 1 **ĐÓNG** (PrivacyGuard 0.3.2, tag
+  cục bộ `v0.3.2`), Chu kỳ 2 **ĐÓNG** (refactor `open_ai_settings`, không tăng phiên bản).
+- `open_ai_settings()` đã tách thành `open_ai_settings_dialog()` cấp module;
+  `gui()` giảm từ ~956 xuống **793 dòng**. 141 hằng chuỗi giữ nguyên thứ tự; chỉ
+  thêm docstring. Mutation "hộp thoại không mở" bị `test_ui_acceptance` bắt.
+- Hồi quy sau refactor: `test_gui` 14/14, `test_ui_acceptance` 48/48,
   `test_app --integration` 97/97, `test_usecases` 37/37,
-  `test_all_edge_cases` 61/61, `test_gui` 14/14.
-- Tài liệu: `cycles/CYCLE-01.md` (kết quả thật), `release-notes-0.3.2.md`,
-  `RELEASES.md`, `ROADMAP.md` (S-1..S-4 đóng), README cập nhật số mẫu/giới hạn.
+  `test_all_edge_cases` 61/61, PrivacyGuard 80 PII/37 non-PII (2 known).
+- Tài liệu: `cycles/CYCLE-02.md` (kết quả thật), `cycles/CYCLE-03.md` (kế hoạch),
+  `ROADMAP.md` (M-2 đóng), `RELEASES.md` (chu kỳ không tăng phiên bản).
 
 ## Việc tiếp theo (thứ tự)
 
-1. **Pha 2 — Chu kỳ 2:** tách `open_ai_settings()` khỏi `gui()` theo
-   `cycles/CYCLE-02.md`. Một commit di chuyển thuần túy, không đổi chuỗi giao diện.
-2. **Pha 3/4 — Chu kỳ 2:** mở hộp thoại thật bằng Tk để xác nhận không NameError,
-   không cắt nút; chạy `test_gui`, `test_ui_acceptance`, `test_app --integration`.
-   Mutation nhẹ: bỏ một tham số `tk/ttk` truyền vào để chắc test bắt được.
-3. **Pha 5/6 — Chu kỳ 2:** không tăng phiên bản (chỉ refactor, không đổi hành vi);
-   ghi vào RELEASES mục "chu kỳ không tăng phiên bản".
-4. **Pha 7:** chấm lại, cập nhật ROADMAP; chu kỳ 3 dự kiến tách `review()` (M-3).
+1. **Pha 2 — Chu kỳ 3:** tách `review()` thành `review_plan_dialog()` theo
+   `cycles/CYCLE-03.md`. Một commit di chuyển thuần túy, không đổi chuỗi.
+2. **Pha 3/4:** so AST hằng chuỗi; chạy `test_gui` (có bấm approve/cancel thật),
+   `test_ui_acceptance`, `test_app --integration`; mutation thay hàm bằng rỗng phải
+   bị `test_gui` bắt.
+3. **Pha 5/6:** không tăng phiên bản (refactor); ghi RELEASES.
+4. **Pha 7:** chấm lại; chu kỳ 4 cân nhắc M-4 (`infer_smart_plan` ~478 dòng) hoặc
+   M-1 (tách `App` khỏi `gui()`) — chọn theo mức rủi ro đo được.
 
-## Quyết định đã chốt trong Chu kỳ 1
+## Quyết định đã chốt
 
-1. **Che tên đứng một mình:** đã làm theo đề xuất (từ điển họ + 3–4 từ Title Case
-   + loại trừ địa danh). Hai giới hạn chấp nhận: tên 2 từ và tên dân tộc không
-   thuộc họ Kinh.
-2. **Phiên bản:** đã tăng **0.3.2** vì thay đổi hành vi người dùng thấy (che PII
-   khác đi). Nếu chủ sản phẩm muốn gộp vào 0.4.0 cùng tính năng mới, ghi lại để
-   đổi số ở lượt sau; tag `v0.3.2` là tag cục bộ, có thể xóa nếu đổi quyết định.
+- Chu kỳ 1 tăng **0.3.2** (hành vi người dùng thấy); tag `v0.3.2` là tag cục bộ,
+  chưa push. Nếu muốn gộp vào 0.4.0, xóa tag và đổi số ở lượt sau.
+- Refactor không tăng phiên bản; mỗi lát cắt phải có test bảo vệ + mutation chứng
+  minh test bắt được lỗi.
 
 ## Giới hạn/rủi ro đã biết
 
@@ -41,6 +37,7 @@
   đường trùng họ người ngoài danh sách loại trừ có thể bị che nhầm. Chưa đo trên
   câu người dùng thật, chưa gọi cloud thật.
 - Chưa đo lại benchmark sau thay đổi PrivacyGuard (prompt ngắn, chưa có số).
+- `gui()` vẫn còn 793 dòng, `App` vẫn lồng trong `gui()`.
 - `test_headers.py` từng timeout COM một lần rồi đạt khi chạy lại; nếu lặp lại 3
   lần liền thì ghi BLOCKER.
 - Guard UC-33 dựa trên owner file `~$`; file khóa sót sau crash có thể chặn nhầm.

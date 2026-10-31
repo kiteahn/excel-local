@@ -1382,6 +1382,175 @@ class _ToolTip:
             self.tip = None
 
 
+def open_ai_settings_dialog(app, tk, ttk, messagebox):
+    """AI settings dialog, extracted from gui() in Cycle 2.
+
+    Kept behaviour-identical: labels, sizing, save/test-connection logic and
+    DPAPI handling are unchanged; only the closure variables are parameters.
+    """
+    cfg = ai_client.get_config()
+    prov_keys = cfg.get('provider_keys', {})
+
+    dlg = tk.Toplevel(app.window)
+    dlg.title('Cài đặt AI & Smart Router (Luân phiên Model Miễn phí / Trả phí)')
+    dlg.geometry('650x550')
+    dlg.transient(app.window)
+    dlg.grab_set()
+
+    f = ttk.Frame(dlg, padding=16)
+    f.pack(fill='both', expand=True)
+
+    ttk.Label(f, text='⚡ Cấu hình Smart Multi-Model Router', font=('Segoe UI', 13, 'bold'), foreground='#0d6efd').pack(anchor='w', pady=(0, 2))
+    ttk.Label(f, text='🔒 Khóa API được mã hóa bằng Windows DPAPI (phạm vi người dùng hiện tại). Khi bạn BẬT chế độ cloud, hệ thống luân phiên giữa các model khi hết hạn mức (quota) hoặc sự cố kết nối, và chuyển về Ollama Offline khi mất mạng nếu bạn bật dự phòng. Mặc định chỉ chạy Ollama cục bộ.', font=('Segoe UI', 8, 'italic'), foreground='#198754', wraplength=610).pack(anchor='w', pady=(0, 8))
+
+    top_frame = ttk.LabelFrame(f, text='Chế độ hoạt động', padding=8)
+    top_frame.pack(fill='x', pady=(0, 8))
+
+    row_top = ttk.Frame(top_frame)
+    row_top.pack(fill='x', pady=2)
+    ttk.Label(row_top, text='Động cơ ưu tiên:').pack(side='left', padx=(0, 8))
+
+    prov_var = tk.StringVar(value=cfg.get('provider', 'ollama'))
+    prov_cb = ttk.Combobox(row_top, textvariable=prov_var, values=['ollama', 'smart_local', 'smart', 'heuristic', 'gemini', 'groq', 'openai', 'openrouter'], state='readonly', width=16)
+    prov_cb.pack(side='left', padx=(0, 16))
+
+    fallback_var = tk.BooleanVar(value=cfg.get('auto_fallback', True))
+    cb_fallback = ttk.Checkbutton(row_top, text='Tự động dự phòng Ollama khi mất mạng', variable=fallback_var)
+    cb_fallback.pack(side='left')
+    _ToolTip(cb_fallback, 'Khi các Cloud model lỗi/hết quota, tự chuyển xuống Ollama chạy trên máy của bạn (cần đã cài runtime và model).')
+
+    row_num = ttk.Frame(top_frame)
+    row_num.pack(fill='x', pady=2)
+    dot_var = tk.BooleanVar(value=cfg.get('vn_dot_thousands', True))
+    cb_dot = ttk.Checkbutton(row_num, text='Số dạng 500.000 hiểu là 500 nghìn (chế độ đọc số nới lỏng)', variable=dot_var)
+    cb_dot.pack(side='left')
+    _ToolTip(cb_dot, 'Quyết định 2026-10-30: khi BẬT, số có MỘT dấu chấm và đúng 3 chữ số sau dấu chấm (500.000, 12.345) được hiểu là phân nhóm nghìn kiểu VN. TẮT thì giữ nghĩa thập phân quốc tế (500.000 = 500). Số 0.xxx luôn là thập phân. Chỉ áp dụng khi kế hoạch bật đọc số nới lỏng (lenient).')
+
+    keys_frame = ttk.LabelFrame(f, text='Quản lý Khóa API các Nhà cung cấp (Tự động xoay vòng)', padding=8)
+    keys_frame.pack(fill='x', pady=(0, 8))
+
+    grid = ttk.Frame(keys_frame)
+    grid.pack(fill='x')
+
+    # 1. Google Gemini
+    ttk.Label(grid, text='Google Gemini Key (Free):', font=('Segoe UI', 9, 'bold')).grid(row=0, column=0, sticky='w', pady=3)
+    gemini_key_var = tk.StringVar(value=prov_keys.get('gemini', ''))
+    gemini_entry = ttk.Entry(grid, textvariable=gemini_key_var, width=34, show='*')
+    gemini_entry.grid(row=0, column=1, sticky='ew', pady=3, padx=4)
+    ttk.Label(grid, text='(aistudio.google.com)', font=('Segoe UI', 8, 'italic'), foreground='#6c757d').grid(row=0, column=2, sticky='w', padx=4)
+
+    # 2. Groq Cloud
+    ttk.Label(grid, text='Groq Cloud Key (Free 70B):', font=('Segoe UI', 9, 'bold')).grid(row=1, column=0, sticky='w', pady=3)
+    groq_key_var = tk.StringVar(value=prov_keys.get('groq', ''))
+    groq_entry = ttk.Entry(grid, textvariable=groq_key_var, width=34, show='*')
+    groq_entry.grid(row=1, column=1, sticky='ew', pady=3, padx=4)
+    ttk.Label(grid, text='(console.groq.com)', font=('Segoe UI', 8, 'italic'), foreground='#6c757d').grid(row=1, column=2, sticky='w', padx=4)
+
+    # 3. OpenAI Official
+    ttk.Label(grid, text='OpenAI API Key:').grid(row=2, column=0, sticky='w', pady=3)
+    openai_key_var = tk.StringVar(value=prov_keys.get('openai', '') or cfg.get('openai_api_key', ''))
+    openai_entry = ttk.Entry(grid, textvariable=openai_key_var, width=34, show='*')
+    openai_entry.grid(row=2, column=1, sticky='ew', pady=3, padx=4)
+    ttk.Label(grid, text='(platform.openai.com)', font=('Segoe UI', 8, 'italic'), foreground='#6c757d').grid(row=2, column=2, sticky='w', padx=4)
+
+    # Toggle show keys
+    show_keys_var = tk.BooleanVar(value=False)
+    def toggle_show():
+        sh = '' if show_keys_var.get() else '*'
+        gemini_entry.configure(show=sh)
+        groq_entry.configure(show=sh)
+        openai_entry.configure(show=sh)
+    ttk.Checkbutton(grid, text='Hiện mã khóa API', variable=show_keys_var, command=toggle_show).grid(row=3, column=1, sticky='w', pady=2, padx=4)
+
+    grid.columnconfigure(1, weight=1)
+
+    # Advanced Custom Endpoint (OpenAI-compatible)
+    adv_frame = ttk.LabelFrame(f, text='Cổng Tùy chỉnh (OpenAI-compatible / Custom Base URL)', padding=8)
+    adv_frame.pack(fill='x', pady=(0, 6))
+
+    adv_grid = ttk.Frame(adv_frame)
+    adv_grid.pack(fill='x')
+
+    ttk.Label(adv_grid, text='Base URL:').grid(row=0, column=0, sticky='w', pady=2)
+    url_var = tk.StringVar(value=cfg.get('openai_base_url', 'https://api.openai.com/v1'))
+    ttk.Entry(adv_grid, textvariable=url_var, width=34).grid(row=0, column=1, sticky='ew', pady=2, padx=4)
+
+    ttk.Label(adv_grid, text='Model:').grid(row=0, column=2, sticky='w', pady=2, padx=(6, 2))
+    model_var = tk.StringVar(value=cfg.get('openai_model', 'gpt-4o-mini'))
+    ttk.Entry(adv_grid, textvariable=model_var, width=16).grid(row=0, column=3, sticky='ew', pady=2)
+
+    adv_grid.columnconfigure(1, weight=1)
+
+    status_lbl = ttk.Label(f, text='', font=('Segoe UI', 9), wraplength=610)
+    status_lbl.pack(fill='x', pady=4)
+
+    btn_box = ttk.Frame(f)
+    btn_box.pack(fill='x', pady=(6, 0))
+
+    def test_conn():
+        status_lbl.configure(text='Đang kiểm tra kết nối...', foreground='#0d6efd')
+        dlg.update()
+        p = prov_var.get()
+        k = ''
+        u = None
+        if p == 'gemini':
+            k = gemini_key_var.get().strip()
+            u = ai_client.PROVIDER_PROFILES['gemini']['base_url']
+        elif p == 'groq':
+            k = groq_key_var.get().strip()
+            u = ai_client.PROVIDER_PROFILES['groq']['base_url']
+        elif p == 'openai':
+            k = openai_key_var.get().strip()
+            u = url_var.get().strip()
+        elif p in ('smart', 'smart_local'):
+            k = gemini_key_var.get().strip() or groq_key_var.get().strip() or openai_key_var.get().strip()
+            if gemini_key_var.get().strip():
+                u = ai_client.PROVIDER_PROFILES['gemini']['base_url']
+            elif groq_key_var.get().strip():
+                u = ai_client.PROVIDER_PROFILES['groq']['base_url']
+            else:
+                u = url_var.get().strip()
+        ok, msg = ai_client.test_ai_connection(p, api_key=k, base_url=u)
+        status_lbl.configure(text=msg, foreground='#198754' if ok else '#dc3545')
+
+    def save_settings():
+        g_key = gemini_key_var.get().strip()
+        gr_key = groq_key_var.get().strip()
+        o_key = openai_key_var.get().strip()
+        try:
+            ai_client.save_config({
+                'provider': prov_var.get(),
+                'auto_fallback': fallback_var.get(),
+                'vn_dot_thousands': dot_var.get(),
+                'openai_api_key': o_key,
+                'openai_model': model_var.get().strip(),
+                'openai_base_url': url_var.get().strip(),
+                'provider_keys': {
+                    'gemini': g_key,
+                    'groq': gr_key,
+                    'openai': o_key,
+                }
+            })
+        except RuntimeError as exc:
+            messagebox.showerror('Không lưu được cấu hình', str(exc), parent=dlg)
+            return
+        app.ai_provider.set(prov_var.get())
+        app.update_engine_badge()
+        dlg.destroy()
+        app.note('Đã lưu cấu hình Smart Router & mã hóa DPAPI an toàn.')
+
+    ttk.Button(btn_box, text='Kiểm tra kết nối', command=test_conn).pack(side='left')
+    ttk.Button(btn_box, text='Lưu cấu hình', style='Highlight.TButton', command=save_settings).pack(side='right')
+    ttk.Button(btn_box, text='Hủy', command=dlg.destroy).pack(side='right', padx=6)
+
+    # Size to the real content so the action buttons are never clipped
+    # (Cycle 0 UI-02: fixed 650x550 cut the bottom row on 100% scaling).
+    dlg.update_idletasks()
+    width = min(max(650, dlg.winfo_reqwidth()), dlg.winfo_screenwidth() - 40)
+    height = min(max(550, dlg.winfo_reqheight()), dlg.winfo_screenheight() - 80)
+    dlg.geometry(f'{width}x{height}')
+
+
 def gui(smoke=False):
     import tkinter as tk
     from tkinter import ttk, filedialog, messagebox
@@ -1642,167 +1811,7 @@ def gui(smoke=False):
             self.note(f"Đã chuyển động cơ AI sang: {self.ai_provider.get().upper()}")
 
         def open_ai_settings(self):
-            cfg = ai_client.get_config()
-            prov_keys = cfg.get('provider_keys', {})
-
-            dlg = tk.Toplevel(self.window)
-            dlg.title('Cài đặt AI & Smart Router (Luân phiên Model Miễn phí / Trả phí)')
-            dlg.geometry('650x550')
-            dlg.transient(self.window)
-            dlg.grab_set()
-
-            f = ttk.Frame(dlg, padding=16)
-            f.pack(fill='both', expand=True)
-
-            ttk.Label(f, text='⚡ Cấu hình Smart Multi-Model Router', font=('Segoe UI', 13, 'bold'), foreground='#0d6efd').pack(anchor='w', pady=(0, 2))
-            ttk.Label(f, text='🔒 Khóa API được mã hóa bằng Windows DPAPI (phạm vi người dùng hiện tại). Khi bạn BẬT chế độ cloud, hệ thống luân phiên giữa các model khi hết hạn mức (quota) hoặc sự cố kết nối, và chuyển về Ollama Offline khi mất mạng nếu bạn bật dự phòng. Mặc định chỉ chạy Ollama cục bộ.', font=('Segoe UI', 8, 'italic'), foreground='#198754', wraplength=610).pack(anchor='w', pady=(0, 8))
-
-            top_frame = ttk.LabelFrame(f, text='Chế độ hoạt động', padding=8)
-            top_frame.pack(fill='x', pady=(0, 8))
-
-            row_top = ttk.Frame(top_frame)
-            row_top.pack(fill='x', pady=2)
-            ttk.Label(row_top, text='Động cơ ưu tiên:').pack(side='left', padx=(0, 8))
-
-            prov_var = tk.StringVar(value=cfg.get('provider', 'ollama'))
-            prov_cb = ttk.Combobox(row_top, textvariable=prov_var, values=['ollama', 'smart_local', 'smart', 'heuristic', 'gemini', 'groq', 'openai', 'openrouter'], state='readonly', width=16)
-            prov_cb.pack(side='left', padx=(0, 16))
-
-            fallback_var = tk.BooleanVar(value=cfg.get('auto_fallback', True))
-            cb_fallback = ttk.Checkbutton(row_top, text='Tự động dự phòng Ollama khi mất mạng', variable=fallback_var)
-            cb_fallback.pack(side='left')
-            _ToolTip(cb_fallback, 'Khi các Cloud model lỗi/hết quota, tự chuyển xuống Ollama chạy trên máy của bạn (cần đã cài runtime và model).')
-
-            row_num = ttk.Frame(top_frame)
-            row_num.pack(fill='x', pady=2)
-            dot_var = tk.BooleanVar(value=cfg.get('vn_dot_thousands', True))
-            cb_dot = ttk.Checkbutton(row_num, text='Số dạng 500.000 hiểu là 500 nghìn (chế độ đọc số nới lỏng)', variable=dot_var)
-            cb_dot.pack(side='left')
-            _ToolTip(cb_dot, 'Quyết định 2026-10-30: khi BẬT, số có MỘT dấu chấm và đúng 3 chữ số sau dấu chấm (500.000, 12.345) được hiểu là phân nhóm nghìn kiểu VN. TẮT thì giữ nghĩa thập phân quốc tế (500.000 = 500). Số 0.xxx luôn là thập phân. Chỉ áp dụng khi kế hoạch bật đọc số nới lỏng (lenient).')
-
-            keys_frame = ttk.LabelFrame(f, text='Quản lý Khóa API các Nhà cung cấp (Tự động xoay vòng)', padding=8)
-            keys_frame.pack(fill='x', pady=(0, 8))
-
-            grid = ttk.Frame(keys_frame)
-            grid.pack(fill='x')
-
-            # 1. Google Gemini
-            ttk.Label(grid, text='Google Gemini Key (Free):', font=('Segoe UI', 9, 'bold')).grid(row=0, column=0, sticky='w', pady=3)
-            gemini_key_var = tk.StringVar(value=prov_keys.get('gemini', ''))
-            gemini_entry = ttk.Entry(grid, textvariable=gemini_key_var, width=34, show='*')
-            gemini_entry.grid(row=0, column=1, sticky='ew', pady=3, padx=4)
-            ttk.Label(grid, text='(aistudio.google.com)', font=('Segoe UI', 8, 'italic'), foreground='#6c757d').grid(row=0, column=2, sticky='w', padx=4)
-
-            # 2. Groq Cloud
-            ttk.Label(grid, text='Groq Cloud Key (Free 70B):', font=('Segoe UI', 9, 'bold')).grid(row=1, column=0, sticky='w', pady=3)
-            groq_key_var = tk.StringVar(value=prov_keys.get('groq', ''))
-            groq_entry = ttk.Entry(grid, textvariable=groq_key_var, width=34, show='*')
-            groq_entry.grid(row=1, column=1, sticky='ew', pady=3, padx=4)
-            ttk.Label(grid, text='(console.groq.com)', font=('Segoe UI', 8, 'italic'), foreground='#6c757d').grid(row=1, column=2, sticky='w', padx=4)
-
-            # 3. OpenAI Official
-            ttk.Label(grid, text='OpenAI API Key:').grid(row=2, column=0, sticky='w', pady=3)
-            openai_key_var = tk.StringVar(value=prov_keys.get('openai', '') or cfg.get('openai_api_key', ''))
-            openai_entry = ttk.Entry(grid, textvariable=openai_key_var, width=34, show='*')
-            openai_entry.grid(row=2, column=1, sticky='ew', pady=3, padx=4)
-            ttk.Label(grid, text='(platform.openai.com)', font=('Segoe UI', 8, 'italic'), foreground='#6c757d').grid(row=2, column=2, sticky='w', padx=4)
-
-            # Toggle show keys
-            show_keys_var = tk.BooleanVar(value=False)
-            def toggle_show():
-                sh = '' if show_keys_var.get() else '*'
-                gemini_entry.configure(show=sh)
-                groq_entry.configure(show=sh)
-                openai_entry.configure(show=sh)
-            ttk.Checkbutton(grid, text='Hiện mã khóa API', variable=show_keys_var, command=toggle_show).grid(row=3, column=1, sticky='w', pady=2, padx=4)
-
-            grid.columnconfigure(1, weight=1)
-
-            # Advanced Custom Endpoint (OpenAI-compatible)
-            adv_frame = ttk.LabelFrame(f, text='Cổng Tùy chỉnh (OpenAI-compatible / Custom Base URL)', padding=8)
-            adv_frame.pack(fill='x', pady=(0, 6))
-
-            adv_grid = ttk.Frame(adv_frame)
-            adv_grid.pack(fill='x')
-
-            ttk.Label(adv_grid, text='Base URL:').grid(row=0, column=0, sticky='w', pady=2)
-            url_var = tk.StringVar(value=cfg.get('openai_base_url', 'https://api.openai.com/v1'))
-            ttk.Entry(adv_grid, textvariable=url_var, width=34).grid(row=0, column=1, sticky='ew', pady=2, padx=4)
-
-            ttk.Label(adv_grid, text='Model:').grid(row=0, column=2, sticky='w', pady=2, padx=(6, 2))
-            model_var = tk.StringVar(value=cfg.get('openai_model', 'gpt-4o-mini'))
-            ttk.Entry(adv_grid, textvariable=model_var, width=16).grid(row=0, column=3, sticky='ew', pady=2)
-
-            adv_grid.columnconfigure(1, weight=1)
-
-            status_lbl = ttk.Label(f, text='', font=('Segoe UI', 9), wraplength=610)
-            status_lbl.pack(fill='x', pady=4)
-
-            btn_box = ttk.Frame(f)
-            btn_box.pack(fill='x', pady=(6, 0))
-
-            def test_conn():
-                status_lbl.configure(text='Đang kiểm tra kết nối...', foreground='#0d6efd')
-                dlg.update()
-                p = prov_var.get()
-                k = ''
-                u = None
-                if p == 'gemini':
-                    k = gemini_key_var.get().strip()
-                    u = ai_client.PROVIDER_PROFILES['gemini']['base_url']
-                elif p == 'groq':
-                    k = groq_key_var.get().strip()
-                    u = ai_client.PROVIDER_PROFILES['groq']['base_url']
-                elif p == 'openai':
-                    k = openai_key_var.get().strip()
-                    u = url_var.get().strip()
-                elif p in ('smart', 'smart_local'):
-                    k = gemini_key_var.get().strip() or groq_key_var.get().strip() or openai_key_var.get().strip()
-                    if gemini_key_var.get().strip():
-                        u = ai_client.PROVIDER_PROFILES['gemini']['base_url']
-                    elif groq_key_var.get().strip():
-                        u = ai_client.PROVIDER_PROFILES['groq']['base_url']
-                    else:
-                        u = url_var.get().strip()
-                ok, msg = ai_client.test_ai_connection(p, api_key=k, base_url=u)
-                status_lbl.configure(text=msg, foreground='#198754' if ok else '#dc3545')
-
-            def save_settings():
-                g_key = gemini_key_var.get().strip()
-                gr_key = groq_key_var.get().strip()
-                o_key = openai_key_var.get().strip()
-                try:
-                    ai_client.save_config({
-                        'provider': prov_var.get(),
-                        'auto_fallback': fallback_var.get(),
-                        'vn_dot_thousands': dot_var.get(),
-                        'openai_api_key': o_key,
-                        'openai_model': model_var.get().strip(),
-                        'openai_base_url': url_var.get().strip(),
-                        'provider_keys': {
-                            'gemini': g_key,
-                            'groq': gr_key,
-                            'openai': o_key,
-                        }
-                    })
-                except RuntimeError as exc:
-                    messagebox.showerror('Không lưu được cấu hình', str(exc), parent=dlg)
-                    return
-                self.ai_provider.set(prov_var.get())
-                self.update_engine_badge()
-                dlg.destroy()
-                self.note('Đã lưu cấu hình Smart Router & mã hóa DPAPI an toàn.')
-
-            ttk.Button(btn_box, text='Kiểm tra kết nối', command=test_conn).pack(side='left')
-            ttk.Button(btn_box, text='Lưu cấu hình', style='Highlight.TButton', command=save_settings).pack(side='right')
-            ttk.Button(btn_box, text='Hủy', command=dlg.destroy).pack(side='right', padx=6)
-
-            # Size to the real content so the action buttons are never clipped
-            # (Cycle 0 UI-02: fixed 650x550 cut the bottom row on 100% scaling).
-            dlg.update_idletasks()
-            width = min(max(650, dlg.winfo_reqwidth()), dlg.winfo_screenwidth() - 40)
-            height = min(max(550, dlg.winfo_reqheight()), dlg.winfo_screenheight() - 80)
-            dlg.geometry(f'{width}x{height}')
+            open_ai_settings_dialog(self, tk, ttk, messagebox)
 
         def close(self):
             if self.busy:

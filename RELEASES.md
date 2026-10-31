@@ -13,3 +13,6 @@
   thêm `test_ui_acceptance.py`, bổ sung hồ sơ nghiệm thu. Đây là bản vá nghiệm thu,
   vẫn mang số 0.3.1; lần tăng phiên bản kế tiếp gắn với thay đổi hành vi người dùng
   (Chu kỳ 1 → 0.3.2: PrivacyGuard chính xác hơn).
+- **Chu kỳ 2 (2026-10-31)** — tách `open_ai_settings()` thành
+  `open_ai_settings_dialog()` cấp module, không đổi giao diện/hành vi. Refactor
+  thuần túy nên giữ số 0.3.2; bằng chứng trong `cycles/CYCLE-02.md`.

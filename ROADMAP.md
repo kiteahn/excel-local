@@ -1,6 +1,6 @@
 # ROADMAP — Excel Local Expert
 
-Cập nhật: 2026-10-31, sau khi đóng Chu kỳ 1 (PrivacyGuard chính xác hơn, bản 0.3.2).
+Cập nhật: 2026-10-31, sau khi đóng Chu kỳ 2 (tách hộp Cài đặt AI khỏi `gui()`).
 Thứ tự ưu tiên của sản phẩm: đúng > an toàn/riêng tư > dễ bảo trì > hiệu năng >
 trải nghiệm > tính năng mới. Mỗi mục chỉ vào chu kỳ khi có tiêu chí đo được.
 
@@ -23,9 +23,9 @@ Known còn lại (chấp nhận, đã đo): tên 2 từ; tên dân tộc không 
 
 | # | Vấn đề | Số đo | Hướng |
 |---|--------|-------|-------|
-| M-1 | `gui()` gần 930 dòng (App lồng trong hàm) | `app.py` | Tách từng khối ra hàm/module cấp module, mỗi lát một commit, `test_gui` + `test_ui_acceptance` phải xanh |
-| M-2 | `open_ai_settings()` ~155 dòng | `app.py` | Ứng viên lát cắt đầu tiên (Chu kỳ 2) |
-| M-3 | `review()` ~100 dòng | `app.py` | Lát cắt sau |
+| M-1 | `gui()` còn 793 dòng (App lồng trong hàm) | `app.py` (AST) | Tách từng khối ra hàm cấp module, mỗi lát một commit, `test_gui` + `test_ui_acceptance` phải xanh |
+| M-2 | `open_ai_settings()` ~155 dòng | ĐÓNG Chu kỳ 2 | Đã thành `open_ai_settings_dialog()`; 141 chuỗi giữ nguyên, UI test 48/48 |
+| M-3 | `review()` ~100 dòng | `app.py` | Lát cắt tiếp theo (Chu kỳ 3): `review_plan_dialog()` |
 | M-4 | `infer_smart_plan` ~478 dòng, `prepare_sheets` ~261 dòng | `app.py` | Tách theo nhánh thuật toán, golden test `test_infer_golden` bảo vệ |
 | M-5 | ~30 `except Exception` rộng | `app.py`, `ai_client.py` | Thu hẹp dần, mỗi chỗ một test |
 
