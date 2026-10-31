@@ -28,3 +28,7 @@ __pycache__/
 ~$*.xlsx
 ~$*.xls
 *.tmp
+
+# Delivery artifacts (generated outside the repo)
+*.bundle
+muse-upgrade.patch
