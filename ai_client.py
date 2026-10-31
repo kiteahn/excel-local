@@ -46,13 +46,52 @@ class PrivacyGuard:
     """
     CCCD_12_REGEX = re.compile(r'\b0\d{11}\b')
     CMND_9_REGEX = re.compile(r'\b\d{9}\b')
-    PHONE_REGEX = re.compile(r'(?:(?:\(\+84\)\s*|\+84\s*|84|0)[\s.-]?(?:3[2-9]|5[25689]|7[06-9]|8[1-9]|9[0-9])[\s.-]?(?:\d[\s.-]?){7}\b)')
+    PHONE_REGEX = re.compile(r'(?:(?:\(\+84\)\s*|\+84\s*|84|0)[\s.-]?(?:3[2-9]|5[25689]|7[06-9]|8[1-9]|9[0-9])[\s.-]?(?:\d[\s.-]?){6}\d\b)')
     EMAIL_REGEX = re.compile(r'[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+')
     TAX_REGEX = re.compile(r'\b\d{10}(?:-\d{3})?\b')
-    BANK_REGEX = re.compile(r'\b(?:\d[\s.-]?){12,19}\b')
+    BANK_REGEX = re.compile(r'\b(?:\d[\s.-]?){11,18}\d\b')
     API_KEY_REGEX = re.compile(r'(?:sk-[a-zA-Z0-9_-]{20,}|ghp_[a-zA-Z0-9]{36}|Bearer\s+[a-zA-Z0-9_.\-]+)', re.IGNORECASE)
     PASSWORD_REGEX = re.compile(r'(?:mật khẩu|mat khau|password|token|secret)(?:\s*[:=]\s*|\s+là\s+|\s+la\s+|(?:\s+\S+){1,3}?\s+là\s+|(?:\s+\S+){1,3}?\s+la\s+)\S+', re.IGNORECASE)
     NAME_TITLE_REGEX = re.compile(r'\b((?i:sinh viên|học sinh|thầy giáo|cô giáo|thầy|cô|anh|chị|ông|bà))\s+([A-ZÀ-ỸĐ][a-zà-ỹđ]*(?:\s+[A-ZÀ-ỸĐ][a-zà-ỹđ]*){1,4})\b')
+
+    # --- Cycle 1: context that must NOT be redacted -------------------------
+    # A 9-digit amount followed by a currency unit is money, not a CMND.
+    MONEY_9_REGEX = re.compile(
+        r'\b(?P<num>\d{9})\s*(?:đồng|vnđ|vnd|nghìn|ngàn|triệu|tỷ|tỉ|đ)\b',
+        re.IGNORECASE)
+    # A 9-digit id right after a student-id label is an MSSV, not a CMND.
+    STUDENT_ID_9_REGEX = re.compile(
+        r'\b(?:MSSV|MSV|mã\s+SV|mã\s+(?:số\s+)?sinh\s+viên)\s*[:=._-]{0,3}\s*(?P<num>\d{9})\b',
+        re.IGNORECASE)
+    # A 13-digit business code after the word "mã" is not a bank account,
+    # unless the phrase between them is explicitly about an account.
+    BUSINESS_CODE_13_REGEX = re.compile(
+        r'\b(?:mã|ma)\b(?P<mid>(?:\s+[^\W\d_]+){0,3}\s*[:=._-]{0,3}\s*)(?P<num>\d{13})\b',
+        re.IGNORECASE)
+    BANK_CONTEXT_WORDS = re.compile(
+        r'(?:tài\s*khoản|ngân\s*hàng|\bstk\b|\btk\b)', re.IGNORECASE)
+
+    # --- Cycle 1: standalone Vietnamese names ------------------------------
+    VIETNAMESE_SURNAMES = frozenset({
+        'nguyễn', 'nguyen', 'trần', 'tran', 'lê', 'le', 'phạm', 'pham',
+        'hoàng', 'hoang', 'huỳnh', 'huynh', 'phan', 'vũ', 'vu', 'võ', 'vo',
+        'đặng', 'dang', 'bùi', 'bui', 'đỗ', 'do', 'hồ', 'ho', 'ngô', 'ngo',
+        'dương', 'duong', 'lý', 'ly', 'trịnh', 'trinh', 'đinh', 'dinh',
+        'tô', 'to', 'trương', 'truong', 'lương', 'luong', 'mai', 'cao',
+        'đào', 'dao', 'tạ', 'ta', 'lâm', 'lam', 'hà', 'ha', 'chu', 'châu',
+        'chau', 'quách', 'quach', 'mạc', 'mac', 'tiêu', 'tieu', 'thái',
+        'thai', 'la', 'vương', 'vuong', 'lưu', 'luu',
+    })
+    # Unambiguous places / historical figures that share a surname pattern.
+    NAME_PLACE_WORDS = frozenset({
+        'hồ chí minh', 'trần hưng đạo', 'lý thường kiệt', 'phạm ngũ lão',
+        'đinh tiên hoàng', 'võ văn tần', 'hai bà trưng',
+    })
+    PLACE_PREFIX_REGEX = re.compile(
+        r'(?:đường|phố|quận|huyện|phường|xã|thị\s+trấn|thôn|ấp|tỉnh|'
+        r'thành\s+phố|tp\.?|trường|trung\s+tâm|công\s+ty|ngân\s+hàng|'
+        r'bệnh\s+viện|ủy\s+ban|uỷ\s+ban)\s*$', re.IGNORECASE)
+    WORD_REGEX = re.compile(r'[^\W\d_]+')
 
     PII_HEADER_CHECKS = [
         re.compile(r'^\s*0\d{11}\s*$'),
@@ -63,11 +102,93 @@ class PrivacyGuard:
     ]
 
     @classmethod
+    def _protect_context_spans(cls, text: str) -> tuple[str, dict[str, str]]:
+        """Temporarily swaps trusted numeric contexts for non-PII tokens.
+
+        The tokens contain no digits, so the redaction regexes below cannot
+        touch them; ``anonymize_prompt`` restores the originals afterwards.
+        """
+        spans: list[tuple[int, int]] = []
+        spans += [m.span('num') for m in cls.MONEY_9_REGEX.finditer(text)]
+        spans += [m.span('num') for m in cls.STUDENT_ID_9_REGEX.finditer(text)]
+        for m in cls.BUSINESS_CODE_13_REGEX.finditer(text):
+            if cls.BANK_CONTEXT_WORDS.search(m.group('mid') or ''):
+                continue
+            spans.append(m.span('num'))
+        if not spans:
+            return text, {}
+        spans.sort()
+        merged: list[tuple[int, int]] = []
+        for start, end in spans:
+            if merged and start < merged[-1][1]:
+                continue
+            merged.append((start, end))
+        pieces: list[str] = []
+        mapping: dict[str, str] = {}
+        pos = 0
+        for idx, (start, end) in enumerate(merged):
+            token = f'\ue000{idx}\ue001'
+            mapping[token] = text[start:end]
+            pieces.append(text[pos:start])
+            pieces.append(token)
+            pos = end
+        pieces.append(text[pos:])
+        return ''.join(pieces), mapping
+
+    @classmethod
+    def _looks_like_name(cls, words: list[str]) -> bool:
+        first = words[0].lower()
+        if first not in cls.VIETNAMESE_SURNAMES:
+            return False
+        if len(words) not in (3, 4):
+            return False
+        if all(w.istitle() for w in words):
+            return True
+        # All-lowercase fallback: an unaccented/accented name is only trusted
+        # when the middle marker văn/thị is present, which ordinary prose lacks.
+        return (all(w.islower() for w in words)
+                and words[1].lower() in {'văn', 'van', 'thị', 'thi'})
+
+    @classmethod
+    def _standalone_name_spans(cls, text: str) -> list[tuple[int, int]]:
+        """Finds 3-4 word Vietnamese names not introduced by a title word."""
+        words = [(m.start(), m.end(), m.group(0))
+                 for m in cls.WORD_REGEX.finditer(text)]
+        spans: list[tuple[int, int]] = []
+        i = 0
+        while i < len(words):
+            found = None
+            for size in (4, 3):
+                if i + size > len(words):
+                    continue
+                window = words[i:i + size]
+                if any(text[window[k][1]:window[k + 1][0]].strip()
+                       for k in range(size - 1)):
+                    continue
+                texts = [w[2] for w in window]
+                if not cls._looks_like_name(texts):
+                    continue
+                lowered = ' '.join(t.lower() for t in texts)
+                if lowered in cls.NAME_PLACE_WORDS:
+                    continue
+                start = window[0][0]
+                if cls.PLACE_PREFIX_REGEX.search(text[max(0, start - 30):start]):
+                    continue
+                found = (start, window[-1][1], size)
+                break
+            if found:
+                spans.append((found[0], found[1]))
+                i += found[2]
+            else:
+                i += 1
+        return spans
+
+    @classmethod
     def anonymize_prompt(cls, text: str) -> str:
         """Strips all identifiable PII from user prompt before sending to any API."""
         if not text:
             return text
-        sanitized = text
+        sanitized, protected = cls._protect_context_spans(text)
         sanitized = cls.EMAIL_REGEX.sub('[EMAIL_AN_DANH]', sanitized)
         sanitized = cls.API_KEY_REGEX.sub('[KEY_AN_DANH]', sanitized)
         sanitized = cls.PASSWORD_REGEX.sub('[MAT_KHAU_AN_DANH]', sanitized)
@@ -77,6 +198,10 @@ class PrivacyGuard:
         sanitized = cls.BANK_REGEX.sub('[STK_AN_DANH]', sanitized)
         sanitized = cls.CMND_9_REGEX.sub('[CMND_AN_DANH]', sanitized)
         sanitized = cls.NAME_TITLE_REGEX.sub(r'\1 [TEN_AN_DANH]', sanitized)
+        for start, end in reversed(cls._standalone_name_spans(sanitized)):
+            sanitized = sanitized[:start] + '[TEN_AN_DANH]' + sanitized[end:]
+        for token, original in protected.items():
+            sanitized = sanitized.replace(token, original)
         return sanitized
 
     @classmethod
