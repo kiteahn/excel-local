@@ -1303,3 +1303,52 @@ READ_WHILE_OPEN=BLOCKED Tệp đang được mở trong Excel. Hãy đóng tệp
 PROBE_EXIT_CODE: 0
 
 Test cleanup: stopped hidden Excel PID 26180 from UC-33 probe.
+
+## Bổ sung 2026-10-31 — Nghiệm thu giao diện bằng ảnh thật (đóng Chu kỳ 0)
+
+### Cách kiểm chứng
+- `orca` CLI của Computer Use không có trên máy này (không tìm thấy lệnh), nên không
+  dùng được skill computer-use. Thay vào đó: dựng app thật bằng Tk, ép cửa sổ lên
+  trên (`-topmost`), chụp đúng vùng client bằng GDI (`System.Drawing.CopyFromScreen`),
+  rồi đọc lại ảnh PNG để soi bố cục. Ảnh lưu ở `results/ui-shots/`.
+- Ghi chú cũ "Computer Use trả screenshot không khớp app" là do cửa sổ không được
+  raise; khi gọi `lift()`/`-topmost` thì ảnh chụp đúng app (đã xác nhận bằng probe
+  "SHOT PROBE 12345" và ảnh chính).
+- Kiểm tra tooltip/phím tắt/khóa nút/hộp lỗi bằng `test_ui_acceptance.py` (điều khiển
+  widget thật, không mở Excel, không gọi AI): 48/48 check đạt.
+
+### Lỗi bố cục phát hiện bằng ảnh (đã sửa trong cùng ngày)
+- **UI-01** — hàng "Động cơ AI" một dòng rộng 1143px; ở cửa sổ mặc định 1160px nút
+  thứ 4 chỉ được cấp 161px (cần 196px) nên hiện "🏠 100% Cục bộ (Of…". Sửa: xếp 2×2.
+- **UI-02** — hộp "Cài đặt AI" cố định 650×550 nhưng nội dung cần 668×560, hàng nút
+  dưới bị bóp còn 23px (cần 30px) và bị cắt đáy. Sửa: tự đo `winfo_reqwidth/height`
+  rồi đặt kích thước (kẹp theo màn hình).
+- **UI-03** — cửa sổ chính cao 870px nhưng nội dung cần 889px; hàng nút đáy chỉ còn
+  11/30px (bị cắt). Sửa: cao mặc định 900px; đóng gói thanh trạng thái + log + nút đáy
+  bằng `side='bottom'` trước bảng xem trước, nên cửa sổ thấp chỉ co bảng xem trước.
+- **UI-04** — hàng chip gợi ý rộng 1426px và hàng checkbox rộng 1126px (khung chỉ
+  1108px): chip cuối bị cắt 18px, checkbox "Xuất bảng gọn gàng" bị bóp 7px; ở bề rộng
+  tối thiểu 980px còn nặng hơn. Sửa: chip 2 hàng (3+2), checkbox xuống hàng riêng,
+  rút gọn phụ đề header và dòng lưu ý PII; `minsize` = 1080×800.
+- Hộp Batch cũng được áp quy tắc tự đo kích thước (820×540 → theo nội dung 825×452).
+
+### Đo lại sau sửa
+- `test_ui_acceptance.py`: 48/48 đạt (tooltip 5 widget, Ctrl+Enter, khóa nút khi chạy,
+  nút Dừng, hộp lỗi UC-33/UC-35, hộp lỗi Batch + nút Đóng mở lại, không nhãn nào bị cắt
+  ở 1080×800 và 1160×900, hộp Cài đặt AI đủ chỗ).
+- `test_gui.py`: 14/14. `app.py --gui-smoke`: `clipped_sections: []`.
+- Nhóm 1: 21/21 lệnh exit 0 (lần đầu `test_headers.py` gặp timeout COM thoáng qua —
+  chạy lại đạt 11/11; không còn tiến trình Excel sau đó). Nhóm 2: 7/7 + 43/43.
+  Nhóm 3: integration 97/97, GUI 14/14, read-boundary 4/4.
+- `benchmark.py` (1.000 dòng) sau sửa: inspect 4,05s; lookup 6,28s; summary 6,13s;
+  clean 5,31s (trước: 4,46/7,98/8,21/7,20). Đối soát công thức vẫn đủ 1000/2000 điểm.
+- Ảnh: `results/ui-shots/main-window.png`, `tooltip-ollama.png`, `ai-settings.png`,
+  `main-window-loaded.png`, `preview-dialog.png` — đã xem trực tiếp, không cắt nhãn,
+  tooltip hiện đúng nội dung, hộp xem trước đủ nút.
+
+### Kết luận cổng nghiệm thu Chu kỳ 0
+- Mọi test đạt, không test nào bị tắt/làm yếu.
+- Nguyên tắc sản phẩm giữ nguyên: mặc định Ollama, key DPAPI, không dữ liệu hàng ra ngoài,
+  AI chỉ đề xuất + token chấp nhận khớp.
+- Tài liệu khớp hành vi; bổ sung `test_ui_acceptance.py` vào danh sách test của README.
+- Còn lại: không có mục nào cần mắt người chưa kiểm. Chu kỳ 0 ĐÓNG; chuyển Chu kỳ 1.

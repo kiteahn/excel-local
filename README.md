@@ -65,7 +65,7 @@ Máy đã kiểm tra: RAM khoảng 16 GB, i5-12450H, RTX 2050 VRAM 4 GB, Excel M
 ## Kiểm tra và mã nguồn
 
 ```powershell
-python -X utf8 test_single_file_filter.py # 24 bài test Lọc & Trích xuất file đơn lẻ, tự bỏ qua banner, cán sự & điểm số
+python -X utf8 test_single_file_filter.py # 30 bài test Lọc & Trích xuất file đơn lẻ, tự bỏ qua banner, cán sự & điểm số
 python -X utf8 test_router.py             # 7 mục kiểm tra Smart Multi-Model Router (cascade & DPAPI; mục DPAPI cần Windows)
 python -X utf8 test_all_edge_cases.py     # 61 bài test stress-test biên (Malformed, CSV, Unicode, Injection)
 python -X utf8 test_security_privacy.py   # 43 bài test bảo mật PII, DPAPI, cache, số âm, ngày tháng
@@ -75,10 +75,13 @@ python -X utf8 test_app.py --integration  # 97 bài test Excel Desktop COM thậ
 python -X utf8 test_gui.py                # 14 bài test kiểm tra giao diện Stepper, treeview, xem trước/hủy/chấp nhận
 python -X utf8 test_cli.py                # 6 bài test kiểm tra cổng chấp nhận an toàn của CLI
 python -X utf8 test_headers.py            # 11 bài test chẩn đoán tiêu đề, lề trống, định dạng
-python -X utf8 test_read_boundary.py      # 3 bài test chống tráo file; lượt đọc Excel thật
+python -X utf8 test_read_boundary.py      # 4 bài test chống tráo file; lượt đọc Excel thật
+python -X utf8 test_ui_acceptance.py      # 48 bài test giao diện: tooltip, Ctrl+Enter, khóa nút khi chạy, hộp lỗi, không cắt nhãn
 python -X utf8 test_diverse_scenarios_e2e.py # 6 kịch bản thực tế đại học/kế toán/kho vận E2E
 python -X utf8 test_batch_processing.py       # 10 bài test Xử lý hàng loạt (Batch Mode) 0-token
 python -X utf8 test_usecases.py           # 37 use case tầng 2 (USECASES.md): CSV/banner, khóa, tổng hợp, token, preflight
+python -X utf8 test_usecases2.py          # 10 use case bất thường (khóa thiếu, kế hoạch sai, dữ liệu lạ)
+python -X utf8 test_batch_summary.py      # 6 bài test tổng hợp theo lô và chặn thiếu danh mục
 python -X utf8 test_privacy_guard_cases.py # 53 mẫu đo Privacy Guard (33 PII + 20 không phải PII)
 python -X utf8 test_infer_golden.py       # 28 prompt vàng cho infer_smart_plan (ghim hành vi heuristic)
 python -X utf8 test_sanitize_plan.py      # 12 bài test sanitize_plan + khóa cache của plan (ép clarify, fuzzy match cột)
