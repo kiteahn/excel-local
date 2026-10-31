@@ -1,4 +1,4 @@
-"""Measured corpus for PrivacyGuard (muc E): >=50 labelled prompt samples.
+"""Measured corpus for PrivacyGuard (muc E): 80 PII + 37 non-PII samples.
 
 Each PII case names the secret substring that must NOT survive
 anonymize_prompt(). Each non-PII case must come back byte-identical.
@@ -56,6 +56,55 @@ PII_CASES = [
     ("Anh Phạm Quốc Bảo phụ trách file này", "Phạm Quốc Bảo", "name with title Anh"),
     ("Cho tôi hồ sơ của Nguyễn Văn An", "Nguyễn Văn An", "standalone full name (no title)"),
     ("Cho tôi hồ sơ của nguyen van an", "nguyen van an", "standalone name unaccented lowercase"),
+    # --- Cycle 1 additions -------------------------------------------------
+    ("Hồ sơ của Đặng Thị Hồng Nhung cần xem", "Đặng Thị Hồng Nhung", "standalone name 4 words"),
+    ("Liên hệ Phạm Minh Tuấn ngay hôm nay", "Phạm Minh Tuấn", "standalone name 3 words"),
+    ("Cập nhật điểm cho Lê Thị Mai Anh", "Lê Thị Mai Anh", "standalone name 4 words female"),
+    ("Danh sách lớp có Vũ Đức Long", "Vũ Đức Long", "standalone name after verb"),
+    ("Báo cáo của nguyen thi lan anh", "nguyen thi lan anh", "standalone unaccented 4 words"),
+    ("Nhập điểm của trần thi thu ha", "trần thi thu ha", "standalone accented lowercase"),
+    ("Hỏi Nguyễn Hoàng Nam về lịch thi", "Nguyễn Hoàng Nam", "standalone name at sentence start"),
+    ("Nguyễn Thị Minh Khai nộp báo cáo", "Nguyễn Thị Minh Khai", "standalone name sharing a street name"),
+    ("Gửi thư cho Hoàng Minh Quân", "Hoàng Minh Quân", "standalone name 3 words (Hoàng)"),
+    ("Gọi 0323456789 giúp tôi", "0323456789", "phone 03x (032)"),
+    ("Gọi 0563456789 giúp tôi", "0563456789", "phone 05x (056)"),
+    ("Gọi 0773456789 giúp tôi", "0773456789", "phone 07x (077)"),
+    ("Gọi 0963456789 giúp tôi", "0963456789", "phone 09x (096)"),
+    ("CCCD 012345678901 của cán bộ", "012345678901", "CCCD 12 head 012"),
+    ("CMND 123456789 nộp bản sao", "123456789", "CMND 9 (123)"),
+    ("Số định danh 079201004568 cần xác minh", "079201004568", "CCCD 12 (568)"),
+    ("MST 0312345678 của công ty", "0312345678", "MST 10 (031)"),
+    ("Mã số thuế 0123456789-002 chi nhánh", "0123456789-002", "MST 13 branch 002"),
+    ("STK 19034567890123 tại ngân hàng", "19034567890123", "STK 14"),
+    ("Tài khoản 012345678901234567 của lớp", "012345678901234567", "STK 18"),
+    ("STK 0123-4567-8901-2 của lớp", "0123-4567-8901-2", "STK dashed 13"),
+    ("Liên hệ TRAN.THI.B@Example.EDU.VN nhé", "TRAN.THI.B@Example.EDU.VN", "email uppercase"),
+    ("Địa chỉ mail: lop.truong+2026@example.org", "lop.truong+2026@example.org", "email plus digits"),
+    ("API key là sk-abcdefghijklmnopqrstuvwx gọi cloud", "sk-abcdefghijklmnopqrstuvwx", "api key sk- 24"),
+    ("Dùng token=ghp_abcdefghijklmnopqrstuvwxyz0123456789", "ghp_abcdefghijklmnopqrstuvwxyz0123456789", "github token ghp_"),
+    ("Mật khẩu là MatKhauMoi#2026", "MatKhauMoi#2026", "password with 'là'"),
+    ("password: P@ssw0rd2026 cho wifi", "P@ssw0rd2026", "password with colon"),
+    ("SĐT 0333456789 của lớp trưởng", "0333456789", "phone 03x (033)"),
+    ("SĐT 0583456789 của lớp trưởng", "0583456789", "phone 05x (058)"),
+    ("SĐT 0793456789 của lớp trưởng", "0793456789", "phone 07x (079)"),
+    ("SĐT 0823456789 của lớp trưởng", "0823456789", "phone 08x (082)"),
+    ("SĐT 0853456789 của lớp trưởng", "0853456789", "phone 08x (085)"),
+    ("SĐT 0883456789 của lớp trưởng", "0883456789", "phone 08x (088)"),
+    ("SĐT 0993456789 của lớp trưởng", "0993456789", "phone 09x (099)"),
+    ("CMND 987654321 trong hồ sơ", "987654321", "CMND 9 (987)"),
+    ("CCCD 079099001122 khi nhập học", "079099001122", "CCCD 12 (099)"),
+    ("STK 9704366801234567 của trường", "9704366801234567", "STK 16 (9704)"),
+    ("STK 012345678901234 tại ngân hàng B", "012345678901234", "STK 15"),
+    ("MST 0101234567-001 của công ty", "0101234567-001", "MST 13 branch 001"),
+    ("Email: sinhvien2026@hcmut.edu.vn", "sinhvien2026@hcmut.edu.vn", "email digits"),
+    ("Mật khẩu wifi là Wifi@2026", "Wifi@2026", "password with middle words"),
+    ("token: abcDEF123456ghi", "abcDEF123456ghi", "generic token with colon"),
+    ("Gửi cho Nguyễn Thị Thu Trang bản điểm", "Nguyễn Thị Thu Trang", "standalone name 4 words (Trang)"),
+    ("Phụ trách là Đỗ Minh Khang", "Đỗ Minh Khang", "standalone name 3 words (Đỗ)"),
+    ("Liên hệ Bùi Thị Ánh Tuyết ngay", "Bùi Thị Ánh Tuyết", "standalone name 4 words (Bùi)"),
+    # Documented residual risks of this design (measured, not hidden)
+    ("Hồ sơ của Lê Minh cần xem", "Lê Minh", "two-word standalone name"),
+    ("Hồ sơ của Y Blô Niê cần xem", "Y Blô Niê", "ethnic name without common surname"),
 ]
 
 # (prompt,) must be returned unchanged
@@ -80,18 +129,33 @@ NON_PII_CASES = [
     "Cho tôi xem cột Email và cột Số điện thoại",       # column names only
     "Nhân viên Nguyễn phụ trách ca sáng",               # single-word surname after title-like word - see KNOWN_LIMITATIONS
     "Tổng tiền đợt 1: 12.345.678 đồng",                 # VN money format
+    # --- Cycle 1 additions -------------------------------------------------
+    "Thành phố Hồ Chí Minh có 3 chi nhánh",             # city, shares a surname pattern
+    "Đường Nguyễn Thị Minh Khai đang sửa chữa",         # street with place prefix
+    "Phố Trần Hưng Đạo đông xe buổi sáng",              # historical figure / street name
+    "Mai làm gì hôm nay cũng được",                     # 'mai' is a surname but not a name here
+    "Ngày mai làm gì cũng được",                        # 'mai' inside ordinary prose
+    "Tổng 250000000 đồng đã thu",                       # 9-digit amount
+    "Học phí 100000000 VNĐ đã nộp",                     # 9-digit amount + VNĐ
+    "Ngân sách còn 999999999đ",                         # 9-digit amount + đ
+    "Quỹ lớp còn 123456789 nghìn đồng",                 # 9-digit amount + nghìn
+    "MSSV: 524002081 đã đăng ký môn",                   # student id with colon
+    "Mã SV 524002081 thuộc lớp KTPM1",                  # student id short label
+    "Mã sinh viên 524002081 cần cập nhật",              # student id long label
+    "Đối chiếu mã hồ sơ 0012345678901",                 # 13-digit business code
+    "Tra mã đơn hàng 0012345678902",                    # 13-digit order code
+    "Khoa Công Nghệ Thông Tin có 3 lớp",                # title-case words, not a name
+    "Trường Đại Học Bách Khoa tuyển sinh",              # organisation name
+    "Lê Văn",                                            # two words, no full name
 ]
 
 # Cases the current regex design is known to get wrong; measured and printed,
 # but they do not fail the run. Anything NOT listed here must pass.
 KNOWN_LIMITATIONS = {
-    "student id 9 digits",       # indistinguishable from CMND by regex alone
-    "order code 11 digits",
-    "9-digit amount",
-    "13-digit business code",    # indistinguishable from a bank account by regex alone
-    "single-word surname after title-like word",
-    "standalone full name (no title)",   # regex cannot tell a bare name from ordinary capitalised words
-    "standalone name unaccented lowercase",
+    "order code 11 digits",      # defensive marker; no longer redacted
+    "single-word surname after title-like word",  # defensive marker; no longer redacted
+    "two-word standalone name",  # too short to separate from ordinary Title Case words
+    "ethnic name without common surname",  # surname list is Kinh-Vietnamese only
 }
 
 def main():
@@ -120,10 +184,7 @@ def main():
     print("PrivacyGuard corpus: all unexpected-failure counts are zero.")
 
 _MARKERS = {
-    "student id 9 digits": "524002081",
     "order code 11 digits": "20261030001",
-    "9-digit amount": "123456789 đồng",
-    "13-digit business code": "0012345678901",
     "single-word surname after title-like word": "Nhân viên Nguyễn",
 }
 
