@@ -1,0 +1,48 @@
+{
+  "main": {
+    "file": "D:\\Excel_update\\.work\\cycle00\\results\\ui-shots\\main-window.png",
+    "size": [
+      1160,
+      900
+    ]
+  },
+  "tooltip": {
+    "file": "D:\\Excel_update\\.work\\cycle00\\results\\ui-shots\\tooltip-ollama.png",
+    "size": [
+      1160,
+      900
+    ]
+  },
+  "tooltip_text": "Động cơ mặc định theo quyết định 2026-10-30: chỉ chạy Ollama trên máy của bạn, không gửi gì lên cloud. Cloud là tùy chọn bạn tự bật ở các nút bên cạnh hoặc trong Cài đặt AI.",
+  "settings": {
+    "file": "D:\\Excel_update\\.work\\cycle00\\results\\ui-shots\\ai-settings.png",
+    "size": [
+      668,
+      560
+    ]
+  },
+  "loaded_headers": [
+    "Mã sản phẩm",
+    "Tên hàng hóa",
+    "Kho xuất",
+    "Số lượng",
+    "Đơn giá (đ)",
+    "Thành tiền (VND)"
+  ],
+  "main_loaded": {
+    "file": "D:\\Excel_update\\.work\\cycle00\\results\\ui-shots\\main-window-loaded.png",
+    "size": [
+      1160,
+      900
+    ]
+  },
+  "review_opened": true,
+  "review": {
+    "file": "D:\\Excel_update\\.work\\cycle00\\results\\ui-shots\\preview-dialog.png",
+    "size": [
+      1080,
+      680
+    ]
+  },
+  "status": "Chưa chấp nhận. Bạn có thể sửa yêu cầu hoặc các cột."
+}

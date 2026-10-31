@@ -1405,9 +1405,9 @@ def gui(smoke=False):
             window.title('Excel Local Expert · Trợ Lý Bảng Tính Cục Bộ & AI v0.3.1')
             window.protocol('WM_DELETE_WINDOW', self.close)
             width = min(1160, window.winfo_screenwidth() - 60)
-            height = min(870, window.winfo_screenheight() - 80)
+            height = min(900, window.winfo_screenheight() - 80)
             window.geometry(f'{width}x{height}+{max(0, (window.winfo_screenwidth() - width) // 2)}+12')
-            window.minsize(min(980, width), min(750, height))
+            window.minsize(min(1080, width), min(800, height))
 
             style = ttk.Style()
             style.theme_use('vista')
@@ -1425,7 +1425,7 @@ def gui(smoke=False):
             header_frame = ttk.Frame(outer)
             header_frame.pack(fill='x', pady=(0, 6))
             ttk.Label(header_frame, text='Excel Local Expert v0.3', style='Title.TLabel').pack(side='left')
-            ttk.Label(header_frame, text='Dual-Engine AI (OpenAI & Ollama) · Tự chữa lành ô gộp & dòng tiêu đề · Đối soát độc lập', style='Sub.TLabel').pack(side='left', padx=12, pady=6)
+            ttk.Label(header_frame, text='Dual-Engine AI · Tự chữa lành ô gộp & dòng tiêu đề · Đối soát độc lập', style='Sub.TLabel').pack(side='left', padx=12, pady=6)
             ttk.Button(header_frame, text='⚙ Cài đặt AI & API Key', command=self.open_ai_settings).pack(side='right')
 
             # Stepper Bar
@@ -1468,18 +1468,18 @@ def gui(smoke=False):
 
             engine_box = ttk.Frame(controls)
             engine_box.pack(fill='x', pady=(0, 4))
-            ttk.Label(engine_box, text='Động cơ AI:').pack(side='left', padx=(0, 8))
+            ttk.Label(engine_box, text='Động cơ AI:').grid(row=0, column=0, rowspan=2, sticky='w', padx=(0, 8))
             rb_ollama = ttk.Radiobutton(engine_box, text='🦙 Ollama Cục bộ (Mặc định)', variable=self.ai_provider, value='ollama', command=self.save_engine_choice)
-            rb_ollama.pack(side='left', padx=(0, 12))
+            rb_ollama.grid(row=0, column=1, sticky='w', padx=(0, 16), pady=1)
             _ToolTip(rb_ollama, 'Động cơ mặc định theo quyết định 2026-10-30: chỉ chạy Ollama trên máy của bạn, không gửi gì lên cloud. Cloud là tùy chọn bạn tự bật ở các nút bên cạnh hoặc trong Cài đặt AI.')
             rb_local_first = ttk.Radiobutton(engine_box, text='⚡ Siêu tốc 0-Token (Cục bộ ➔ Cloud khi cần)', variable=self.ai_provider, value='smart_local', command=self.save_engine_choice)
-            rb_local_first.pack(side='left', padx=(0, 12))
+            rb_local_first.grid(row=0, column=2, sticky='w', padx=(0, 16), pady=1)
             _ToolTip(rb_local_first, 'Ưu tiên xử lý ngay trên máy (không tốn token). Chỉ khi yêu cầu phức tạp mới gọi Cloud bằng khóa bạn đã cấu hình.')
             rb_smart = ttk.Radiobutton(engine_box, text='🌐 Smart Router (Cloud Cascade)', variable=self.ai_provider, value='smart', command=self.save_engine_choice)
-            rb_smart.pack(side='left', padx=(0, 12))
+            rb_smart.grid(row=1, column=1, sticky='w', padx=(0, 16), pady=1)
             _ToolTip(rb_smart, 'Gửi tên cột và yêu cầu (đã che PII) tới lần lượt Gemini → Groq → OpenAI/OpenRouter theo khóa đã cấu hình; lỗi thì dự phòng Ollama trên máy. Dữ liệu ô tính không được gửi.')
             rb_offline = ttk.Radiobutton(engine_box, text='🏠 100% Cục bộ (Offline)', variable=self.ai_provider, value='heuristic', command=self.save_engine_choice)
-            rb_offline.pack(side='left', padx=(0, 12))
+            rb_offline.grid(row=1, column=2, sticky='w', padx=(0, 16), pady=1)
             _ToolTip(rb_offline, 'Chỉ dùng thuật toán nội bộ trên máy: không internet, không Ollama, không token.')
 
             op_box = ttk.Frame(controls)
@@ -1503,10 +1503,10 @@ def gui(smoke=False):
                 self.combos[key] = combo
                 config.columnconfigure(col + 1, weight=1)
 
-            # Quick suggestions
+            # Quick suggestions (two rows so they never get clipped at 980px)
             chip_box = ttk.Frame(controls)
             chip_box.pack(fill='x', pady=(2, 4))
-            ttk.Label(chip_box, text='Gợi ý nhanh:', font=('Segoe UI', 8, 'italic'), foreground='#6c757d').pack(side='left', padx=(0, 6))
+            ttk.Label(chip_box, text='Gợi ý nhanh:', font=('Segoe UI', 8, 'italic'), foreground='#6c757d').grid(row=0, column=0, rowspan=2, sticky='nw', padx=(0, 6), pady=1)
 
             def set_prompt_template(text, act):
                 self.prompt.delete('1.0', 'end')
@@ -1514,14 +1514,20 @@ def gui(smoke=False):
                 self.action.set(act)
                 self.labels()
 
-            ttk.Button(chip_box, text='🎯 Lọc Ban Cán Sự (Lớp trưởng, Bí thư...)', command=lambda: set_prompt_template('Lọc danh sách các cán sự, lớp trưởng, tổ trưởng, bí thư', 'filter')).pack(side='left', padx=2)
-            ttk.Button(chip_box, text='⭐ Lọc Điểm cao (>= 8.0)', command=lambda: set_prompt_template('Lọc danh sách sinh viên có Điểm lớn hơn hoặc bằng 8.0', 'filter')).pack(side='left', padx=2)
-            ttk.Button(chip_box, text='🎓 Đối chiếu Sinh viên', command=lambda: set_prompt_template('Đối chiếu theo Mã sinh viên để lấy thông tin từ danh mục', 'lookup')).pack(side='left', padx=2)
-            ttk.Button(chip_box, text='💰 Tổng hợp Học phí/Tiền', command=lambda: set_prompt_template('Tính tổng số tiền hoặc học phí theo từng nhóm/lớp', 'summary')).pack(side='left', padx=2)
-            ttk.Button(chip_box, text='🧹 Chuẩn hóa Họ tên & Chuỗi', command=lambda: set_prompt_template('Làm sạch khoảng trắng thừa và chuẩn hóa Unicode cột Họ tên', 'clean')).pack(side='left', padx=2)
+            chips = (
+                ('🎯 Lọc Ban Cán Sự (Lớp trưởng, Bí thư...)', 'Lọc danh sách các cán sự, lớp trưởng, tổ trưởng, bí thư', 'filter'),
+                ('⭐ Lọc Điểm cao (>= 8.0)', 'Lọc danh sách sinh viên có Điểm lớn hơn hoặc bằng 8.0', 'filter'),
+                ('🎓 Đối chiếu Sinh viên', 'Đối chiếu theo Mã sinh viên để lấy thông tin từ danh mục', 'lookup'),
+                ('💰 Tổng hợp Học phí/Tiền', 'Tính tổng số tiền hoặc học phí theo từng nhóm/lớp', 'summary'),
+                ('🧹 Chuẩn hóa Họ tên & Chuỗi', 'Làm sạch khoảng trắng thừa và chuẩn hóa Unicode cột Họ tên', 'clean'),
+            )
+            for index, (label, text, act) in enumerate(chips):
+                row, column = divmod(index, 3)
+                ttk.Button(chip_box, text=label, command=lambda t=text, a=act: set_prompt_template(t, a)).grid(
+                    row=row, column=column + 1, sticky='w', padx=2, pady=1)
 
             # Prompt
-            ttk.Label(controls, text='🔒 Quyền riêng tư: PII trong yêu cầu được che bằng regex trước khi gọi AI · Chỉ tên cột + yêu cầu được gửi tới động cơ bạn chọn · Dữ liệu ô tính không đưa vào prompt', font=('Segoe UI', 8, 'italic'), foreground='#198754').pack(anchor='w', pady=(2, 2))
+            ttk.Label(controls, text='🔒 PII trong yêu cầu được che bằng regex trước khi gọi AI · Chỉ tên cột + yêu cầu được gửi tới động cơ bạn chọn · Dữ liệu ô tính không đưa vào prompt', font=('Segoe UI', 8, 'italic'), foreground='#198754').pack(anchor='w', pady=(2, 2))
             self.prompt = tk.Text(controls, height=2, font=('Segoe UI', 10), wrap='word')
             self.prompt.pack(fill='x', pady=(2, 6))
             self.prompt.insert('1.0', 'Ví dụ: Đối chiếu cột Mã sinh viên với danh mục để lấy Họ tên và Quê quán.')
@@ -1529,26 +1535,30 @@ def gui(smoke=False):
 
             actions = ttk.Frame(controls)
             actions.pack(fill='x')
-            ttk.Button(actions, text='✨ AI Phân tích & Lập đề xuất', command=self.plan).pack(side='left')
+            actions.columnconfigure(1, weight=1)
+            ttk.Button(actions, text='✨ AI Phân tích & Lập đề xuất', command=self.plan).grid(row=0, column=0, sticky='w')
+            # Checkboxes sit on their own row; together with the action buttons
+            # they are wider than a 980px window (Cycle 0 UI-04).
+            options = ttk.Frame(actions)
+            options.grid(row=1, column=0, columnspan=2, sticky='w', pady=(4, 0))
             self.pdf = tk.BooleanVar(value=False)
-            cb_pdf = ttk.Checkbutton(actions, text='Xuất PDF của sheet kết quả', variable=self.pdf)
-            cb_pdf.pack(side='left', padx=12)
+            cb_pdf = ttk.Checkbutton(options, text='Xuất PDF của sheet kết quả', variable=self.pdf)
+            cb_pdf.pack(side='left')
             _ToolTip(cb_pdf, 'Sau khi thực thi và đối soát xong, Excel sẽ xuất thêm PDF của sheet kết quả. PDF chưa được kiểm tra bố cục trực quan.')
             self.auto_heal = tk.BooleanVar(value=True)
-            cb_heal = ttk.Checkbutton(actions, text='Tự chữa lành ô gộp & khoảng trắng', variable=self.auto_heal)
-            cb_heal.pack(side='left', padx=8)
+            cb_heal = ttk.Checkbutton(options, text='Tự chữa lành ô gộp & khoảng trắng', variable=self.auto_heal)
+            cb_heal.pack(side='left', padx=12)
             _ToolTip(cb_heal, 'Khi đọc file: tự xử lý ô gộp (merged cells) và cột trùng tên/thiếu tên để tìm đúng dòng tiêu đề và cột dữ liệu.')
             self.clean_output = tk.BooleanVar(value=True)
-            cb_clean = ttk.Checkbutton(actions, text='Xuất bảng gọn gàng (Không chèn cột trạng thái thừa)', variable=self.clean_output)
-            cb_clean.pack(side='left', padx=8)
+            cb_clean = ttk.Checkbutton(options, text='Xuất bảng gọn gàng (Không chèn cột trạng thái thừa)', variable=self.clean_output)
+            cb_clean.pack(side='left', padx=12)
             _ToolTip(cb_clean, 'Bật: sheet kết quả chỉ gồm dữ liệu, không thêm cột trạng thái đối chiếu (KHOP/KHONG_TIM_THAY...). Tắt nếu bạn muốn xem cột trạng thái để rà soát.')
             self.run_button = ttk.Button(actions, text='3. Kiểm tra kết quả dự kiến (Preview)', style='Highlight.TButton', command=self.run)
             _ToolTip(self.run_button, 'Chỉ tính thử và hiển thị kết quả dự kiến, chưa ghi file. Muốn thực thi phải bấm Chấp nhận ở hộp thoại xem trước.')
-            self.run_button.pack(side='right')
+            self.run_button.grid(row=0, column=1, sticky='e')
 
             # Preview treeview
             preview_frame = ttk.LabelFrame(outer, text='Xem trước bảng dữ liệu (Tối đa 20 dòng / 10 cột)', padding=4)
-            preview_frame.pack(fill='both', expand=True, pady=(0, 6))
             self.preview = ttk.Treeview(preview_frame, show='headings', height=6)
             h_scroll = ttk.Scrollbar(preview_frame, orient='horizontal', command=self.preview.xview)
             v_scroll = ttk.Scrollbar(preview_frame, orient='vertical', command=self.preview.yview)
@@ -1561,7 +1571,6 @@ def gui(smoke=False):
 
             # Live Progress & Status
             progress_frame = ttk.Frame(outer)
-            progress_frame.pack(fill='x', pady=(0, 4))
             self.status = tk.StringVar(value='Sẵn sàng. Chọn file nguồn để bắt đầu.')
             ttk.Label(progress_frame, textvariable=self.status, font=('Segoe UI', 9, 'bold')).pack(side='left')
             self.stop_button = tk.Button(progress_frame, text='⏹ Dừng lại', command=self.stop_current_work, bg='#dc3545', fg='white', activebackground='#bb2d3b', activeforeground='white', font=('Segoe UI', 9, 'bold'), relief='flat', padx=10, pady=1, cursor='hand2')
@@ -1569,17 +1578,23 @@ def gui(smoke=False):
             self.progress.pack(side='right')
 
             self.log = tk.Text(outer, height=3, font=('Consolas', 9), wrap='word', state='disabled')
-            self.log.pack(fill='x', pady=(0, 6))
 
             # Bottom Actions
             bottom = ttk.Frame(outer)
-            bottom.pack(fill='x')
             ttk.Button(bottom, text='📂 Mở workbook kết quả', command=self.open_result).pack(side='left')
             ttk.Button(bottom, text='📁 Mở thư mục kết quả', command=lambda: os.startfile(str(OUTPUT))).pack(side='left', padx=6)
             ttk.Button(bottom, text='⚡ Xử lý hàng loạt (Batch)', command=self.open_batch_dialog).pack(side='left', padx=6)
             ttk.Button(bottom, text='🔄 Làm mới phiên', command=self.reset_session).pack(side='left')
             self.engine_badge = ttk.Label(bottom, text='', foreground='#0d6efd', font=('Segoe UI', 9, 'bold'))
             self.engine_badge.pack(side='right')
+
+            # Pack the fixed footer first so a short window squeezes only the
+            # preview table, never the status/progress bars or the buttons
+            # (Cycle 0 UI-03: the footer was clipped at the default height).
+            bottom.pack(side='bottom', fill='x')
+            self.log.pack(side='bottom', fill='x', pady=(0, 6))
+            progress_frame.pack(side='bottom', fill='x', pady=(0, 4))
+            preview_frame.pack(fill='both', expand=True, pady=(0, 6))
 
             OUTPUT.mkdir(exist_ok=True)
             self.labels()
@@ -1781,6 +1796,13 @@ def gui(smoke=False):
             ttk.Button(btn_box, text='Kiểm tra kết nối', command=test_conn).pack(side='left')
             ttk.Button(btn_box, text='Lưu cấu hình', style='Highlight.TButton', command=save_settings).pack(side='right')
             ttk.Button(btn_box, text='Hủy', command=dlg.destroy).pack(side='right', padx=6)
+
+            # Size to the real content so the action buttons are never clipped
+            # (Cycle 0 UI-02: fixed 650x550 cut the bottom row on 100% scaling).
+            dlg.update_idletasks()
+            width = min(max(650, dlg.winfo_reqwidth()), dlg.winfo_screenwidth() - 40)
+            height = min(max(550, dlg.winfo_reqheight()), dlg.winfo_screenheight() - 80)
+            dlg.geometry(f'{width}x{height}')
 
         def close(self):
             if self.busy:
@@ -2223,6 +2245,12 @@ def gui(smoke=False):
             close_btn.pack(side='right')
             open_folder_btn = ttk.Button(b_btn_box, text='📁 Mở thư mục kết quả', command=lambda: os.startfile(str(OUTPUT)))
             open_folder_btn.pack(side='right', padx=8)
+
+            # Same sizing rule as the AI settings dialog: never squeeze the footer.
+            b_dlg.update_idletasks()
+            b_width = min(max(820, b_dlg.winfo_reqwidth()), b_dlg.winfo_screenwidth() - 40)
+            b_height = min(max(540, b_dlg.winfo_reqheight()), b_dlg.winfo_screenheight() - 80)
+            b_dlg.geometry(f'{b_width}x{b_height}')
 
             def on_prog(cur, total, item):
                 self.window.after(0, lambda: _update_row(cur, total, item))

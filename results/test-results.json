@@ -1,5 +1,5 @@
 {
-  "passed": 79,
+  "passed": 97,
   "tests": [
     {
       "test": "complete file published",
@@ -316,10 +316,82 @@
     {
       "test": "timeout invokes owned-process cleanup only",
       "status": "pass"
+    },
+    {
+      "test": "Excel inspection row count",
+      "status": "pass"
+    },
+    {
+      "test": "Excel lookup reconciliation",
+      "status": "pass"
+    },
+    {
+      "test": "all matching formulas checked",
+      "status": "pass"
+    },
+    {
+      "test": "source sheets unchanged",
+      "status": "pass"
+    },
+    {
+      "test": "leading-zero numeric code matches",
+      "status": "pass"
+    },
+    {
+      "test": "literal wildcard correct after Excel",
+      "status": "pass"
+    },
+    {
+      "test": "formula injection inert after save",
+      "status": "pass"
+    },
+    {
+      "test": "no imported HYPERLINK formula",
+      "status": "pass"
+    },
+    {
+      "test": "PDF created",
+      "status": "pass"
+    },
+    {
+      "test": "Excel aggregation independent total",
+      "status": "pass"
+    },
+    {
+      "test": "Excel aggregate formula checks",
+      "status": "pass"
+    },
+    {
+      "test": "Excel clean only one cell",
+      "status": "pass"
+    },
+    {
+      "test": "original file hashes unchanged",
+      "status": "pass"
+    },
+    {
+      "test": "numeric text and operator groups stay distinct",
+      "status": "pass"
+    },
+    {
+      "test": "lookup preserves false zero blank and escaped literal",
+      "status": "pass"
+    },
+    {
+      "test": "unused stale reference does not block cleaning",
+      "status": "pass"
+    },
+    {
+      "test": "fresh Excel calculation error rejected",
+      "status": "pass"
+    },
+    {
+      "test": "new task files cleaned up",
+      "status": "pass"
     }
   ],
-  "integration": false,
+  "integration": true,
   "ai": false,
-  "example_output": null,
+  "example_output": "D:\\Excel_update\\.work\\cycle00\\output\\20261031-131943_lookup_5c8fe7b8.xlsx",
   "security_scope": "Kiểm tra cục bộ chức năng và trust boundary; chưa nghiệm thu bảo mật toàn máy"
 }
