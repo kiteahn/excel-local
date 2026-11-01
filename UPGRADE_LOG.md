@@ -340,3 +340,8 @@ Việc còn dở, nói thẳng:
 - Added minimal owner-marker guard for `.xlsx/.xlsm` and a regression check in `test_read_boundary.py`. Actual post-fix Excel probe now blocks with a clear Vietnamese message; `test_read_boundary.py` 4/4.
 - Re-ran group 1 (20/20 commands, 437 counted checks + 6 scenarios), group 2 (50/50 checks), and post-fix group 3 integration 97/97, GUI 14/14, read-boundary 4/4. Did not rerun COM benchmark after code change per user's instruction to stop at handoff; existing result is pre-fix.
 - Direct UI checks remain pending because Computer Use screenshot did not match the target window; no app input was sent. Handoff state is in `NEXT.md`. Known shortcut: a stale `~$` marker can block an unlocked file; remove only after confirming Excel is closed.
+
+### Bước 0 — B0.1: fixture test không ghi vào examples/ (2026-11-01)
+- `test_app.integration_tests()` nhận `fixture_dir` và sinh 3 file mẫu trong thư mục tạm nằm dưới `app.WORK`; `main()` giữ `TemporaryDirectory` sống suốt cả integration lẫn AI tests.
+- Thêm `examples_fingerprint()` (chỉ băm nội dung, bỏ qua thời gian sửa) và check cuối "examples folder untouched by tests" để tự phát hiện nếu tương lai có test ghi đè mẫu đi kèm.
+- Chạy thật: `python test_app.py --integration` → **98 check pass** (97 cũ + check mới); `git status --porcelain examples` rỗng trước và sau. Chạy không integration: 80 check (79 cũ + check mới).

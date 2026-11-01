@@ -1,5 +1,5 @@
 {
-  "passed": 97,
+  "passed": 98,
   "tests": [
     {
       "test": "complete file published",
@@ -388,10 +388,14 @@
     {
       "test": "new task files cleaned up",
       "status": "pass"
+    },
+    {
+      "test": "examples folder untouched by tests",
+      "status": "pass"
     }
   ],
   "integration": true,
   "ai": false,
-  "example_output": "D:\\Excel_update\\output\\20261031-134106_lookup_19af0985.xlsx",
+  "example_output": "D:\\Excel_update\\output\\20261101-095436_lookup_5a47905b.xlsx",
   "security_scope": "Kiểm tra cục bộ chức năng và trust boundary; chưa nghiệm thu bảo mật toàn máy"
 }
