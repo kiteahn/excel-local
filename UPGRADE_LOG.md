@@ -356,3 +356,8 @@ Việc còn dở, nói thẳng:
 - `bridge()` có thêm tham số `attempts=2`: chỉ thử lại khi **timeout đã dọn được tiến trình Excel của tác vụ** hoặc **thiếu result.json**; không bao giờ thử lại khi Excel trả lỗi thật (`ok=false`, exit code khác 0). Timeout mà dọn thất bại thì báo ngay và không chạy Excel lần hai.
 - Thông điệp lỗi timeout nói rõ đã thử tối đa bao nhiêu lần; giữ nguyên câu cũ khi chỉ có 1 attempt.
 - Test mô phỏng (không gọi cloud, không cần Excel): 9 check mới — retry-1-lần sau dọn, thành công sau timeout, không retry lỗi thật, lỗi thật nổi ngay lần đầu, dọn thất bại chặn retry, thiếu result được retry. Chạy thật: `test_app.py` **87 check**, `test_app.py --integration` **105 check** (đều pass), `examples/` sạch.
+
+### Chu kỳ 4 — Q1a: bộ vàng nhánh lookup trước khi tách (2026-11-01)
+- Thêm `test_prepare_sheets_golden.py`: **26 kịch bản** gọi trực tiếp `prepare_sheets`, không cần Excel, không gọi mạng. Phủ: khớp cơ bản + công thức MATCH/INDEX/SUBSTITUTE, khóa trùng/thiếu/trống (ghi nhận hành vi hiện tại: khóa trống cũng tăng `missing`), `clean_output` thêm cột và ghi đè tại chỗ, va chạm nhãn cột (`(mới)`), khóa số 0 đầu, số âm/thực, Unicode/NFC, ký tự vô hình, ngày chuỗi/serial và lỗi khi chưa cho phép ngày, giá trị tham chiếu `False`/`0`/trống, bảng tham chiếu rỗng, token/tên sheet/audit, không sửa dữ liệu nguồn.
+- Ảnh chụp vàng: `results/prepare-sheets-lookup-golden.json` (ghi bằng `--update` sau khi đọc tay các kết quả).
+- Kiểm chứng hai chiều: bản hiện tại khớp vàng (26/26) và bản **trước khi tách** lấy từ `git show HEAD:app.py` cũng khớp vàng (26/26). Chạy bằng `--app <đường dẫn>`.

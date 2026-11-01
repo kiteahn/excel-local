@@ -89,9 +89,14 @@ python -X utf8 test_fuzz_light.py         # 20 biến thể fuzz nhẹ cho parse
 python -X utf8 test_fuzz_headers.py       # 15 biến thể fuzz cho detect_header_row/select_header
 python -X utf8 test_fuzz_xlsx.py          # 12 biến thể fuzz cho đường đọc XLSX thuần Python (cần openpyxl, tự SKIP nếu thiếu)
 python -X utf8 test_policy_defaults.py    # 12 bài test quyết định chính sách 2026-10-30 (mặc định Ollama, vn_dot_thousands)
+python -X utf8 test_prepare_sheets_golden.py # 26 kịch bản vàng cho nhánh lookup của prepare_sheets (không cần Excel)
 python -X utf8 test_safety_limits.py      # 6 bài test giới hạn an toàn (80MB, 10.000 thành phần ZIP, chuỗi 2000 ký tự, hash sau đọc)
 powershell -NoProfile -File test_cleanup.ps1 # 4 bài test dọn tiến trình Excel cô lập
+python -X utf8 secret_scan.py               # quét mẫu bí mật trong file được git theo dõi + toàn bộ lịch sử (không gọi mạng)
+powershell -NoProfile -File run_all_tests.ps1 # chạy cả 3 nhóm, in bảng tổng hợp, kiểm tra examples/ sạch và Excel mồ côi
 ```
+
+`run_all_tests.ps1` là đường chạy đầy đủ trên Windows: nhóm 1 không cần Excel, nhóm 2 cần DPAPI thật, nhóm 3 cần Excel desktop (và màn hình cho GUI). Script dừng nhóm sau khi ghi lỗi, in bảng tổng hợp kèm số check, trả exit code 1 nếu có lệnh lỗi, nếu `examples/` bị thay đổi trong lượt chạy, hoặc nếu còn tiến trình Excel do bridge tạo. Dùng `-SkipExcel`, `-SkipGui`, `-SkipBenchmark` để bỏ bớt nhóm 3. Log từng suite nằm trong `.work/run-all-logs/`.
 
 Các file kết quả kiểm tra và benchmark nằm trong thư mục `results/`. `test_app.py` ghi theo chế độ chạy để các lần chạy không ghi đè lẫn nhau: `results/test-results-unit.json` (chỉ logic), `results/test-results.json` (đủ integration Excel), `results/test-results-ai.json` (có thêm AI cục bộ). Mỗi file ghi từng phép kiểm tra đã chạy. Đây không phải bằng chứng về mọi loại workbook hay khả năng chống mọi tấn công. Kết quả là dữ liệu giả, đáp án số học được tính độc lập.
 
