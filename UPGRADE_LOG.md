@@ -350,3 +350,9 @@ Việc còn dở, nói thẳng:
 - `test_app.py` ghi `results/test-results-unit.json` khi chỉ chạy logic, `results/test-results.json` khi có `--integration`, `results/test-results-ai.json` khi có `--ai`; in rõ đường dẫn vừa ghi.
 - Chạy thật cả hai chế độ liên tiếp: unit 80 check, integration 98 check; mtime của file unit giữ nguyên sau lần chạy integration (không còn ghi đè 98 thành 80). `examples/` vẫn sạch theo git.
 - README cập nhật số check (80/98) và giải thích ba tên file.
+
+### Bước 0 — B0.3: retry có giới hạn cho lỗi Excel tạm thời (2026-11-01)
+- Đo thật 20 lần gọi bridge (workbook tổng hợp 2 dòng, timeout 60s/attempt), lưu `results/bridge-retry-20.json`: **19/20 thành công, 1/20 timeout cứng, 0 lỗi khác**; trung vị 4,21s, dài nhất 126,29s. Trong đó lần 11 mất 67,99s rồi thành công = một lần timeout 60s được retry thành công; lần 7 hỏng cả hai attempt (~126s) rồi máy tự hồi.
+- `bridge()` có thêm tham số `attempts=2`: chỉ thử lại khi **timeout đã dọn được tiến trình Excel của tác vụ** hoặc **thiếu result.json**; không bao giờ thử lại khi Excel trả lỗi thật (`ok=false`, exit code khác 0). Timeout mà dọn thất bại thì báo ngay và không chạy Excel lần hai.
+- Thông điệp lỗi timeout nói rõ đã thử tối đa bao nhiêu lần; giữ nguyên câu cũ khi chỉ có 1 attempt.
+- Test mô phỏng (không gọi cloud, không cần Excel): 9 check mới — retry-1-lần sau dọn, thành công sau timeout, không retry lỗi thật, lỗi thật nổi ngay lần đầu, dọn thất bại chặn retry, thiếu result được retry. Chạy thật: `test_app.py` **87 check**, `test_app.py --integration` **105 check** (đều pass), `examples/` sạch.

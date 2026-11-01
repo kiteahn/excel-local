@@ -257,7 +257,22 @@ def load_xlsx_fast(path, sheet_name=''):
             pass
 
 
-def bridge(job, directory, timeout=240):
+def _bridge_cleanup(command, options):
+    try:
+        cleanup = subprocess.run(command + ['-CleanupOnly'], timeout=20, **options)
+        return cleanup.returncode == 0
+    except (OSError, subprocess.SubprocessError):
+        return False
+
+
+def bridge(job, directory, timeout=240, attempts=2):
+    """Run one bridge job; retry only failures that can be transient.
+
+    A timeout is retried once, and only after the owned Excel process was
+    cleaned up. A missing result file is retried because the bridge may have
+    died before writing it. A real Excel error (ok=false / non-zero exit) is
+    never retried; it must surface to the user unchanged.
+    """
     directory = Path(directory)
     request = directory / 'job.json'
     result = directory / 'result.json'
@@ -266,18 +281,29 @@ def bridge(job, directory, timeout=240):
     env = dict(os.environ, TEMP=str(directory), TMP=str(directory))
     command = ['powershell.exe', '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', str(ROOT / 'excel_bridge.ps1'), '-JobFile', str(request)]
     options = dict(env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
-    try:
-        completed = subprocess.run(command, timeout=timeout, **options)
-    except subprocess.TimeoutExpired as exc:
-        cleanup = subprocess.run(command + ['-CleanupOnly'], timeout=20, **options)
-        raise RuntimeError('Excel quá thời gian; đã yêu cầu dọn đúng tiến trình của tác vụ.' if cleanup.returncode == 0 else 'Excel quá thời gian; dọn tiến trình chưa thành công. Kiểm tra .work.') from exc
-    if not result.exists():
-        subprocess.run(command + ['-CleanupOnly'], timeout=20, **options)
-        raise RuntimeError('Không nhận được kết quả từ Excel. Kiểm tra Excel desktop và quyền chạy PowerShell.')
-    response = json.loads(result.read_text(encoding='utf-8-sig'))
-    if completed.returncode or not response.get('ok'):
-        raise RuntimeError('Excel: ' + response.get('error', 'Thao tác thất bại'))
-    return response
+    for attempt in range(1, attempts + 1):
+        result.unlink(missing_ok=True)
+        try:
+            completed = subprocess.run(command, timeout=timeout, **options)
+        except subprocess.TimeoutExpired as exc:
+            cleaned = _bridge_cleanup(command, options)
+            if cleaned and attempt < attempts:
+                time.sleep(min(2, attempt))
+                continue
+            message = 'Excel quá thời gian; đã yêu cầu dọn đúng tiến trình của tác vụ.' if cleaned else 'Excel quá thời gian; dọn tiến trình chưa thành công. Kiểm tra .work.'
+            if attempts > 1:
+                message += f' Đã thử tối đa {attempts} lần.'
+            raise RuntimeError(message) from exc
+        if not result.exists():
+            _bridge_cleanup(command, options)
+            if attempt < attempts:
+                time.sleep(min(2, attempt))
+                continue
+            raise RuntimeError('Không nhận được kết quả từ Excel. Kiểm tra Excel desktop và quyền chạy PowerShell.')
+        response = json.loads(result.read_text(encoding='utf-8-sig'))
+        if completed.returncode or not response.get('ok'):
+            raise RuntimeError('Excel: ' + response.get('error', 'Thao tác thất bại'))
+        return response
 
 
 def load_csv(path, strict_ragged=True):

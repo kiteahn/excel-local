@@ -230,9 +230,57 @@ def unit_tests(directory):
     with zipfile.ZipFile(utf16,'a') as archive:
         archive.writestr('xl/unused.xml','<?xml version="1.0" encoding="UTF-16"?><!DOCTYPE x [<!ENTITY a "expanded">]><x>&a;</x>'.encode('utf-16'))
     rejects('UTF16 XML DTD rejected',lambda:app.preflight(utf16))
-    with patch.object(app.subprocess,'run',side_effect=[subprocess.TimeoutExpired('Excel bridge',1),subprocess.CompletedProcess([],0)]) as mocked:
-        rejects('Excel timeout converted to task error',lambda:app.bridge(dict(operation='inspect'),directory,timeout=1))
-        check('timeout invokes owned-process cleanup only',mocked.call_args_list[1].args[0][-1]=='-CleanupOnly')
+    with patch.object(app.subprocess,'run',side_effect=[subprocess.TimeoutExpired('Excel bridge',1),subprocess.CompletedProcess([],0),subprocess.TimeoutExpired('Excel bridge',1),subprocess.CompletedProcess([],0)]) as mocked:
+        retries=directory/'retry-timeout'
+        retries.mkdir()
+        rejects('Excel double timeout converted to task error',lambda:app.bridge(dict(operation='inspect'),retries,timeout=1))
+        calls=[call.args[0] for call in mocked.call_args_list]
+        check('timeout retried once after cleanup',len(calls)==4 and calls[1][-1]=='-CleanupOnly' and calls[2][-1]!='-CleanupOnly' and calls[3][-1]=='-CleanupOnly')
+    def transient_then_success(directory):
+        state={'main_calls':0}
+        def fake(command,**kwargs):
+            if command[-1]=='-CleanupOnly': return subprocess.CompletedProcess([],0)
+            state['main_calls']+=1
+            if state['main_calls']==1: raise subprocess.TimeoutExpired('Excel bridge',1)
+            (directory/'result.json').write_text(json.dumps({'ok':True,'value':7}),encoding='utf-8')
+            return subprocess.CompletedProcess([],0)
+        return state,fake
+    retry_dir=directory/'retry-success'
+    retry_dir.mkdir()
+    state,fake=transient_then_success(retry_dir)
+    with patch.object(app.subprocess,'run',side_effect=fake),patch.object(app.time,'sleep') as slept:
+        check('transient timeout retried to success',app.bridge(dict(operation='inspect'),retry_dir,timeout=1)['value']==7)
+        check('retry waits briefly once',state['main_calls']==2 and slept.call_count==1)
+    error_dir=directory/'retry-error'
+    error_dir.mkdir()
+    error_calls={'main':0,'cleanup':0}
+    def real_error(command,**kwargs):
+        if command[-1]=='-CleanupOnly':
+            error_calls['cleanup']+=1; return subprocess.CompletedProcess([],0)
+        error_calls['main']+=1
+        (error_dir/'result.json').write_text(json.dumps({'ok':False,'error':'Không mở được tệp'},ensure_ascii=False),encoding='utf-8')
+        return subprocess.CompletedProcess([],1)
+    with patch.object(app.subprocess,'run',side_effect=real_error),patch.object(app.time,'sleep'):
+        rejects('real Excel error is not retried',lambda:app.bridge(dict(operation='inspect'),error_dir,timeout=1))
+        check('real error surfaced on first attempt',error_calls=={'main':1,'cleanup':0})
+    cleanup_fail_dir=directory/'retry-cleanup-fail'
+    cleanup_fail_dir.mkdir()
+    with patch.object(app.subprocess,'run',side_effect=[subprocess.TimeoutExpired('Excel bridge',1),subprocess.CompletedProcess([],1)]) as mocked,patch.object(app.time,'sleep') as slept:
+        try: app.bridge(dict(operation='inspect'),cleanup_fail_dir,timeout=1)
+        except RuntimeError as exc: check('failed cleanup blocks retry and is reported','dọn tiến trình chưa thành công' in str(exc))
+        else: raise AssertionError('failed cleanup must raise')
+        check('failed cleanup means no second Excel run',mocked.call_count==2 and slept.call_count==0)
+    missing_dir=directory/'retry-missing-result'
+    missing_dir.mkdir()
+    missing_calls={'main':0}
+    def missing_result(command,**kwargs):
+        if command[-1]=='-CleanupOnly': return subprocess.CompletedProcess([],0)
+        missing_calls['main']+=1
+        if missing_calls['main']==2:
+            (missing_dir/'result.json').write_text(json.dumps({'ok':True,'value':9}),encoding='utf-8')
+        return subprocess.CompletedProcess([],0)
+    with patch.object(app.subprocess,'run',side_effect=missing_result),patch.object(app.time,'sleep'):
+        check('missing result retried once',app.bridge(dict(operation='inspect'),missing_dir,timeout=1)['value']==9 and missing_calls['main']==2)
     return source,reference
 
 

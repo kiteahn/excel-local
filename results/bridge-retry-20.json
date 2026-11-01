@@ -1,0 +1,130 @@
+{
+  "calls": 20,
+  "ok": 19,
+  "timeout": 1,
+  "error": 0,
+  "median_seconds": 4.21,
+  "max_seconds": 126.29,
+  "detail": [
+    {
+      "call": 1,
+      "status": "ok",
+      "seconds": 3.92,
+      "error": null
+    },
+    {
+      "call": 2,
+      "status": "ok",
+      "seconds": 4.03,
+      "error": null
+    },
+    {
+      "call": 3,
+      "status": "ok",
+      "seconds": 4.42,
+      "error": null
+    },
+    {
+      "call": 4,
+      "status": "ok",
+      "seconds": 4.14,
+      "error": null
+    },
+    {
+      "call": 5,
+      "status": "ok",
+      "seconds": 4.62,
+      "error": null
+    },
+    {
+      "call": 6,
+      "status": "ok",
+      "seconds": 4.13,
+      "error": null
+    },
+    {
+      "call": 7,
+      "status": "timeout",
+      "seconds": 126.29,
+      "error": "Excel quá thời gian; đã yêu cầu dọn đúng tiến trình của tác vụ. Đã thử tối đa 2 lần."
+    },
+    {
+      "call": 8,
+      "status": "ok",
+      "seconds": 4.0,
+      "error": null
+    },
+    {
+      "call": 9,
+      "status": "ok",
+      "seconds": 4.06,
+      "error": null
+    },
+    {
+      "call": 10,
+      "status": "ok",
+      "seconds": 4.28,
+      "error": null
+    },
+    {
+      "call": 11,
+      "status": "ok",
+      "seconds": 67.99,
+      "error": null
+    },
+    {
+      "call": 12,
+      "status": "ok",
+      "seconds": 4.17,
+      "error": null
+    },
+    {
+      "call": 13,
+      "status": "ok",
+      "seconds": 4.24,
+      "error": null
+    },
+    {
+      "call": 14,
+      "status": "ok",
+      "seconds": 4.56,
+      "error": null
+    },
+    {
+      "call": 15,
+      "status": "ok",
+      "seconds": 4.78,
+      "error": null
+    },
+    {
+      "call": 16,
+      "status": "ok",
+      "seconds": 4.09,
+      "error": null
+    },
+    {
+      "call": 17,
+      "status": "ok",
+      "seconds": 3.96,
+      "error": null
+    },
+    {
+      "call": 18,
+      "status": "ok",
+      "seconds": 4.49,
+      "error": null
+    },
+    {
+      "call": 19,
+      "status": "ok",
+      "seconds": 4.21,
+      "error": null
+    },
+    {
+      "call": 20,
+      "status": "ok",
+      "seconds": 4.03,
+      "error": null
+    }
+  ]
+}

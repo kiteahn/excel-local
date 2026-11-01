@@ -1,5 +1,5 @@
 {
-  "passed": 98,
+  "passed": 105,
   "tests": [
     {
       "test": "complete file published",
@@ -310,11 +310,39 @@
       "status": "pass"
     },
     {
-      "test": "Excel timeout converted to task error",
+      "test": "Excel double timeout converted to task error",
       "status": "pass"
     },
     {
-      "test": "timeout invokes owned-process cleanup only",
+      "test": "timeout retried once after cleanup",
+      "status": "pass"
+    },
+    {
+      "test": "transient timeout retried to success",
+      "status": "pass"
+    },
+    {
+      "test": "retry waits briefly once",
+      "status": "pass"
+    },
+    {
+      "test": "real Excel error is not retried",
+      "status": "pass"
+    },
+    {
+      "test": "real error surfaced on first attempt",
+      "status": "pass"
+    },
+    {
+      "test": "failed cleanup blocks retry and is reported",
+      "status": "pass"
+    },
+    {
+      "test": "failed cleanup means no second Excel run",
+      "status": "pass"
+    },
+    {
+      "test": "missing result retried once",
       "status": "pass"
     },
     {
@@ -396,6 +424,6 @@
   ],
   "integration": true,
   "ai": false,
-  "example_output": "D:\\Excel_update\\output\\20261101-095611_lookup_39475489.xlsx",
+  "example_output": "D:\\Excel_update\\output\\20261101-100244_lookup_072380b5.xlsx",
   "security_scope": "Kiểm tra cục bộ chức năng và trust boundary; chưa nghiệm thu bảo mật toàn máy"
 }
