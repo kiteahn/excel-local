@@ -658,6 +658,158 @@
     }
   },
   {
+    "name": "clean_output_helper_covers_all_source_keys",
+    "output": {
+      "sheets": [
+        {
+          "name": "_EL_gold04",
+          "rows": [
+            [
+              "Khoa_chuan_hoa",
+              "Gia_tri",
+              "",
+              "Khoa_nguon"
+            ],
+            [
+              "00123",
+              "An",
+              "",
+              "00123"
+            ],
+            [
+              "",
+              null,
+              "",
+              "999"
+            ],
+            [
+              "",
+              null,
+              "",
+              "888"
+            ],
+            [
+              "",
+              null,
+              "",
+              "777"
+            ]
+          ],
+          "formulas": [],
+          "formats": []
+        },
+        {
+          "name": "Ket_qua_gold04",
+          "rows": [
+            [
+              "Mã",
+              "Nhóm",
+              "Họ tên"
+            ],
+            [
+              "00123",
+              "A",
+              null
+            ],
+            [
+              "999",
+              "B",
+              null
+            ],
+            [
+              "888",
+              "C",
+              null
+            ],
+            [
+              "777",
+              "D",
+              null
+            ]
+          ],
+          "formulas": [
+            {
+              "row": 2,
+              "col": 3,
+              "formula": "=IF(INDEX('_EL_gold04'!$B$2:$B$2,MATCH(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE('_EL_gold04'!$D$2,\"~\",\"~~\"),\"*\",\"~*\"),\"?\",\"~?\"),'_EL_gold04'!$A$2:$A$2,0))=\"\",\"\",INDEX('_EL_gold04'!$B$2:$B$2,MATCH(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE('_EL_gold04'!$D$2,\"~\",\"~~\"),\"*\",\"~*\"),\"?\",\"~?\"),'_EL_gold04'!$A$2:$A$2,0)))",
+              "expected": "An"
+            }
+          ],
+          "formats": []
+        },
+        {
+          "name": "Kiem_tra_gold04",
+          "rows": [
+            [
+              "Hang_muc",
+              "Ket_qua"
+            ],
+            [
+              "Thao_tac",
+              "lookup"
+            ],
+            [
+              "Sheet_nguon",
+              "Nguon"
+            ],
+            [
+              "SHA256_nguon",
+              "hash-Nguon"
+            ],
+            [
+              "Chinh_sach_khoa",
+              "NFC, bo khoang trang hai dau, khong phan biet hoa thuong; giu so 0 dau"
+            ],
+            [
+              "Cong_thuc_can_doi_soat",
+              1
+            ],
+            [
+              "action",
+              "lookup"
+            ],
+            [
+              "source_rows",
+              "4"
+            ],
+            [
+              "blank_keys",
+              "0"
+            ],
+            [
+              "matched",
+              "1"
+            ],
+            [
+              "missing",
+              "3"
+            ],
+            [
+              "duplicate",
+              "0"
+            ],
+            [
+              "reference_duplicate_keys",
+              "0"
+            ]
+          ],
+          "formulas": [],
+          "formats": []
+        }
+      ],
+      "name": "Ket_qua_gold04",
+      "stats": {
+        "action": "lookup",
+        "source_rows": 4,
+        "blank_keys": 0,
+        "matched": 1,
+        "missing": 3,
+        "duplicate": 0,
+        "reference_duplicate_keys": 0
+      }
+    }
+  },
+  {
     "name": "clean_output_inplace_target",
     "output": {
       "sheets": [

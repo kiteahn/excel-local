@@ -96,7 +96,7 @@ python -X utf8 secret_scan.py               # quét mẫu bí mật trong file �
 powershell -NoProfile -File run_all_tests.ps1 # chạy cả 3 nhóm, in bảng tổng hợp, kiểm tra examples/ sạch và Excel mồ côi
 ```
 
-`run_all_tests.ps1` là đường chạy đầy đủ trên Windows: nhóm 1 không cần Excel, nhóm 2 cần DPAPI thật, nhóm 3 cần Excel desktop (và màn hình cho GUI). Script dừng nhóm sau khi ghi lỗi, in bảng tổng hợp kèm số check, trả exit code 1 nếu có lệnh lỗi, nếu `examples/` bị thay đổi trong lượt chạy, hoặc nếu còn tiến trình Excel do bridge tạo. Dùng `-SkipExcel`, `-SkipGui`, `-SkipBenchmark` để bỏ bớt nhóm 3. Log từng suite nằm trong `.work/run-all-logs/`.
+`run_all_tests.ps1` là đường chạy đầy đủ trên Windows: nhóm 1 không cần Excel, nhóm 2 cần DPAPI thật, nhóm 3 cần Excel desktop (và màn hình cho GUI). Script dừng nhóm sau khi ghi lỗi, in bảng tổng hợp kèm số check, trả exit code 1 nếu có lệnh lỗi, nếu `examples/` bị thay đổi trong lượt chạy, hoặc nếu còn tiến trình Excel do bridge tạo. Dùng `-SkipExcel`, `-SkipGui`, `-SkipBenchmark` để bỏ bớt nhóm 3. Log từng suite nằm trong `.work/qa-logs/` (không dùng tên bắt đầu bằng `run-` vì `cleanup_stale_work_dirs()` sẽ xóa).
 
 Các file kết quả kiểm tra và benchmark nằm trong thư mục `results/`. `test_app.py` ghi theo chế độ chạy để các lần chạy không ghi đè lẫn nhau: `results/test-results-unit.json` (chỉ logic), `results/test-results.json` (đủ integration Excel), `results/test-results-ai.json` (có thêm AI cục bộ). Mỗi file ghi từng phép kiểm tra đã chạy. Đây không phải bằng chứng về mọi loại workbook hay khả năng chống mọi tấn công. Kết quả là dữ liệu giả, đáp án số học được tính độc lập.
 

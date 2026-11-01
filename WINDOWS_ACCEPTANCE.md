@@ -46,6 +46,19 @@ git checkout muse-upgrade
 
 ## Lệnh chạy test trên Windows
 
+Cách nhanh nhất — chạy đủ 3 nhóm, in bảng tổng hợp, kiểm tra `examples/` và Excel mồ côi:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\run_all_tests.ps1
+```
+
+Script trả exit code 0 chỉ khi mọi suite đạt, `examples/` không bị đổi, và không còn
+tiến trình Excel do bridge tạo. Log từng suite ở `.work/qa-logs/`. Có thể bỏ nhóm 3
+bằng `-SkipExcel`, bỏ riêng GUI bằng `-SkipGui`, bỏ benchmark bằng `-SkipBenchmark`;
+`-Only ten_file.py` để chạy đúng một suite.
+
+Nếu muốn chạy tay từng nhóm (nội dung y hệt script):
+
 ### Nhóm 1 — Không cần Excel (chạy ở đâu cũng được, kỳ vọng: tất cả exit 0)
 ```powershell
 python -X utf8 test_app.py
@@ -54,20 +67,21 @@ python -X utf8 test_upgrades.py
 python -X utf8 test_cli.py
 python -X utf8 test_headers.py
 python -X utf8 test_usecases.py
+python -X utf8 test_usecases2.py
 python -X utf8 test_fuzz_light.py
 python -X utf8 test_fuzz_headers.py
+python -X utf8 test_fuzz_xlsx.py
 python -X utf8 test_infer_golden.py
 python -X utf8 test_sanitize_plan.py
 python -X utf8 test_policy_defaults.py
 python -X utf8 test_safety_limits.py
-python -X utf8 test_fuzz_xlsx.py
-python -X utf8 test_usecases2.py
 python -X utf8 test_batch_summary.py
 python -X utf8 test_privacy_guard_cases.py
 python -X utf8 test_single_file_filter.py
 python -X utf8 test_diverse_scenarios_e2e.py
 python -X utf8 test_batch_processing.py
 python -X utf8 benchmark_python_stages.py
+python -X utf8 secret_scan.py
 ```
 
 ### Nhóm 2 — Cần Windows (DPAPI thật), không cần Excel mở sẵn
@@ -78,11 +92,20 @@ python -X utf8 test_security_privacy.py  # 43 mục trên Windows (38 logic + 5 
 
 ### Nhóm 3 — CẦN EXCEL DESKTOP THẬT (quan trọng nhất của đợt nghiệm thu này)
 ```powershell
-python -X utf8 test_app.py --integration  # 97 bài: inspect/preview/execute/đối soát/PDF qua Excel COM
-python -X utf8 test_gui.py                # 14 bài GUI (cần màn hình; đừng khóa máy khi chạy)
+python -X utf8 test_app.py --integration  # 105 bài: inspect/preview/execute/đối soát/PDF qua Excel COM
 python -X utf8 test_read_boundary.py      # có lượt đọc Excel thật (chống tráo file)
+python -X utf8 test_gui.py                # 14 bài GUI (cần màn hình; đừng khóa máy khi chạy)
 python -X utf8 benchmark.py               # đo lại thời gian Excel COM cho code hiện tại
 ```
+
+Lưu ý mới từ Bước 0:
+- `test_app.py` ghi kết quả riêng theo chế độ: `results/test-results-unit.json` (chỉ
+  logic), `results/test-results.json` (đủ integration), `results/test-results-ai.json`.
+- Bridge Excel có retry **có giới hạn**: chỉ thử lại một lần khi timeout mà tiến trình
+  Excel của tác vụ đã dọn được, hoặc khi thiếu `result.json`; lỗi Excel thật
+  (`ok=false`) không bao giờ được thử lại. Đo 20 lần thật: 19/20 đạt, 1 lần hỏng cả hai
+  attempt; một lần timeout 60s đã được retry thành công (xem
+  `results/bridge-retry-20.json`).
 
 ## Kiểm tra thủ công (5–10 phút, ghi kết quả đạt/không)
 1. **UC-32:** mở app, chạy trọn luồng với 1 file thật: Đọc → Đề xuất → Xem

@@ -361,3 +361,10 @@ Việc còn dở, nói thẳng:
 - Thêm `test_prepare_sheets_golden.py`: **26 kịch bản** gọi trực tiếp `prepare_sheets`, không cần Excel, không gọi mạng. Phủ: khớp cơ bản + công thức MATCH/INDEX/SUBSTITUTE, khóa trùng/thiếu/trống (ghi nhận hành vi hiện tại: khóa trống cũng tăng `missing`), `clean_output` thêm cột và ghi đè tại chỗ, va chạm nhãn cột (`(mới)`), khóa số 0 đầu, số âm/thực, Unicode/NFC, ký tự vô hình, ngày chuỗi/serial và lỗi khi chưa cho phép ngày, giá trị tham chiếu `False`/`0`/trống, bảng tham chiếu rỗng, token/tên sheet/audit, không sửa dữ liệu nguồn.
 - Ảnh chụp vàng: `results/prepare-sheets-lookup-golden.json` (ghi bằng `--update` sau khi đọc tay các kết quả).
 - Kiểm chứng hai chiều: bản hiện tại khớp vàng (26/26) và bản **trước khi tách** lấy từ `git show HEAD:app.py` cũng khớp vàng (26/26). Chạy bằng `--app <đường dẫn>`.
+
+### Chu kỳ 4 — Q1b: tách nhánh lookup khỏi prepare_sheets (2026-11-01)
+- Tách 96 dòng nhánh `lookup` thành hàm cấp module `_prepare_lookup(source, reference, plan, rows, keys, stats, helper)` (106 dòng) trả `(headers, formulas, stats, sheets)`; `prepare_sheets` còn **169 dòng** (trước 262), không đổi công thức/nhãn/thứ tự cột/audit/token.
+- AST hằng chuỗi so với bản trước tách: lookup **92 = 92**, phần còn lại **142 = 142**; khác duy nhất là docstring mới, chuỗi `'allow_dates'` được đọc sớm trong hàm mới, và chuỗi `'lookup'` của chính câu `if` (vẫn ở đúng chỗ cũ). Không có hằng chuỗi nào bị đổi nội dung.
+- Vàng lookup tăng lên **27 kịch bản** (thêm ca `clean_output` có khóa nguồn nhiều hơn bảng tham chiếu để bắt lỗi cắt helper). Bản mới 27/27 và bản trước tách (lấy `git show HEAD:app.py`) cũng 27/27.
+- Mutation 6 chỗ trong hàm mới: đổi nhãn `Gia_tri`, đổi `KHONG_TIM_THAY`, bỏ `escape_criteria`, đổi `Khoa_nguon`, cắt helper còn `len(table)`, đổi `expected is not None` thành `or ''` — **6/6 bị vàng bắt**, phục hồi xong vàng vẫn 27/27.
+- Test thật sau tách: `test_app.py --integration` **105/105** (lookup qua Excel COM), `test_usecases.py` **37/37** (UC-11..16), `test_gui.py` **14/14**, `test_ui_acceptance.py` **48/48**; `examples/` sạch.

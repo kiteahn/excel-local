@@ -29,7 +29,7 @@ Push-Location $root
 $startedAt = Get-Date
 $runId = $startedAt.ToString('yyyyMMdd-HHmmss')
 $work = Join-Path $root '.work'
-$logDir = Join-Path $work 'run-all-logs'
+$logDir = Join-Path $work 'qa-logs'
 New-Item -ItemType Directory -Force -Path $logDir | Out-Null
 $logPath = Join-Path $logDir "run-$runId.log"
 $transcriptRows = New-Object System.Collections.Generic.List[object]

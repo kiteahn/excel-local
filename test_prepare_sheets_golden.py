@@ -135,6 +135,13 @@ SCENARIOS = [
         'check': check_clean_append,
     },
     {
+        'name': 'clean_output_helper_covers_all_source_keys',
+        'source': snapshot(['Mã', 'Nhóm'], [['00123', 'A'], ['999', 'B'], ['888', 'C'], ['777', 'D']]),
+        'reference': reference(['Mã', 'Họ tên'], [['00123', 'An']]),
+        'plan': plan(ref_value='Họ tên', clean_output=True),
+        'check': lambda s, n, st: expect(len(s[0]['rows']) == 5 and s[0]['rows'][4][3] == '777', 'helper covers every key'),
+    },
+    {
         'name': 'clean_output_inplace_target',
         'source': snapshot(['Mã', 'Nhóm', 'Ghi chú'], [['00123', 'A', 'giữ'], ['00124', 'B', 'x']]),
         'reference': reference(['Mã', 'Họ tên'], [['00123', 'An'], ['00124', 'Bình']]),

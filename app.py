@@ -760,6 +760,114 @@ def escape_criteria(cell):
     return f'SUBSTITUTE(SUBSTITUTE(SUBSTITUTE({cell},"~","~~"),"*","~*"),"?","~?")'
 
 
+def _prepare_lookup(source, reference, plan, rows, keys, stats, helper):
+    """Build helper/result data and MATCH formulas for one lookup plan.
+
+    Returns (headers, formulas, stats, sheets); caller keeps sheet order.
+    `rows` is intentionally mutated in place for in-place targets.
+    """
+    allow_dates = bool(plan.get('allow_dates', False))
+    sheets = []
+    formulas = []
+    ref_col = reference['headers'].index(plan['ref_key'])
+    val_col = reference['headers'].index(plan['ref_value'])
+    ref_keys = normalized_keys(reference, ref_col, allow_dates=allow_dates)
+    groups = collections.defaultdict(list)
+    for i, key in enumerate(ref_keys):
+        if key:
+            groups[key].append(reference['data'][i][val_col])
+    table = [['Khoa_chuan_hoa', 'Gia_tri']]
+    for key, values in groups.items():
+        if len(values) == 1:
+            table.append([key, values[0]])
+    if len(table) == 1:
+        table.append(['', None])
+    clean_output = bool(plan.get('clean_output', False))
+    if clean_output:
+        max_helper_len = max(len(table), len(keys) + 1)
+        helper_rows = []
+        for r in range(max_helper_len):
+            row_ab = table[r] if r < len(table) else ['', None]
+            key_d = 'Khoa_nguon' if r == 0 else (keys[r - 1] if r - 1 < len(keys) else '')
+            helper_rows.append([row_ab[0], row_ab[1], '', key_d])
+        sheets.append({'name': helper, 'rows': helper_rows, 'formulas': [], 'formats': []})
+        target_col_name = plan.get('value')
+        if target_col_name and target_col_name in source['headers']:
+            headers = list(source['headers'])
+            value_result_col = headers.index(target_col_name) + 1
+            inplace_target = True
+        else:
+            val_label = plan.get('ref_value', 'Giá trị đối chiếu')
+            label = f'{val_label} (đối chiếu)' if val_label in source['headers'] else val_label
+            unique = label
+            while unique in source['headers']:
+                unique += ' (mới)'
+            headers = source['headers'] + [unique]
+            value_result_col = len(headers)
+            inplace_target = False
+        stats.update(matched=0, missing=0, duplicate=0)
+        for i, (row, key) in enumerate(zip(rows, keys), 2):
+            status = 'KHOP'
+            if not key:
+                status = 'KHOA_TRONG'
+            elif key not in groups:
+                status = 'KHONG_TIM_THAY'
+            elif len(groups[key]) > 1:
+                status = 'KHOA_TRUNG'
+            if status == 'KHOP':
+                stats['matched'] += 1
+                last = len(table)
+                match = f'MATCH({escape_criteria(f"\'{helper}\'!$D${i}")},\'{helper}\'!$A$2:$A${last},0)'
+                result = f'INDEX(\'{helper}\'!$B$2:$B${last},{match})'
+                formula = f'=IF({result}="","",{result})'
+                expected = groups[key][0]
+                formulas.append({'row': i, 'col': value_result_col, 'formula': formula, 'expected': expected if expected is not None else ''})
+            elif status == 'KHOA_TRUNG':
+                stats['duplicate'] += 1
+            else:
+                stats['missing'] += 1
+            if inplace_target:
+                row[value_result_col - 1] = None
+            else:
+                row.append(None)
+        stats['reference_duplicate_keys'] = sum(len(v) > 1 for v in groups.values())
+    else:
+        sheets.append({'name': helper, 'rows': table, 'formulas': [], 'formats': []})
+        extra_headers = []
+        for label in ('Giá trị đối chiếu', 'Trạng thái đối chiếu', 'Khóa chuẩn hóa'):
+            unique = label
+            while unique in source['headers'] or unique in extra_headers:
+                unique += ' (mới)'
+            extra_headers.append(unique)
+        headers = source['headers'] + extra_headers
+        key_result_col = len(headers)
+        value_result_col = len(headers) - 2
+        stats.update(matched=0, missing=0, duplicate=0)
+        for i, (row, key) in enumerate(zip(rows, keys), 2):
+            status = 'KHOP'
+            if not key:
+                status = 'KHOA_TRONG'
+            elif key not in groups:
+                status = 'KHONG_TIM_THAY'
+            elif len(groups[key]) > 1:
+                status = 'KHOA_TRUNG'
+            if status == 'KHOP':
+                stats['matched'] += 1
+                last = len(table)
+                match = f'MATCH({escape_criteria(column_name(key_result_col)+str(i))},\'{helper}\'!$A$2:$A${last},0)'
+                result = f'INDEX(\'{helper}\'!$B$2:$B${last},{match})'
+                formula = f'=IF({result}="","",{result})'
+                expected = groups[key][0]
+                formulas.append({'row': i, 'col': value_result_col, 'formula': formula, 'expected': expected if expected is not None else ''})
+            elif status == 'KHOA_TRUNG':
+                stats['duplicate'] += 1
+            else:
+                stats['missing'] += 1
+            row.extend([None, status, key])
+        stats['reference_duplicate_keys'] = sum(len(v) > 1 for v in groups.values())
+    return headers, formulas, stats, sheets
+
+
 def prepare_sheets(source, reference, plan, token):
     validate_plan(plan, source, reference)
     name = 'Ket_qua_' + token
@@ -783,102 +891,9 @@ def prepare_sheets(source, reference, plan, token):
     if action not in ('clean', 'filter'):
         stats['blank_keys'] = sum(not k for k in keys)
     if action == 'lookup':
-        ref_col = reference['headers'].index(plan['ref_key'])
-        val_col = reference['headers'].index(plan['ref_value'])
-        ref_keys = normalized_keys(reference, ref_col, allow_dates=allow_dates)
-        groups = collections.defaultdict(list)
-        for i, key in enumerate(ref_keys):
-            if key:
-                groups[key].append(reference['data'][i][val_col])
-        table = [['Khoa_chuan_hoa', 'Gia_tri']]
-        for key, values in groups.items():
-            if len(values) == 1:
-                table.append([key, values[0]])
-        if len(table) == 1:
-            table.append(['', None])
-        clean_output = bool(plan.get('clean_output', False))
-        if clean_output:
-            max_helper_len = max(len(table), len(keys) + 1)
-            helper_rows = []
-            for r in range(max_helper_len):
-                row_ab = table[r] if r < len(table) else ['', None]
-                key_d = 'Khoa_nguon' if r == 0 else (keys[r - 1] if r - 1 < len(keys) else '')
-                helper_rows.append([row_ab[0], row_ab[1], '', key_d])
-            sheets.append({'name': helper, 'rows': helper_rows, 'formulas': [], 'formats': []})
-            target_col_name = plan.get('value')
-            if target_col_name and target_col_name in source['headers']:
-                headers = list(source['headers'])
-                value_result_col = headers.index(target_col_name) + 1
-                inplace_target = True
-            else:
-                val_label = plan.get('ref_value', 'Giá trị đối chiếu')
-                label = f'{val_label} (đối chiếu)' if val_label in source['headers'] else val_label
-                unique = label
-                while unique in source['headers']:
-                    unique += ' (mới)'
-                headers = source['headers'] + [unique]
-                value_result_col = len(headers)
-                inplace_target = False
-            stats.update(matched=0, missing=0, duplicate=0)
-            for i, (row, key) in enumerate(zip(rows, keys), 2):
-                status = 'KHOP'
-                if not key:
-                    status = 'KHOA_TRONG'
-                elif key not in groups:
-                    status = 'KHONG_TIM_THAY'
-                elif len(groups[key]) > 1:
-                    status = 'KHOA_TRUNG'
-                if status == 'KHOP':
-                    stats['matched'] += 1
-                    last = len(table)
-                    match = f'MATCH({escape_criteria(f"\'{helper}\'!$D${i}")},\'{helper}\'!$A$2:$A${last},0)'
-                    result = f'INDEX(\'{helper}\'!$B$2:$B${last},{match})'
-                    formula = f'=IF({result}="","",{result})'
-                    expected = groups[key][0]
-                    formulas.append({'row': i, 'col': value_result_col, 'formula': formula, 'expected': expected if expected is not None else ''})
-                elif status == 'KHOA_TRUNG':
-                    stats['duplicate'] += 1
-                else:
-                    stats['missing'] += 1
-                if inplace_target:
-                    row[value_result_col - 1] = None
-                else:
-                    row.append(None)
-            stats['reference_duplicate_keys'] = sum(len(v) > 1 for v in groups.values())
-        else:
-            sheets.append({'name': helper, 'rows': table, 'formulas': [], 'formats': []})
-            extra_headers = []
-            for label in ('Giá trị đối chiếu', 'Trạng thái đối chiếu', 'Khóa chuẩn hóa'):
-                unique = label
-                while unique in source['headers'] or unique in extra_headers:
-                    unique += ' (mới)'
-                extra_headers.append(unique)
-            headers = source['headers'] + extra_headers
-            key_result_col = len(headers)
-            value_result_col = len(headers) - 2
-            stats.update(matched=0, missing=0, duplicate=0)
-            for i, (row, key) in enumerate(zip(rows, keys), 2):
-                status = 'KHOP'
-                if not key:
-                    status = 'KHOA_TRONG'
-                elif key not in groups:
-                    status = 'KHONG_TIM_THAY'
-                elif len(groups[key]) > 1:
-                    status = 'KHOA_TRUNG'
-                if status == 'KHOP':
-                    stats['matched'] += 1
-                    last = len(table)
-                    match = f'MATCH({escape_criteria(column_name(key_result_col)+str(i))},\'{helper}\'!$A$2:$A${last},0)'
-                    result = f'INDEX(\'{helper}\'!$B$2:$B${last},{match})'
-                    formula = f'=IF({result}="","",{result})'
-                    expected = groups[key][0]
-                    formulas.append({'row': i, 'col': value_result_col, 'formula': formula, 'expected': expected if expected is not None else ''})
-                elif status == 'KHOA_TRUNG':
-                    stats['duplicate'] += 1
-                else:
-                    stats['missing'] += 1
-                row.extend([None, status, key])
-            stats['reference_duplicate_keys'] = sum(len(v) > 1 for v in groups.values())
+        headers, formulas, stats, lookup_sheets = _prepare_lookup(
+            source, reference, plan, rows, keys, stats, helper)
+        sheets.extend(lookup_sheets)
     elif action == 'summary':
         value_col = source['headers'].index(plan['value'])
         totals = collections.defaultdict(lambda: Decimal(0))
