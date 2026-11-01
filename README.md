@@ -70,8 +70,8 @@ python -X utf8 test_router.py             # 7 mục kiểm tra Smart Multi-Model
 python -X utf8 test_all_edge_cases.py     # 61 bài test stress-test biên (Malformed, CSV, Unicode, Injection)
 python -X utf8 test_security_privacy.py   # 43 bài test bảo mật PII, DPAPI, cache, số âm, ngày tháng
 python -X utf8 test_upgrades.py           # 28 bài test tự chữa lành ô gộp, cột trùng, tiền tệ VN
-python -X utf8 test_app.py                # 79 bài test logic, trust boundary và console UTF-8
-python -X utf8 test_app.py --integration  # 97 bài test Excel Desktop COM thật, tính toán và xuất PDF
+python -X utf8 test_app.py                # 80 bài test logic, trust boundary và console UTF-8
+python -X utf8 test_app.py --integration  # 98 bài test Excel Desktop COM thật, tính toán và xuất PDF
 python -X utf8 test_gui.py                # 14 bài test kiểm tra giao diện Stepper, treeview, xem trước/hủy/chấp nhận
 python -X utf8 test_cli.py                # 6 bài test kiểm tra cổng chấp nhận an toàn của CLI
 python -X utf8 test_headers.py            # 11 bài test chẩn đoán tiêu đề, lề trống, định dạng
@@ -93,7 +93,7 @@ python -X utf8 test_safety_limits.py      # 6 bài test giới hạn an toàn (8
 powershell -NoProfile -File test_cleanup.ps1 # 4 bài test dọn tiến trình Excel cô lập
 ```
 
-Các file kết quả kiểm tra và benchmark nằm trong thư mục `results/` (ví dụ `results/test-results.json` ghi từng phép kiểm tra đã chạy). Đây không phải bằng chứng về mọi loại workbook hay khả năng chống mọi tấn công. Kết quả là dữ liệu giả, đáp án số học được tính độc lập.
+Các file kết quả kiểm tra và benchmark nằm trong thư mục `results/`. `test_app.py` ghi theo chế độ chạy để các lần chạy không ghi đè lẫn nhau: `results/test-results-unit.json` (chỉ logic), `results/test-results.json` (đủ integration Excel), `results/test-results-ai.json` (có thêm AI cục bộ). Mỗi file ghi từng phép kiểm tra đã chạy. Đây không phải bằng chứng về mọi loại workbook hay khả năng chống mọi tấn công. Kết quả là dữ liệu giả, đáp án số học được tính độc lập.
 
 Lượt triển khai 0.1 có **79 kiểm tra đạt**, được giữ ở `results/test-results-v0.1.json`. Kết quả nghiệm thu 0.2 và số đo hiệu năng nằm trong `results/acceptance-v0.2.json`, `results/test-results.json`, `results/gui-test-results.json`, `results/cli-test-results.json` và các file `results/benchmark-*.json` (lưu ý: các benchmark này đo trên mã nguồn cũ hơn, xem UPGRADE_LOG vòng 8). Các phép kiểm tra giao diện/CLI dùng mock ở bước thực hiện để xác nhận cổng chấp nhận; bộ integration riêng chạy Excel desktop thật. Xem `release-notes-0.2.md` để biết lỗi đã vá, số đo và giới hạn của phép đo.
 

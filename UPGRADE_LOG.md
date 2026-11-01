@@ -345,3 +345,8 @@ Việc còn dở, nói thẳng:
 - `test_app.integration_tests()` nhận `fixture_dir` và sinh 3 file mẫu trong thư mục tạm nằm dưới `app.WORK`; `main()` giữ `TemporaryDirectory` sống suốt cả integration lẫn AI tests.
 - Thêm `examples_fingerprint()` (chỉ băm nội dung, bỏ qua thời gian sửa) và check cuối "examples folder untouched by tests" để tự phát hiện nếu tương lai có test ghi đè mẫu đi kèm.
 - Chạy thật: `python test_app.py --integration` → **98 check pass** (97 cũ + check mới); `git status --porcelain examples` rỗng trước và sau. Chạy không integration: 80 check (79 cũ + check mới).
+
+### Bước 0 — B0.2: file kết quả tách theo chế độ chạy (2026-11-01)
+- `test_app.py` ghi `results/test-results-unit.json` khi chỉ chạy logic, `results/test-results.json` khi có `--integration`, `results/test-results-ai.json` khi có `--ai`; in rõ đường dẫn vừa ghi.
+- Chạy thật cả hai chế độ liên tiếp: unit 80 check, integration 98 check; mtime của file unit giữ nguyên sau lần chạy integration (không còn ghi đè 98 thành 80). `examples/` vẫn sạch theo git.
+- README cập nhật số check (80/98) và giải thích ba tên file.
