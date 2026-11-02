@@ -32,3 +32,5 @@ __pycache__/
 # Delivery artifacts (generated outside the repo)
 *.bundle
 muse-upgrade.patch
+handoff/*.zip
+handoff/*.patch
