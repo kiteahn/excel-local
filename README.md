@@ -101,6 +101,8 @@ powershell -NoProfile -File run_all_tests.ps1 # chạy cả 3 nhóm, in bảng t
 
 Các file kết quả kiểm tra và benchmark nằm trong thư mục `results/`. `test_app.py` ghi theo chế độ chạy để các lần chạy không ghi đè lẫn nhau: `results/test-results-unit.json` (chỉ logic), `results/test-results.json` (đủ integration Excel), `results/test-results-ai.json` (có thêm AI cục bộ). Mỗi file ghi từng phép kiểm tra đã chạy. Đây không phải bằng chứng về mọi loại workbook hay khả năng chống mọi tấn công. Kết quả là dữ liệu giả, đáp án số học được tính độc lập.
 
+Hiệu năng đo lại 2026-11-02 bằng 5 lần, lấy trung vị (`results/benchmark-q3-summary.json`): ở 20.000 dòng, đọc nguồn 5,1s, đọc danh mục 4,8s, đối chiếu 19,9s, tổng hợp 16,8s, làm sạch 12,0s; ở 5.000 dòng là 10,7s / 9,4s / 7,0s. Đây là số đo trên một máy Windows cụ thể, có 2 lần Excel treo tạm thời 253–262s (đã ghi trong `cycles/CYCLE-06.md`), không phải cam kết tốc độ cho mọi máy.
+
 Lượt triển khai 0.1 có **79 kiểm tra đạt**, được giữ ở `results/test-results-v0.1.json`. Kết quả nghiệm thu 0.2 và số đo hiệu năng nằm trong `results/acceptance-v0.2.json`, `results/test-results.json`, `results/gui-test-results.json`, `results/cli-test-results.json` và các file `results/benchmark-*.json` (lưu ý: các benchmark này đo trên mã nguồn cũ hơn, xem UPGRADE_LOG vòng 8). Các phép kiểm tra giao diện/CLI dùng mock ở bước thực hiện để xác nhận cổng chấp nhận; bộ integration riêng chạy Excel desktop thật. Xem `release-notes-0.2.md` để biết lỗi đã vá, số đo và giới hạn của phép đo.
 
 Mã nguồn chính: `app.py`; API AI chỉ lập đề xuất: `ai_client.py`; bridge Excel: `excel_bridge.ps1`; chuẩn bị runtime: `setup-runtime.ps1`; mở giao diện: `start.cmd`. Không bổ sung thư viện ngoài, huấn luyện model hoặc dịch vụ cloud cho v1.

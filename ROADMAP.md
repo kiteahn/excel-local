@@ -7,8 +7,7 @@ trải nghiệm > tính năng mới. Mỗi mục chỉ vào chu kỳ khi có ti�
 ## P0 — Đúng & an toàn
 
 Không còn mục mở. S-1..S-4 **ĐÓNG** ở bản 0.3.2; bằng chứng:
-`test_privacy_guard_cases.py` 80 PII + 37 non-PII, 0 rò lọt / 0 che nhầm ngoài
-danh sách, 2 known hit có ghi chú; mutation 5 chỗ đều bị bắt.
+`test_privacy_guard_cases.py` **125 PII + 87 non-PII = 212 câu** (mở rộng ở Chu kỳ 5), 0 rò lọt ngoài danh sách, 0% che nhầm, 2 known hit có ghi chú; mutation 5 chỗ đều bị bắt.
 
 | # | Vấn đề | Trạng thái | Bằng chứng |
 |---|--------|------------|------------|
@@ -26,16 +25,17 @@ Known còn lại (chấp nhận, đã đo): tên 2 từ; tên dân tộc không 
 | M-1 | `gui()` còn 697 dòng (App lồng trong hàm) | `app.py` (AST) | Tách từng khối ra hàm cấp module, mỗi lát một commit, `test_gui` + `test_ui_acceptance` phải xanh |
 | M-2 | `open_ai_settings()` ~155 dòng | ĐÓNG Chu kỳ 2 | Đã thành `open_ai_settings_dialog()`; 141 chuỗi giữ nguyên, UI test 48/48 |
 | M-3 | `review()` ~100 dòng | ĐÓNG Chu kỳ 3 | Đã thành `review_plan_dialog()`; 172 chuỗi giữ nguyên, `test_gui` 14/14 |
-| M-4 | `prepare_sheets` 262 dòng (không phải `infer_smart_plan`: hàm này đã chỉ còn 25 dòng sau các vòng trước) | `app.py` (AST) | Lát cắt tiếp theo (Chu kỳ 4): tách theo nhánh `lookup`/`summary`/`clean`/`filter`, `test_app` + `test_usecases` bảo vệ |
+| M-4 | `prepare_sheets` 169 dòng sau khi tách nhánh `lookup` (Chu kỳ 4) | `app.py` (AST) | Lát cắt tiếp theo: tách `summary`/`clean`/`filter` theo cùng quy trình vàng + mutation |
 | M-6 | `ai_client._lookup_plan` 180 dòng, `_filter_plan` 178 dòng | `ai_client.py` (AST) | Tách sau M-4, dùng `test_infer_golden` (28 prompt vàng) |
 | M-5 | ~30 `except Exception` rộng | `app.py`, `ai_client.py` | Thu hẹp dần, mỗi chỗ một test |
 
-## P2 — Hiệu năng (số đo 1.000 dòng, `results/benchmark-current-1000.json`)
+## P2 — Hiệu năng (số đo 5 lần, trung vị; `results/benchmark-q3-summary.json`)
 
-| # | Số đo hiện tại | Nút thắt | Hướng |
+| # | Số đo hiện tại (20.000 dòng) | Nút thắt | Hướng |
 |---|----------------|----------|-------|
-| P-1 | inspect 4,05s; lookup 6,28s; summary 6,13s; clean 5,31s | Mở Excel COM ~1s/lần + ghi ô theo khối 1,4–2,0s | Đo lại ở 5.000/20.000 dòng; thử đọc XLSX thuần Python cho bước kiểm tra (không thay đường ghi) |
-| P-2 | Mỗi thao tác mở/đóng Excel riêng | bridge.ps1 | Chỉ giữ thay đổi nếu đối soát vẫn đúng và không để tiến trình mồ côi |
+| P-1 | lookup 19,9s; summary 16,8s; clean 12,0s; đọc nguồn 5,1s; đọc danh mục 4,8s | Ghi công thức/COM + JSON bridge; `Write-Grid` đã ghi khối (`paste` 0,007s) | Không giữ thay đổi <10%; đo lại nếu đổi giao thức bridge |
+| P-2 | Mỗi thao tác mở/đóng Excel riêng (~0,8–1,2s/lần) | bridge.ps1 | Tái dùng phiên tiết kiệm ~8% một lượt benchmark nhưng tăng rủi ro COM; chưa giữ |
+| P-3 | Excel treo tạm thời 253–262s ở 2 lần đo | Môi trường Excel/máy | Theo dõi; dùng trung vị và ghi ngoại lệ, không giấu |
 
 ## P3 — Trải nghiệm
 

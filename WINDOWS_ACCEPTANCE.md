@@ -1,33 +1,44 @@
 # Gói nghiệm thu Windows — Excel Local Expert, nhánh `muse-upgrade`
 
-Ngày xuất: 2026-10-30 (bản cập nhật sau Vòng 31). Commit đầu nhánh:
-`a9a1c5a` (Bước 0 + Vòng 1–31 trên nền bản gốc `28f5679` — v0.3.1).
+Ngày xuất: **2026-11-02** (cập nhật sau Chu kỳ 6 — hết Bước 0 + Q1 + Q2 + Q3).
+Nhánh `muse-upgrade`, **không push**. Nền bản gốc `28f5679` — v0.3.1; hành vi
+gần nhất v0.3.2 (tag cục bộ `v0.3.2`).
 Đã gồm 2 quyết định chính sách của bạn (2026-10-30): mặc định chỉ Ollama
 local (cloud tự bật) và tùy chọn `vn_dot_thousands` cho số '500.000'.
-Toàn bộ phần việc trên Linux đã xong và có bằng chứng; tài liệu này là
-phần CHỈ làm được trên máy Windows có Excel. Danh sách nghiệm thu đầy đủ
-từng bước cũng nằm trong `NEXT.md` của repo.
+Toàn bộ phần việc chạy được trên máy Windows có Excel đã có bằng chứng; các
+mục cần mắt người được đánh dấu **CẦN NGƯỜI XÁC NHẬN** trong `NEXT.md`.
+Danh sách nghiệm thu đầy đủ từng bước cũng nằm trong `NEXT.md`.
 
 ## Gói này gồm
-- `excel-local-muse-upgrade.bundle` — toàn bộ repo + lịch sử nhánh
-  `muse-upgrade` (đã kiểm chứng: clone từ bundle chạy được test_app đạt).
-- `excel-local-muse-upgrade.zip` — cây thư mục tại đầu nhánh (giải nén là
-  dùng ngay, không cần git).
-- `muse-upgrade.patch` — diff đầy đủ so với bản gốc (để xem nhanh thay đổi).
+- `handoff/excel-local-muse-upgrade-cycle6.bundle` — toàn bộ repo + lịch sử
+  nhánh `muse-upgrade`.
+- `handoff/excel-local-muse-upgrade-cycle6.zip` — cây thư mục tại đúng commit
+  đầu nhánh (chỉ file git theo dõi; không chứa `config.json` hay `.work/`).
+- `handoff/muse-upgrade-cycle6.patch` — diff đầy đủ so với bản gốc `28f5679`.
+- `handoff/HANDOFF.md` — tóm tắt commit, cách chạy test, việc còn lại.
 - File này.
+
+## Cập nhật sau Chu kỳ 6 (2026-11-02)
+- **Q1:** tách `_prepare_lookup`; `prepare_sheets` 262 → 169 dòng; 27 kịch bản vàng, mutation 6/6 bị bắt.
+- **Q2:** corpus PrivacyGuard **212 câu** (125 PII + 87 non-PII): 0 rò lọt ngoài 2 giới hạn đã ghi, **0% che nhầm**; thêm `cloud_preview` + hộp xem trước/cancel trước khi gửi cloud (chỉ hiện khi cloud thật sự được gọi).
+- **Q3:** đo 5 lần/loại (5k, 20k) và 5 lần Python stages; trung vị 20k: đọc nguồn 5,07s, đọc danh mục 4,81s, đối chiếu 19,89s, tổng hợp 16,80s, làm sạch 11,99s. Không giữ tối ưu nào vì mọi phương án đơn giản đều <10%.
+- **Test đầy đủ cuối:** `run_all_tests.ps1` **30 lệnh, 0 lỗi, 292,0s, exit 0**; `examples/` không đổi, không còn Excel mồ côi, không có thư mục tạm mới.
+- **Ngoại lệ đã ghi:** một lượt integration timeout 496,1s và 2 lần đo đơn lẻ 253–262s do Excel treo tạm thời; chạy lại đạt. Không giấu.
+- **CẦN NGƯỜI XÁC NHẬN BẰNG MẮT:** giao diện tiếng Việt, hộp xem trước nội dung cloud, màu/trạng thái nút, bố cục ở 100% và 150% DPI. Ảnh GUI sẽ bổ sung ở Q5.
+- **Câu hỏi chờ chủ sản phẩm:** có đồng ý thêm `LICENSE` (giấy phép nào) và có muốn push nhánh/ tạo tag phát hành không. Không tự thêm.
 
 ## Cách lấy code (chọn 1)
 ```powershell
 # Cách A — từ bundle (giữ lịch sử git):
-git clone excel-local-muse-upgrade.bundle excel-local-check
+git clone handoff/excel-local-muse-upgrade-cycle6.bundle excel-local-check
 cd excel-local-check
 git checkout muse-upgrade
 
-# Cách B — giải nén file zip vào một thư mục mới, mở PowerShell tại đó.
+# Cách B — giải nén file handoff/excel-local-muse-upgrade-cycle6.zip vào một thư mục mới, mở PowerShell tại đó.
 ```
 
 ## Danh sách file đã đổi so với bản gốc (46 mục)
-- **Code chính:** `app.py`, `ai_client.py` (sửa), `excel_bridge.ps1` (KHÔNG đổi).
+- **Code chính:** `app.py`, `ai_client.py` (sửa), `excel_bridge.ps1` (đã thêm đo đạc, không đổi công thức/kết quả).
 - **Tài liệu mới/sửa:** `README.md` (viết lại theo hành vi thật), `UPGRADE_LOG.md`
   (hồ sơ 22 vòng), `NEXT.md`, `USECASES.md` (37 use case), `PROMPT_MUSE.md` +
   `run-muse-loop.ps1` (bản bạn gửi, lưu vào repo).

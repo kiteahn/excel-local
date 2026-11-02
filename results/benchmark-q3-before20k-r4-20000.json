@@ -1,0 +1,84 @@
+{
+  "label": "q3-before20k-r4",
+  "rows": 20000,
+  "seconds": {
+    "preflight": 0.321,
+    "inspect_source": 4.911,
+    "inspect_reference": 4.671,
+    "lookup": 20.067,
+    "summary": 15.735,
+    "clean": 11.987
+  },
+  "formula_checks": {
+    "lookup": 20000,
+    "summary": 40000,
+    "clean": 0
+  },
+  "bridge_phases": {
+    "lookup": {
+      "save_seconds": 0.514807900000001,
+      "excel_start_seconds": 0.8582662999999999,
+      "verify_seconds": 0.7062121000000001,
+      "open_seconds": 1.2381309999999999,
+      "calculate_seconds": 0.1215092000000002,
+      "write_detail": {
+        "numeric_format_seconds": 5.1699999999999996e-05,
+        "wrap_autofit_rows_seconds": 0.5084603999999999,
+        "build_seconds": 3.64e-05,
+        "style_autofit_columns_seconds": 0.047013099999999995,
+        "paste_seconds": 0.009776199999999999
+      },
+      "write_seconds": 7.882481899999999
+    },
+    "summary": {
+      "save_seconds": 0.37237100000000023,
+      "excel_start_seconds": 0.7903072,
+      "verify_seconds": 1.2437189999999996,
+      "open_seconds": 1.1556634,
+      "calculate_seconds": 0.07099069999999941,
+      "write_detail": {
+        "numeric_format_seconds": 2.2e-05,
+        "wrap_autofit_rows_seconds": 0.4141372,
+        "build_seconds": 0.0007555,
+        "style_autofit_columns_seconds": 0.0211778,
+        "paste_seconds": 0.0051756
+      },
+      "write_seconds": 4.916842099999999
+    },
+    "clean": {
+      "save_seconds": 0.20366950000000017,
+      "excel_start_seconds": 0.8323359,
+      "verify_seconds": 0.033722700000000216,
+      "open_seconds": 1.2156018,
+      "calculate_seconds": 0.010510199999999692,
+      "write_detail": {
+        "numeric_format_seconds": 2.01e-05,
+        "wrap_autofit_rows_seconds": 0.5300142999999999,
+        "build_seconds": 2.4999999999999998e-05,
+        "style_autofit_columns_seconds": 0.032961899999999995,
+        "paste_seconds": 0.0034346
+      },
+      "write_seconds": 3.6691746
+    }
+  },
+  "inspect_phases": {
+    "source": {
+      "find_seconds": 0.2120238000000001,
+      "convert_seconds": 0.2324421000000001,
+      "excel_start_seconds": 0.7844285999999999,
+      "read_seconds": 0.043644999999999934,
+      "open_seconds": 1.1585410999999999,
+      "calculate_seconds": 0.009572099999999972
+    },
+    "reference": {
+      "find_seconds": 0.20330009999999987,
+      "convert_seconds": 0.16835579999999983,
+      "excel_start_seconds": 0.7821758999999999,
+      "read_seconds": 0.034534899999999924,
+      "open_seconds": 1.1224777,
+      "calculate_seconds": 0.009024300000000096
+    }
+  },
+  "app_sha256": "bf8b0449d629b58bb66baa2a3e5302b125824bd0261403e9d9379e7e6467ee36",
+  "bridge_sha256": "0e21abfb13452d4f4fe74e94a2ff7def25ed6f39b67ac3a497b926ae86f0abbb"
+}

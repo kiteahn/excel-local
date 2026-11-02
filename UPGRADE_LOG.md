@@ -387,3 +387,13 @@ Việc còn dở, nói thẳng:
 - Test mới `test_cloud_preview.py`: **20 check** (che đúng, đúng cột, không gọi mạng, local không hỏi, hủy chặn, OK cho gửi, thông điệp không lộ PII gốc). `test_gui.py` 14/14, `test_ui_acceptance.py` 48/48, `test_app.py` 87/87.
 - README cập nhật số mẫu, tỷ lệ đo, giới hạn còn lại và bước xem trước/hủy; không dùng từ "tuyệt đối"/"không bao giờ lọt".
 
+
+### Chu kỳ 6 — Q3: đo lại hiệu năng và phân rã giai đoạn (2026-11-02)
+- Chạy 5 lần `benchmark_python_stages.py` và 5 lần `benchmark.py --rows 5000`, 5 lần `--rows 20000`; lưu từng file trong `results/`, tổng hợp trung vị ở `results/benchmark-q3-summary.json`.
+- 20.000 dòng (trung vị): đọc nguồn 5,072s; đọc danh mục 4,810s; lookup 19,886s; summary 16,797s; clean 11,987s. 5.000 dòng: 5,159 / 4,745 / 10,714 / 9,351 / 7,040s.
+- Phân rã 20k: `write` lookup 7,669s, summary 4,917s, clean 3,368s; mở/khởi động Excel 1,17–1,24s mỗi phiên; đối soát 0,748/1,244/0,046s; trong lần đọc: khởi động Excel 0,874/0,805s, find 0,222/0,203s, Value2 0,050/0,033s, chuyển ma trận 0,236/0,165s.
+- `Write-Grid` vốn đã ghi theo khối bằng `Range.Value2 = ma trận 2 chiều`; đo được `paste_seconds` 0,007s cho 20k×4. Nút thắt còn lại là công thức (20k lookup, 40k summary), các bước COM và tuần tự hóa JSON của bridge, không phải vòng lặp ghi từng ô.
+- Đã cân nhắc: bỏ `WrapText`/`Rows.AutoFit` chỉ tiết kiệm 0,29–0,55s/20k (~2,9% lookup) và đổi hình thức; tái dùng phiên Excel tiết kiệm ~4–6s trên ~60s một lượt (~8%) nhưng tăng rủi ro COM. Cả hai dưới 10% nên **không giữ**, đúng quy tắc.
+- Không tệ hơn mốc: `benchmark-final-5000.json` lookup 15,829s / summary 13,601s / clean 11,114s; lượt này 10,714 / 9,351 / 7,040s.
+- Ngoại lệ môi trường: một lần summary 20k mất 261,68s và một lần lookup 5k mất 253,07s do Excel treo; báo cáo dùng trung vị và ghi rõ, không giấu.
+- Test cuối: lượt đầu 1 lỗi do integration timeout 496,1s; chạy riêng 105/105; lượt hai **30 lệnh, 0 lỗi, 292,0s, exit 0** (`run-20261102-104045.log`).

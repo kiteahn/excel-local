@@ -1,0 +1,122 @@
+{
+  "date": "2026-11-02",
+  "runs": {
+    "python_stages": 5,
+    "native_5000": 5,
+    "native_20000": 5
+  },
+  "python_stages_medians": {
+    "100": {
+      "preflight_xlsx": 0.018,
+      "inspect_source_lenient_fast": 0.012,
+      "inspect_reference_lenient_fast": 0.023,
+      "preview_lookup": 0.002,
+      "preview_summary": 0.001,
+      "preview_clean": 0.001,
+      "inspect_csv": 0.005
+    },
+    "1000": {
+      "preflight_xlsx": 0.033,
+      "inspect_source_lenient_fast": 0.079,
+      "inspect_reference_lenient_fast": 0.063,
+      "preview_lookup": 0.009,
+      "preview_summary": 0.005,
+      "preview_clean": 0.005,
+      "inspect_csv": 0.017
+    },
+    "5000": {
+      "preflight_xlsx": 0.096,
+      "inspect_source_lenient_fast": 0.396,
+      "inspect_reference_lenient_fast": 0.292,
+      "preview_lookup": 0.047,
+      "preview_summary": 0.022,
+      "preview_clean": 0.023,
+      "inspect_csv": 0.031
+    },
+    "20000": {
+      "preflight_xlsx": 0.535,
+      "inspect_source_lenient_fast": 2.587,
+      "inspect_reference_lenient_fast": 1.642,
+      "preview_lookup": 0.261,
+      "preview_summary": 0.181,
+      "preview_clean": 0.132,
+      "inspect_csv": 0.096
+    }
+  },
+  "native_5000_medians": {
+    "preflight": 0.122,
+    "inspect_source": 5.159,
+    "inspect_reference": 4.745,
+    "lookup": 10.714,
+    "summary": 9.351,
+    "clean": 7.04
+  },
+  "native_20000_medians": {
+    "preflight": 0.333,
+    "inspect_source": 5.072,
+    "inspect_reference": 4.81,
+    "lookup": 19.886,
+    "summary": 16.797,
+    "clean": 11.987
+  },
+  "bridge_phases_20000_medians": {
+    "lookup": {
+      "excel_start_seconds": 0.858,
+      "open_seconds": 1.238,
+      "write_seconds": 7.669,
+      "calculate_seconds": 0.125,
+      "verify_seconds": 0.748,
+      "save_seconds": 0.472
+    },
+    "summary": {
+      "excel_start_seconds": 0.797,
+      "open_seconds": 1.168,
+      "write_seconds": 4.917,
+      "calculate_seconds": 0.071,
+      "verify_seconds": 1.244,
+      "save_seconds": 0.412
+    },
+    "clean": {
+      "excel_start_seconds": 0.803,
+      "open_seconds": 1.179,
+      "write_seconds": 3.368,
+      "calculate_seconds": 0.011,
+      "verify_seconds": 0.046,
+      "save_seconds": 0.232
+    }
+  },
+  "inspect_phases_20000_medians": {
+    "source": {
+      "excel_start_seconds": 0.874,
+      "open_seconds": 1.18,
+      "find_seconds": 0.222,
+      "read_seconds": 0.05,
+      "convert_seconds": 0.236,
+      "calculate_seconds": 0.009
+    },
+    "reference": {
+      "excel_start_seconds": 0.805,
+      "open_seconds": 1.177,
+      "find_seconds": 0.203,
+      "read_seconds": 0.033,
+      "convert_seconds": 0.165,
+      "calculate_seconds": 0.009
+    }
+  },
+  "outliers": [
+    {
+      "run": "summary 20k #1",
+      "seconds": 261.68
+    },
+    {
+      "run": "lookup 5k #1",
+      "seconds": 253.066
+    }
+  ],
+  "old_milestone_5000": {
+    "lookup": 15.829,
+    "summary": 13.601,
+    "clean": 11.114
+  },
+  "kept_change": "instrumentation only; no low-risk change reached 10% so none was kept"
+}

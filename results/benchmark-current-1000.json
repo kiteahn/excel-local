@@ -3,11 +3,11 @@
   "rows": 1000,
   "seconds": {
     "preflight": 0.036,
-    "inspect_source": 5.039,
-    "inspect_reference": 4.869,
-    "lookup": 7.847,
-    "summary": 7.53,
-    "clean": 6.555
+    "inspect_source": 4.352,
+    "inspect_reference": 4.462,
+    "lookup": 7.48,
+    "summary": 7.402,
+    "clean": 6.148
   },
   "formula_checks": {
     "lookup": 1000,
@@ -16,27 +16,69 @@
   },
   "bridge_phases": {
     "lookup": {
-      "verify_seconds": 0.15348700000000015,
-      "save_seconds": 0.16241079999999997,
-      "open_seconds": 1.4190189,
-      "write_seconds": 2.8103246000000004,
-      "calculate_seconds": 0.05937000000000037
+      "save_seconds": 0.14954999999999963,
+      "excel_start_seconds": 1.061234,
+      "verify_seconds": 0.13525230000000033,
+      "open_seconds": 1.4574741,
+      "calculate_seconds": 0.01666539999999994,
+      "write_detail": {
+        "numeric_format_seconds": 3.89e-05,
+        "wrap_autofit_rows_seconds": 0.5253249,
+        "build_seconds": 3.71e-05,
+        "style_autofit_columns_seconds": 0.0369229,
+        "paste_seconds": 0.0089576
+      },
+      "write_seconds": 2.5553410999999997
     },
     "summary": {
-      "verify_seconds": 0.22690120000000036,
-      "save_seconds": 0.1724616000000001,
-      "open_seconds": 1.4078583,
-      "write_seconds": 2.5149834999999996,
-      "calculate_seconds": 0.01955309999999999
+      "save_seconds": 0.16781120000000005,
+      "excel_start_seconds": 1.0759454,
+      "verify_seconds": 0.17610320000000002,
+      "open_seconds": 1.4652513,
+      "calculate_seconds": 0.01737570000000055,
+      "write_detail": {
+        "numeric_format_seconds": 3.88e-05,
+        "wrap_autofit_rows_seconds": 0.5399409,
+        "build_seconds": 0.0011828,
+        "style_autofit_columns_seconds": 0.0505129,
+        "paste_seconds": 0.0103284
+      },
+      "write_seconds": 2.5321824
     },
     "clean": {
-      "verify_seconds": 0.0893136000000001,
-      "save_seconds": 0.19694650000000014,
-      "open_seconds": 1.5066163,
-      "write_seconds": 1.7245076,
-      "calculate_seconds": 0.013810900000000181
+      "save_seconds": 0.12704929999999992,
+      "excel_start_seconds": 1.0296739,
+      "verify_seconds": 0.0640824000000002,
+      "open_seconds": 1.3872802,
+      "calculate_seconds": 0.008454399999999751,
+      "write_detail": {
+        "numeric_format_seconds": 3.53e-05,
+        "wrap_autofit_rows_seconds": 0.4838169,
+        "build_seconds": 3.26e-05,
+        "style_autofit_columns_seconds": 0.0249955,
+        "paste_seconds": 0.0049638
+      },
+      "write_seconds": 1.6464677999999997
+    }
+  },
+  "inspect_phases": {
+    "source": {
+      "find_seconds": 0.2768461,
+      "convert_seconds": 0.02609370000000011,
+      "excel_start_seconds": 0.9566882,
+      "read_seconds": 0.024273100000000047,
+      "open_seconds": 1.3179108,
+      "calculate_seconds": 0.01150590000000018
+    },
+    "reference": {
+      "find_seconds": 0.24240670000000009,
+      "convert_seconds": 0.02588289999999982,
+      "excel_start_seconds": 1.0289930999999999,
+      "read_seconds": 0.023304699999999956,
+      "open_seconds": 1.4517649,
+      "calculate_seconds": 0.009251800000000143
     }
   },
   "app_sha256": "bf8b0449d629b58bb66baa2a3e5302b125824bd0261403e9d9379e7e6467ee36",
-  "bridge_sha256": "967b253e2db8c77b88cc7465876a3425da6f0ed81f9e27628f5830065e7adb25"
+  "bridge_sha256": "0e21abfb13452d4f4fe74e94a2ff7def25ed6f39b67ac3a497b926ae86f0abbb"
 }
