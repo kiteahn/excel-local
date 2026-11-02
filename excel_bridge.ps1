@@ -67,6 +67,8 @@ function Assert-NoErrors($sheet) {
 function Write-Grid($sheet, $rows) {
     $height = $rows.Count
     $width = $rows[0].Count
+    $detail = @{}
+    $step = [Diagnostics.Stopwatch]::StartNew()
     $matrix = [object[,]]::new($height, $width)
     for ($r = 0; $r -lt $height; $r++) {
         for ($c = 0; $c -lt $width; $c++) {
@@ -77,10 +79,14 @@ function Write-Grid($sheet, $rows) {
             $matrix[$r,$c] = $value
         }
     }
+    $detail.build_seconds = $step.Elapsed.TotalSeconds
+    $step.Restart()
     $range = $sheet.Range($sheet.Cells.Item(1,1), $sheet.Cells.Item($height,$width))
     # Text format is set BEFORE assignment: imported strings never become formulas.
     $range.NumberFormat = '@'
     $range.Value2 = $matrix
+    $detail.paste_seconds = $step.Elapsed.TotalSeconds
+    $step.Restart()
     for ($c = 0; $c -lt $width; $c++) {
         $allNumeric = $true
         for ($r = 1; $r -lt $height; $r++) {
@@ -93,6 +99,8 @@ function Write-Grid($sheet, $rows) {
             $sheet.Range($sheet.Cells.Item(2,$c+1),$sheet.Cells.Item($height,$c+1)).NumberFormat = 'General'
         }
     }
+    $detail.numeric_format_seconds = $step.Elapsed.TotalSeconds
+    $step.Restart()
     $header = $sheet.Range($sheet.Cells.Item(1,1),$sheet.Cells.Item(1,$width))
     $header.Font.Bold = $true
     $header.Interior.Color = 15128749
@@ -102,6 +110,8 @@ function Write-Grid($sheet, $rows) {
     for ($c = 1; $c -le $width; $c++) {
         if ($sheet.Columns.Item($c).ColumnWidth -gt 42) { $sheet.Columns.Item($c).ColumnWidth = 42 }
     }
+    $detail.style_autofit_columns_seconds = $step.Elapsed.TotalSeconds
+    $step.Restart()
     $range.WrapText = $true
     [void]$range.Rows.AutoFit()
     $sheet.PageSetup.Orientation = 2
@@ -110,6 +120,8 @@ function Write-Grid($sheet, $rows) {
     $sheet.PageSetup.FitToPagesWide = 1
     $sheet.PageSetup.FitToPagesTall = $false
     $sheet.PageSetup.PrintTitleRows = '$1:$1'
+    $detail.wrap_autofit_rows_seconds = $step.Elapsed.TotalSeconds
+    $script:writeDetail = $detail
     $sheet.PageSetup.PrintArea = $range.Address()
     Release-Com $header
     Release-Com $range
@@ -132,6 +144,7 @@ try {
     $excel.AskToUpdateLinks = $false
     $excel.EnableEvents = $false
     $excel.AutomationSecurity = 3
+    $timings.excel_start_seconds = $clock.Elapsed.TotalSeconds
     if ($job.input) {
         # Inputs have already passed OOXML preflight, including connections.
         $book = $excel.Workbooks.Open([string]$job.input, 0, $true)
@@ -144,8 +157,11 @@ try {
     $timings.open_seconds = $clock.Elapsed.TotalSeconds
 
     if ($job.operation -eq 'inspect') {
+        $phase = $clock.Elapsed.TotalSeconds
         $excel.CalculateFullRebuild()
         if ($excel.CalculationState -ne 0) { throw 'Excel calculation did not finish' }
+        $timings.calculate_seconds = $clock.Elapsed.TotalSeconds - $phase
+        $phase = $clock.Elapsed.TotalSeconds
         $names = @()
         foreach ($tab in $book.Worksheets) { $names += [string]$tab.Name; Release-Com $tab }
         $name = if ($job.sheet) { [string]$job.sheet } else { $names[0] }
@@ -159,8 +175,12 @@ try {
         if ($height -gt 20001 -or $width -gt 60 -or ($height * $width) -gt 400000) {
             throw 'V1 limit: 20000 data rows, 60 columns, 400000 cells'
         }
+        $timings.find_seconds = $clock.Elapsed.TotalSeconds - $phase
+        $phase = $clock.Elapsed.TotalSeconds
         $range = $sheet.Range($sheet.Cells.Item(1,1),$sheet.Cells.Item($height,$width))
         $matrix = $range.Value2
+        $timings.read_seconds = $clock.Elapsed.TotalSeconds - $phase
+        $phase = $clock.Elapsed.TotalSeconds
         $rows = [System.Collections.Generic.List[object]]::new()
         for ($r = 1; $r -le $height; $r++) {
             $row = [object[]]::new($width)
@@ -169,7 +189,8 @@ try {
             }
             $rows.Add($row)
         }
-        $result = @{ ok=$true; sheets=$names; sheet=$name; rows=$rows.ToArray(); excel_version=[string]$excel.Version }
+        $timings.convert_seconds = $clock.Elapsed.TotalSeconds - $phase
+        $result = @{ ok=$true; sheets=$names; sheet=$name; rows=$rows.ToArray(); excel_version=[string]$excel.Version; timings=$timings }
         Release-Com $lastRowCell
         Release-Com $lastColCell
         Release-Com $range
@@ -196,6 +217,7 @@ try {
             Release-Com $sheet
         }
         $timings.write_seconds = $clock.Elapsed.TotalSeconds - $phase
+        $timings.write_detail = $script:writeDetail
         $phase = $clock.Elapsed.TotalSeconds
         $excel.CalculateFullRebuild()
         if ($excel.CalculationState -ne 0) { throw 'Excel calculation did not finish' }

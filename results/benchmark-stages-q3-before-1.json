@@ -1,0 +1,38 @@
+{
+  "100": {
+    "preflight_xlsx": 0.017,
+    "inspect_source_lenient_fast": 0.016,
+    "inspect_reference_lenient_fast": 0.028,
+    "preview_lookup": 0.001,
+    "preview_summary": 0.001,
+    "preview_clean": 0.001,
+    "inspect_csv": 0.006
+  },
+  "1000": {
+    "preflight_xlsx": 0.033,
+    "inspect_source_lenient_fast": 0.075,
+    "inspect_reference_lenient_fast": 0.063,
+    "preview_lookup": 0.01,
+    "preview_summary": 0.005,
+    "preview_clean": 0.005,
+    "inspect_csv": 0.017
+  },
+  "5000": {
+    "preflight_xlsx": 0.096,
+    "inspect_source_lenient_fast": 0.387,
+    "inspect_reference_lenient_fast": 0.25,
+    "preview_lookup": 0.04,
+    "preview_summary": 0.021,
+    "preview_clean": 0.021,
+    "inspect_csv": 0.033
+  },
+  "20000": {
+    "preflight_xlsx": 0.469,
+    "inspect_source_lenient_fast": 2.399,
+    "inspect_reference_lenient_fast": 1.584,
+    "preview_lookup": 0.261,
+    "preview_summary": 0.165,
+    "preview_clean": 0.138,
+    "inspect_csv": 0.102
+  }
+}

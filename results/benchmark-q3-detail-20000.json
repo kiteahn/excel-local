@@ -1,0 +1,84 @@
+{
+  "label": "q3-detail",
+  "rows": 20000,
+  "seconds": {
+    "preflight": 0.318,
+    "inspect_source": 5.251,
+    "inspect_reference": 4.768,
+    "lookup": 21.557,
+    "summary": 21.051,
+    "clean": 14.118
+  },
+  "formula_checks": {
+    "lookup": 20000,
+    "summary": 40000,
+    "clean": 0
+  },
+  "bridge_phases": {
+    "lookup": {
+      "save_seconds": 0.5904021000000004,
+      "excel_start_seconds": 0.8325916,
+      "verify_seconds": 0.7902722999999998,
+      "open_seconds": 1.2297042,
+      "calculate_seconds": 0.13251299999999944,
+      "write_detail": {
+        "numeric_format_seconds": 3.7199999999999996e-05,
+        "wrap_autofit_rows_seconds": 0.5525966,
+        "build_seconds": 4.04e-05,
+        "style_autofit_columns_seconds": 0.0389204,
+        "paste_seconds": 0.0071124
+      },
+      "write_seconds": 7.7753644
+    },
+    "summary": {
+      "save_seconds": 0.4821340999999997,
+      "excel_start_seconds": 0.9354652999999999,
+      "verify_seconds": 1.8445215000000008,
+      "open_seconds": 1.3826452999999999,
+      "calculate_seconds": 0.27271979999999996,
+      "write_detail": {
+        "numeric_format_seconds": 2.51e-05,
+        "wrap_autofit_rows_seconds": 0.6682232,
+        "build_seconds": 0.0007394999999999999,
+        "style_autofit_columns_seconds": 0.0357704,
+        "paste_seconds": 0.0075417999999999995
+      },
+      "write_seconds": 6.4194794
+    },
+    "clean": {
+      "save_seconds": 0.33722660000000015,
+      "excel_start_seconds": 0.9970901999999999,
+      "verify_seconds": 0.08442430000000023,
+      "open_seconds": 1.4304515,
+      "calculate_seconds": 0.013532400000000777,
+      "write_detail": {
+        "numeric_format_seconds": 3.9999999999999996e-05,
+        "wrap_autofit_rows_seconds": 0.5977158,
+        "build_seconds": 5.06e-05,
+        "style_autofit_columns_seconds": 0.0430315,
+        "paste_seconds": 0.007770999999999999
+      },
+      "write_seconds": 3.9825878999999995
+    }
+  },
+  "inspect_phases": {
+    "source": {
+      "find_seconds": 0.3611249000000001,
+      "convert_seconds": 0.2873029,
+      "excel_start_seconds": 0.8823743,
+      "read_seconds": 0.05643149999999997,
+      "open_seconds": 1.1816689,
+      "calculate_seconds": 0.009457600000000177
+    },
+    "reference": {
+      "find_seconds": 0.20937279999999991,
+      "convert_seconds": 0.14683580000000007,
+      "excel_start_seconds": 0.8061707,
+      "read_seconds": 0.03170609999999985,
+      "open_seconds": 1.1494882,
+      "calculate_seconds": 0.00871859999999991
+    }
+  },
+  "app_sha256": "bf8b0449d629b58bb66baa2a3e5302b125824bd0261403e9d9379e7e6467ee36",
+  "bridge_sha256": "0e21abfb13452d4f4fe74e94a2ff7def25ed6f39b67ac3a497b926ae86f0abbb"
+}

@@ -1,0 +1,63 @@
+{
+  "label": "q3-instrument",
+  "rows": 5000,
+  "seconds": {
+    "preflight": 0.089,
+    "inspect_source": 4.061,
+    "inspect_reference": 4.125,
+    "lookup": 9.448,
+    "summary": 10.776,
+    "clean": 8.921
+  },
+  "formula_checks": {
+    "lookup": 5000,
+    "summary": 10000,
+    "clean": 0
+  },
+  "bridge_phases": {
+    "lookup": {
+      "save_seconds": 0.2020559000000004,
+      "excel_start_seconds": 0.8868744,
+      "verify_seconds": 0.2639452000000002,
+      "open_seconds": 1.1917242,
+      "calculate_seconds": 0.03660130000000006,
+      "write_seconds": 3.2011753
+    },
+    "summary": {
+      "save_seconds": 0.31556810000000013,
+      "excel_start_seconds": 0.9367702,
+      "verify_seconds": 0.5952134999999998,
+      "open_seconds": 1.2836497999999998,
+      "calculate_seconds": 0.03272770000000058,
+      "write_seconds": 3.7922751999999997
+    },
+    "clean": {
+      "save_seconds": 0.2423415000000002,
+      "excel_start_seconds": 1.1352271999999999,
+      "verify_seconds": 0.05552139999999994,
+      "open_seconds": 1.5585605999999999,
+      "calculate_seconds": 0.01638730000000077,
+      "write_seconds": 2.7469273999999997
+    }
+  },
+  "inspect_phases": {
+    "source": {
+      "find_seconds": 0.16423339999999986,
+      "convert_seconds": 0.08283719999999994,
+      "excel_start_seconds": 0.7862949,
+      "read_seconds": 0.02465469999999992,
+      "open_seconds": 0.9911344999999999,
+      "calculate_seconds": 0.008998900000000032
+    },
+    "reference": {
+      "find_seconds": 0.21313439999999995,
+      "convert_seconds": 0.04462189999999988,
+      "excel_start_seconds": 0.7842758999999999,
+      "read_seconds": 0.022839400000000065,
+      "open_seconds": 1.0697875,
+      "calculate_seconds": 0.008576600000000045
+    }
+  },
+  "app_sha256": "bf8b0449d629b58bb66baa2a3e5302b125824bd0261403e9d9379e7e6467ee36",
+  "bridge_sha256": "7b8a724ecfaeaed2814c5280119ba545d9a164b0eee9c3ea3100dc650aaae82f"
+}

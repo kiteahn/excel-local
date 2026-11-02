@@ -34,6 +34,7 @@ def main():
         timed('preflight', lambda:app.preflight(source_path))
         source = timed('inspect_source', lambda:app.inspect_file(source_path))
         reference = timed('inspect_reference', lambda:app.inspect_file(reference_path))
+        inspect_phases = {'source': source.get('timings', {}), 'reference': reference.get('timings', {})}
         checks = {}
         phases = {}
         for plan in [dict(action='lookup',key='ID',ref_key='ID',ref_value='Name'),
@@ -43,7 +44,7 @@ def main():
             report = timed(plan['action'], lambda:app.execute(source,reference,plan,output_dir=directory/'output',approval_token=preview['approval_token']))
             checks[plan['action']] = report['formula_checks']
             phases[plan['action']] = report.get('timings',{})
-    result = dict(label=args.label,rows=args.rows,seconds=measurements,formula_checks=checks,bridge_phases=phases,
+    result = dict(label=args.label,rows=args.rows,seconds=measurements,formula_checks=checks,bridge_phases=phases,inspect_phases=inspect_phases,
                   app_sha256=app.file_hash(app.ROOT/'app.py'),bridge_sha256=app.file_hash(app.ROOT/'excel_bridge.ps1'))
     path = app.ROOT/'results'/f'benchmark-{args.label}-{args.rows}.json'
     path.parent.mkdir(exist_ok=True)
