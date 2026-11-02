@@ -1390,6 +1390,35 @@ def ai_plan(prompt, source, reference=None, allow_clarify=False, provider=None, 
     return validate_plan(plan, source, reference, allow_clarify)
 
 
+def confirm_cloud_preview(prompt, source, reference=None, provider=None, parent=None, ask=None, api_key=None):
+    """Show the exact masked prompt/columns before a cloud request, on the Tk main thread.
+
+    Returns ``(approved, preview)``. When the router would stay local, no dialog
+    is shown and no data can leave the machine. ``ask`` is injectable for tests.
+    """
+    preview = ai_client.cloud_preview(
+        prompt,
+        source.get('headers', ()) if source else (),
+        reference.get('headers', ()) if reference else (),
+        provider=provider,
+        api_key=api_key,
+    )
+    if not preview['will_send']:
+        return True, preview
+
+    ask = ask or messagebox.askokcancel
+    targets = ', '.join(preview['providers']) or (provider or 'Cloud').upper()
+    body = (
+        f'Đích: {targets}\n\n'
+        'Nội dung chính xác sẽ gửi lên cloud (đã che dữ liệu nhận diện):\n\n'
+        f"{preview['prompt']}"
+    )
+    if preview['columns']:
+        body += '\n\nTên cột gửi kèm: ' + ', '.join(preview['columns'])
+    body += '\n\nBấm OK để gửi; Cancel để hủy. Nếu hủy, không có dữ liệu nào rời khỏi máy.'
+    return bool(ask('☁ Xem trước nội dung gửi Cloud', body, parent=parent)), preview
+
+
 class _ToolTip:
     """Minimal hover tooltip (stdlib Tk only); shows a small label near the widget."""
 
@@ -2192,6 +2221,14 @@ def gui(smoke=False):
             clean_test = ai_client.PrivacyGuard.anonymize_prompt(prompt)
             if clean_test != prompt:
                 self.note('🔒 Zero-Leakage: Đã nhận diện và khử định danh dữ liệu nhạy cảm (PII) trong yêu cầu trước khi gửi AI.')
+
+            approved, preview = True, None
+            if prompt and len(prompt) <= 8000:  # length/empty errors are reported by the worker as before
+                approved, preview = confirm_cloud_preview(prompt, source, reference, prov, parent=self.window)
+            if not approved:
+                self.status.set('Đã hủy gửi Cloud trước khi gửi.')
+                self.note('☁ Đã hủy gửi Cloud theo yêu cầu. Không có dữ liệu nào rời khỏi máy.')
+                return
 
             def proposed(plan):
                 if self.prompt.get('1.0', 'end').strip() != prompt:

@@ -368,3 +368,22 @@ Việc còn dở, nói thẳng:
 - Vàng lookup tăng lên **27 kịch bản** (thêm ca `clean_output` có khóa nguồn nhiều hơn bảng tham chiếu để bắt lỗi cắt helper). Bản mới 27/27 và bản trước tách (lấy `git show HEAD:app.py`) cũng 27/27.
 - Mutation 6 chỗ trong hàm mới: đổi nhãn `Gia_tri`, đổi `KHONG_TIM_THAY`, bỏ `escape_criteria`, đổi `Khoa_nguon`, cắt helper còn `len(table)`, đổi `expected is not None` thành `or ''` — **6/6 bị vàng bắt**, phục hồi xong vàng vẫn 27/27.
 - Test thật sau tách: `test_app.py --integration` **105/105** (lookup qua Excel COM), `test_usecases.py` **37/37** (UC-11..16), `test_gui.py` **14/14**, `test_ui_acceptance.py` **48/48**; `examples/` sạch.
+
+### Bước 0 — B0.4: một lệnh chạy đủ 3 nhóm + kiểm tra rác (2026-11-02)
+- `run_all_tests.ps1` chạy nhóm 1 (offline), nhóm 2 (Windows/DPAPI), nhóm 3 (Excel + GUI), ghi log riêng từng suite vào `.work/qa-logs/` (tên không bắt đầu `run-` để không bị `cleanup_stale_work_dirs()` xóa), in bảng tổng hợp, trả exit code 1 khi có suite lỗi / `examples/` đổi / còn Excel mồ côi.
+- Lượt cuối: **30 lệnh, 0 lỗi, 315,3s, exit 0**; `examples/` không đổi, không còn Excel do bridge tạo, không có thư mục tạm mới. Log: `.work/qa-logs/run-20261102-095442.log`.
+- Đã thêm `test_prepare_sheets_golden.py`, `test_cloud_preview.py`, `secret_scan.py`, `test_ui_acceptance.py` vào đúng nhóm; `-SkipExcel`, `-SkipGui`, `-SkipBenchmark` vẫn dùng được.
+
+### Bước 0 — B0.5: quét bí mật/đường dẫn cá nhân (2026-11-02)
+- `secret_scan.py` quét 95 file được git theo dõi (79 file văn bản) và toàn bộ lịch sử `git log -p --all`, không gọi mạng; bắt mẫu OpenAI/GitHub/Slack/Groq/AWS/Google, `Bearer`, mật khẩu và đường dẫn `C:\Users\<tên>`.
+- Kết quả cuối: **0 finding ngoài allowlist** ở working tree và lịch sử; allowlist 15 mẫu working tree / 12 mẫu lịch sử, tất cả là fixture tổng hợp đã đọc tận nơi (không lưu giá trị gốc).
+- Giới hạn: chỉ bắt mẫu phổ biến, không phải chứng nhận "không còn bí mật nào"; không quét file chưa được git theo dõi.
+### Chu kỳ 5 — Q2: corpus 212 câu + xem trước nội dung gửi cloud (2026-11-02)
+- Mở rộng `test_privacy_guard_cases.py` từ 117 lên **212 câu yêu cầu tiếng Việt** (125 PII + 87 không phải PII). Thêm 45 câu PII thực tế (SĐT nhiều định dạng, CCCD/CMND, email, STK/MST, API key/token/mật khẩu, tên có chức danh và tên đứng riêng) và 50 câu bình thường dễ bị che nhầm (địa danh trùng họ, trường/bệnh viện/công ty, môn học, hàng hóa, chức vụ, số tiền/MSSV/mã đơn, câu có từ giống họ).
+- Đo lại: **0 rò lọt ngoài 2 giới hạn đã ghi** (tên 2 từ; tên dân tộc không có họ Kinh) và **0/87 che nhầm = 0,00%**, ngưỡng đặt ra ≤2%. Test tự assert tỷ lệ che nhầm.
+- Phát hiện và vá một lỗ rò thật khi viết corpus: `"Mật khẩu mới: ..."` không bị che vì regex chỉ chấp nhận từ khóa đứng ngay trước `:`/`=`. `PASSWORD_REGEX` nay cho phép tối đa 2 từ đệm trước dấu `:`/`=`; corpus và 43 check bảo mật đều đạt lại.
+- Thêm `ai_client.cloud_preview(...)`: trả **đúng** câu đã che, danh sách cột đã che, nhà cung cấp đích và dự đoán `will_send` theo cùng thứ tự cache → clarify → local-first → Ollama → cloud của `request_plan`; **không gọi mạng** (có test chặn `call_openai_plan`).
+- GUI: trước khi chạy worker, nếu router sẽ gửi cloud, hiện hộp xem trước đúng nội dung + tên cột, nút OK/Cancel. Cancel dừng trước khi gửi, ghi rõ "không có dữ liệu nào rời khỏi máy". Chế độ local/Ollama/heuristic không hiện hộp.
+- Test mới `test_cloud_preview.py`: **20 check** (che đúng, đúng cột, không gọi mạng, local không hỏi, hủy chặn, OK cho gửi, thông điệp không lộ PII gốc). `test_gui.py` 14/14, `test_ui_acceptance.py` 48/48, `test_app.py` 87/87.
+- README cập nhật số mẫu, tỷ lệ đo, giới hạn còn lại và bước xem trước/hủy; không dùng từ "tuyệt đối"/"không bao giờ lọt".
+

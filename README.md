@@ -12,7 +12,7 @@ Nhấp đúp `start.cmd` hoặc chạy `python app.py`. Máy hiện tại đã c
    - **🏠 Ollama Cục bộ (Offline) — MẶC ĐỊNH (quyết định 2026-10-30):** Ứng dụng chỉ gọi Ollama tại 127.0.0.1 trên máy, không cần internet, không gửi gì ra ngoài. Đây là động cơ được chọn sẵn khi chưa có cấu hình đã lưu; cấu hình bạn đã lưu trước đó vẫn được tôn trọng.
    - **⚡ Smart Multi-Model Router (tùy chọn, bạn tự bật):** Tự động luân phiên giữa các model AI miễn phí & trả phí chất lượng cao (Google Gemini Free Tier, Groq Llama 3.3 70B, OpenAI). Tự động failover sang model kế tiếp khi gặp giới hạn hạn mức (quota) và tự động fallback về Ollama Local khi mất mạng internet. Cloud KHÔNG tự bật — chỉ chạy khi bạn chọn chế độ này (hoặc một nhà cung cấp cloud) trong giao diện/Cài đặt AI.
 4. Bấm **⚙ Cài đặt AI & Smart Router** để nhập API Key (được mã hóa bằng Windows DPAPI; chỉ tài khoản Windows hiện tại mới giải mã được — đây là lớp bảo vệ khi file cấu hình bị sao chép, không phải bảo vệ tuyệt đối nếu chính tài khoản/máy đã bị xâm nhập). Có thể dùng API Key hoàn toàn miễn phí từ Google AI Studio hoặc Groq Cloud.
-5. Nhập yêu cầu tự nhiên rồi bấm **✨ AI Phân tích & Lập đề xuất**, hoặc chọn cột thủ công.
+5. Nhập yêu cầu tự nhiên rồi bấm **✨ AI Phân tích & Lập đề xuất**, hoặc chọn cột thủ công. Nếu động cơ sắp gửi lên cloud, ứng dụng hiện hộp **xem trước đúng đoạn chữ và tên cột đã che**; bấm Cancel để hủy, khi đó không có dữ liệu nào rời máy.
 6. Bấm **3. Kiểm tra kết quả dự kiến (Preview)** để xem trước dữ liệu mẫu và các thẻ thống kê trực quan.
 7. Bấm **Chấp nhận và thực hiện** để Excel native thực thi, tính toán và đối soát độc lập.
 
@@ -54,7 +54,7 @@ Máy đã kiểm tra: RAM khoảng 16 GB, i5-12450H, RTX 2050 VRAM 4 GB, Excel M
 
 ## Bảo mật & quyền riêng tư (mô tả đúng hành vi code, kèm giới hạn)
 
-1. **Che PII bằng regex + ngữ cảnh (Privacy Guard):** Trước khi gọi bất kỳ động cơ AI nào (cloud hoặc Ollama), hệ thống quét câu yêu cầu và che CCCD (12 số), CMND (9 số), SĐT VN (+84, 03x-09x), email, số tài khoản ngân hàng, mã số thuế, mật khẩu, cùng tên riêng có từ xưng hô hoặc tên đứng một mình từ 3 từ trở lên bắt đầu bằng họ Việt phổ biến. **Giới hạn (đã đo bằng bộ 80 mẫu PII + 37 mẫu không phải PII trong `test_privacy_guard_cases.py`, 0 rò lọt/0 che nhầm ngoài danh sách đã ghi):** đây vẫn là regex nên không bảo đảm che hết — tên chỉ 2 từ, tên dân tộc không bắt đầu bằng họ Kinh, hoặc định dạng lạ có thể lọt; tên đường/phố trùng họ người được loại trừ bằng danh sách và từ chỉ địa danh, nhưng có thể còn sót. Ngược lại, số 9 chữ số đứng sau đơn vị tiền, sau MSSV/mã sinh viên, và mã 13 chữ số sau chữ "mã" (trừ ngữ cảnh tài khoản/ngân hàng) được giữ nguyên thay vì che. Đừng gõ thông tin định danh thật vào ô yêu cầu.
+1. **Che PII bằng regex + ngữ cảnh (Privacy Guard):** Trước khi gọi bất kỳ động cơ AI nào (cloud hoặc Ollama), hệ thống quét câu yêu cầu và che CCCD (12 số), CMND (9 số), SĐT VN (+84, 03x-09x), email, số tài khoản ngân hàng, mã số thuế, mật khẩu, cùng tên riêng có từ xưng hô hoặc tên đứng một mình từ 3 từ trở lên bắt đầu bằng họ Việt phổ biến. **Giới hạn (đã đo bằng bộ 125 mẫu PII + 87 mẫu không phải PII = 212 câu trong `test_privacy_guard_cases.py`; 0 rò lọt ngoài 2 giới hạn đã ghi, 0 che nhầm = 0% ≤ ngưỡng 2%):** đây vẫn là regex nên không bảo đảm che hết — tên chỉ 2 từ, tên dân tộc không bắt đầu bằng họ Kinh, hoặc định dạng lạ có thể lọt; tên đường/phố trùng họ người được loại trừ bằng danh sách và từ chỉ địa danh, nhưng có thể còn sót. Ngược lại, số 9 chữ số đứng sau đơn vị tiền, sau MSSV/mã sinh viên, và mã 13 chữ số sau chữ "mã" (trừ ngữ cảnh tài khoản/ngân hàng) được giữ nguyên thay vì che. Đừng gõ thông tin định danh thật vào ô yêu cầu.
 2. **Bảo vệ tiêu đề cột (Column Pseudonymization):** Tiêu đề cột chứa dữ liệu nhạy cảm được thay thế bằng bí danh `[COT_BAO_MAT_i]` khi gọi API và hoàn nguyên cục bộ khi nhận kết quả.
 3. **Mã hóa khóa API bằng Windows DPAPI:** Khóa OpenAI API Key được mã hóa bằng chuẩn Windows Data Protection API (DPAPI). Không lưu văn bản thô trên ổ đĩa; chỉ tài khoản Windows hiện tại mới có thể giải mã.
 4. **Bộ nhớ đệm kế hoạch cục bộ (Local Plan Cache):** Yêu cầu lặp lại cùng ý định được phục vụ ngay từ RAM trong 0ms, không phát sinh bất kỳ kết nối mạng nào ra ngoài (Zero Egress).
@@ -82,7 +82,8 @@ python -X utf8 test_batch_processing.py       # 10 bài test Xử lý hàng lo�
 python -X utf8 test_usecases.py           # 37 use case tầng 2 (USECASES.md): CSV/banner, khóa, tổng hợp, token, preflight
 python -X utf8 test_usecases2.py          # 10 use case bất thường (khóa thiếu, kế hoạch sai, dữ liệu lạ)
 python -X utf8 test_batch_summary.py      # 6 bài test tổng hợp theo lô và chặn thiếu danh mục
-python -X utf8 test_privacy_guard_cases.py # 117 mẫu đo Privacy Guard (80 PII + 37 không phải PII)
+python -X utf8 test_privacy_guard_cases.py # 212 mẫu đo Privacy Guard (125 PII + 87 không phải PII)
+python -X utf8 test_cloud_preview.py     # 20 check xem trước đúng nội dung gửi cloud + hủy (không gọi mạng)
 python -X utf8 test_infer_golden.py       # 28 prompt vàng cho infer_smart_plan (ghim hành vi heuristic)
 python -X utf8 test_sanitize_plan.py      # 12 bài test sanitize_plan + khóa cache của plan (ép clarify, fuzzy match cột)
 python -X utf8 test_fuzz_light.py         # 20 biến thể fuzz nhẹ cho parser CSV

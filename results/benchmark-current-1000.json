@@ -2,12 +2,12 @@
   "label": "current",
   "rows": 1000,
   "seconds": {
-    "preflight": 0.029,
-    "inspect_source": 4.052,
-    "inspect_reference": 3.977,
-    "lookup": 6.275,
-    "summary": 6.133,
-    "clean": 5.309
+    "preflight": 0.036,
+    "inspect_source": 5.039,
+    "inspect_reference": 4.869,
+    "lookup": 7.847,
+    "summary": 7.53,
+    "clean": 6.555
   },
   "formula_checks": {
     "lookup": 1000,
@@ -16,27 +16,27 @@
   },
   "bridge_phases": {
     "lookup": {
-      "verify_seconds": 0.1005288000000002,
-      "save_seconds": 0.11293059999999988,
-      "open_seconds": 1.0332686,
-      "write_seconds": 2.0226892,
-      "calculate_seconds": 0.022308799999999795
+      "verify_seconds": 0.15348700000000015,
+      "save_seconds": 0.16241079999999997,
+      "open_seconds": 1.4190189,
+      "write_seconds": 2.8103246000000004,
+      "calculate_seconds": 0.05937000000000037
     },
     "summary": {
-      "verify_seconds": 0.10698549999999996,
-      "save_seconds": 0.10984019999999983,
-      "open_seconds": 1.0294796,
-      "write_seconds": 1.9732201999999999,
-      "calculate_seconds": 0.0101602999999999
+      "verify_seconds": 0.22690120000000036,
+      "save_seconds": 0.1724616000000001,
+      "open_seconds": 1.4078583,
+      "write_seconds": 2.5149834999999996,
+      "calculate_seconds": 0.01955309999999999
     },
     "clean": {
-      "verify_seconds": 0.026240999999999737,
-      "save_seconds": 0.09087230000000002,
-      "open_seconds": 1.0222002,
-      "write_seconds": 1.3791612999999998,
-      "calculate_seconds": 0.006836800000000309
+      "verify_seconds": 0.0893136000000001,
+      "save_seconds": 0.19694650000000014,
+      "open_seconds": 1.5066163,
+      "write_seconds": 1.7245076,
+      "calculate_seconds": 0.013810900000000181
     }
   },
-  "app_sha256": "9b373e6418a1e65b99c5b1b685597cc7810f105c8d54588fd3e79117e70521ae",
+  "app_sha256": "bf8b0449d629b58bb66baa2a3e5302b125824bd0261403e9d9379e7e6467ee36",
   "bridge_sha256": "967b253e2db8c77b88cc7465876a3425da6f0ed81f9e27628f5830065e7adb25"
 }

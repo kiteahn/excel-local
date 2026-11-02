@@ -51,7 +51,7 @@ class PrivacyGuard:
     TAX_REGEX = re.compile(r'\b\d{10}(?:-\d{3})?\b')
     BANK_REGEX = re.compile(r'\b(?:\d[\s.-]?){11,18}\d\b')
     API_KEY_REGEX = re.compile(r'(?:sk-[a-zA-Z0-9_-]{20,}|ghp_[a-zA-Z0-9]{36}|Bearer\s+[a-zA-Z0-9_.\-]+)', re.IGNORECASE)
-    PASSWORD_REGEX = re.compile(r'(?:mật khẩu|mat khau|password|token|secret)(?:\s*[:=]\s*|\s+là\s+|\s+la\s+|(?:\s+\S+){1,3}?\s+là\s+|(?:\s+\S+){1,3}?\s+la\s+)\S+', re.IGNORECASE)
+    PASSWORD_REGEX = re.compile(r'(?:mật khẩu|mat khau|password|token|secret)(?:\s*[:=]\s*|\s+là\s+|\s+la\s+|(?:\s+\S+){1,3}?\s+là\s+|(?:\s+\S+){1,3}?\s+la\s+|(?:\s+\S+){1,2}?\s*[:=]\s*)\S+', re.IGNORECASE)
     NAME_TITLE_REGEX = re.compile(r'\b((?i:sinh viên|học sinh|thầy giáo|cô giáo|thầy|cô|anh|chị|ông|bà))\s+([A-ZÀ-ỸĐ][a-zà-ỹđ]*(?:\s+[A-ZÀ-ỸĐ][a-zà-ỹđ]*){1,4})\b')
 
     # --- Cycle 1: context that must NOT be redacted -------------------------
@@ -1413,6 +1413,63 @@ def get_active_candidates(cfg, requested_provider=None, api_key=None, model=None
             })
 
     return candidates
+
+
+def cloud_preview(prompt, source_columns, reference_columns=(), provider=None, api_key=None, model=None, base_url=None):
+    """Return the exact masked payload a cloud call would send, without any network.
+
+    ``will_send`` follows the same local-first / cache / clarify checks as
+    :func:`request_plan`; it is a prediction made immediately before planning,
+    not a log of a request that already happened. No HTTP request is made here.
+    """
+    if not prompt.strip() or len(prompt) > 8000:
+        raise ValueError('Nhập yêu cầu từ 1 đến 8000 ký tự.')
+
+    clean_prompt = PrivacyGuard.anonymize_prompt(prompt)
+    clean_src_cols, _ = PrivacyGuard.anonymize_columns(list(source_columns))
+    clean_ref_cols, _ = PrivacyGuard.anonymize_columns(list(reference_columns))
+
+    cfg = get_config()
+    chosen_provider = provider or cfg.get('provider', 'ollama')
+    candidates = get_active_candidates(
+        cfg, requested_provider=chosen_provider, api_key=api_key, model=model, base_url=base_url)
+    qa_check = infer_smart_plan(clean_prompt, clean_src_cols, clean_ref_cols)
+    cache_key = get_plan_cache_key(clean_prompt, tuple(clean_src_cols), tuple(clean_ref_cols))
+
+    local_only = False
+    reason = 'cloud'
+    if cache_key in _PLAN_CACHE:
+        local_only, reason = True, 'cache'
+    elif qa_check and qa_check.get('action') == 'clarify':
+        local_only, reason = True, 'clarify'
+    elif chosen_provider == 'ollama':
+        local_only, reason = True, 'ollama'
+    elif (chosen_provider in ('smart_local', 'local_first', 'heuristic')
+          or cfg.get('local_first', False)
+          or (chosen_provider == 'smart' and not candidates)):
+        if qa_check and qa_check.get('action') in ('lookup', 'summary', 'clean', 'filter'):
+            local_only, reason = True, 'local_engine'
+        elif chosen_provider == 'heuristic':
+            local_only, reason = True, 'heuristic'
+        else:
+            # The local engine could not handle this prompt, so request_plan
+            # may still fall through to a cloud candidate.
+            reason = 'local_engine_fallback_to_cloud'
+
+    will_send = (not local_only) and bool(candidates)
+    if not will_send and reason == 'cloud':
+        reason = 'no_cloud_key'
+
+    return {
+        'prompt': clean_prompt,
+        'columns': list(clean_src_cols) + list(clean_ref_cols),
+        'source_columns': list(clean_src_cols),
+        'reference_columns': list(clean_ref_cols),
+        'providers': [c.get('name', 'Cloud AI') for c in candidates],
+        'provider': chosen_provider,
+        'will_send': will_send,
+        'reason': reason,
+    }
 
 
 def test_ai_connection(provider='smart', api_key=None, model=None, base_url=None):

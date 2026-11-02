@@ -1,4 +1,4 @@
-"""Measured corpus for PrivacyGuard (muc E): 80 PII + 37 non-PII samples.
+"""Measured corpus for PrivacyGuard (muc E): 125 PII + 87 non-PII samples (212 total).
 
 Each PII case names the secret substring that must NOT survive
 anonymize_prompt(). Each non-PII case must come back byte-identical.
@@ -105,6 +105,52 @@ PII_CASES = [
     # Documented residual risks of this design (measured, not hidden)
     ("Hồ sơ của Lê Minh cần xem", "Lê Minh", "two-word standalone name"),
     ("Hồ sơ của Y Blô Niê cần xem", "Y Blô Niê", "ethnic name without common surname"),
+    # --- Cycle 5: user-writing corpus, realistic spreadsheet requests -------
+    ("Số liên lạc 0912345678 của phụ huynh", "0912345678", "phone 09x request"),
+    ("Gọi lại cho 0945678901 sau 8h", "0945678901", "phone 09x request"),
+    ("Hotline cá nhân 0387654321 cần xóa", "0387654321", "phone 03x request"),
+    ("SĐT 0868123456 trong hồ sơ", "0868123456", "phone 08x request"),
+    ("Liên hệ 0789123456 để nhận bằng", "0789123456", "phone 07x request"),
+    ("Số 0932 456 789 của lớp phó", "0932 456 789", "phone spaced request"),
+    ("Số 0977.123.456 cần gọi", "0977.123.456", "phone dotted request"),
+    ("Số +84 987 654 321 khẩn cấp", "987 654 321", "phone +84 spaced request"),
+    ("Số 84912345678 của cố vấn", "84912345678", "phone 84 request"),
+    ("SĐT 0345-678-901 của trợ giảng", "0345-678-901", "phone dashed request"),
+    ("CCCD 079202012345 cần đối chiếu", "079202012345", "CCCD request"),
+    ("Căn cước 001202009876 của tân sinh viên", "001202009876", "CCCD request"),
+    ("CMND 456789123 trong hồ sơ giấy", "456789123", "CMND request"),
+    ("Số định danh 079202011111 đã cập nhật", "079202011111", "CCCD request"),
+    ("CCCD 052202022222 của nhân viên", "052202022222", "CCCD request"),
+    ("Gửi bảng điểm tới hoang.thi.mai@example.vn", "hoang.thi.mai@example.vn", "email request"),
+    ("Email phụ huynh: phuhuynh.2026@example.com", "phuhuynh.2026@example.com", "email request"),
+    ("Liên hệ qua a.b.c+lop@example.edu.vn", "a.b.c+lop@example.edu.vn", "email request"),
+    ("Thư tới NGUYEN.VAN.B@EXAMPLE.ORG", "NGUYEN.VAN.B@EXAMPLE.ORG", "email request"),
+    ("Mail: sv.00123@hcmut.edu.vn", "sv.00123@hcmut.edu.vn", "email request"),
+    ("STK 9876543210123 của nhà trường", "9876543210123", "bank request"),
+    ("Chuyển vào tài khoản 0011002233445566", "0011002233445566", "bank request"),
+    ("Tài khoản 1234 5678 9012 345 thu học phí", "1234 5678 9012 345", "bank spaced request"),
+    ("STK 0123-4567-8901-23 hoàn tiền", "0123-4567-8901-23", "bank dashed request"),
+    ("MST 0312345678-002 của chi nhánh", "0312345678-002", "tax request"),
+    ("Mã số thuế 0109876543 của đối tác", "0109876543", "tax request"),
+    ("STK 5555666677778888 cần xác minh", "5555666677778888", "bank request"),
+    ("API key mới là sk-proj-abcdefghijklmnop123456", "sk-proj-abcdefghijklmnop123456", "api key request"),
+    ("Token: ghp_0123456789abcdefghijklmnopqrstuvwxyz", "ghp_0123456789abcdefghijklmnopqrstuvwxyz", "github token request"),
+    ("Mật khẩu mới: DoiMatKhau#2026", "DoiMatKhau#2026", "password request"),
+    ("password là P@ss2026moi", "P@ss2026moi", "password request"),
+    ("secret: topsecret2026", "topsecret2026", "secret request"),
+    ("Thầy Nguyễn Đức Anh dạy môn này", "Nguyễn Đức Anh", "name with title request"),
+    ("Cô giáo Lê Thị Hồng nhận lớp", "Lê Thị Hồng", "name with title request"),
+    ("Anh Trần Quốc Việt phụ trách", "Trần Quốc Việt", "name with title request"),
+    ("Chị Phạm Thu Hà gửi báo cáo", "Phạm Thu Hà", "name with title request"),
+    ("Ông Đỗ Văn Nam ký duyệt", "Đỗ Văn Nam", "name with title request"),
+    ("Bà Ngô Thị Lan thanh toán", "Ngô Thị Lan", "name with title request"),
+    ("Học sinh Vũ Minh Đức nghỉ học", "Vũ Minh Đức", "name with title request"),
+    ("Sinh viên Huỳnh Gia Bảo nộp bài", "Huỳnh Gia Bảo", "name with title request"),
+    ("Nhập điểm cho Nguyễn Thị Kim Ngân", "Nguyễn Thị Kim Ngân", "standalone name request"),
+    ("Hồ sơ của Trần Đức Thịnh", "Trần Đức Thịnh", "standalone name request"),
+    ("Báo cáo của Lê Hoàng Phúc", "Lê Hoàng Phúc", "standalone name request"),
+    ("Gửi thư cho Hoàng Thị Thu Hương", "Hoàng Thị Thu Hương", "standalone name request"),
+    ("Danh sách có Đặng Minh Tuấn", "Đặng Minh Tuấn", "standalone name request"),
 ]
 
 # (prompt,) must be returned unchanged
@@ -147,6 +193,57 @@ NON_PII_CASES = [
     "Khoa Công Nghệ Thông Tin có 3 lớp",                # title-case words, not a name
     "Trường Đại Học Bách Khoa tuyển sinh",              # organisation name
     "Lê Văn",                                            # two words, no full name
+    # --- Cycle 5: ordinary requests that share words with names/places -----
+    "Đường Nguyễn Trãi đang mở rộng",
+    "Phố Lê Lợi cấm xe tải",
+    "Quảng trường Nguyễn Huệ đông người",
+    "Đường Trần Phú có ổ gà",
+    "Phường Nguyễn Du tổ chức họp",
+    "Xã Lê Minh Xuân đã hoàn thành",
+    "Xã Đinh Tiên Hoàng đạt chuẩn",
+    "Đường Hoàng Diệu sửa cống",
+    "Phố Võ Thị Sáu đông khách",
+    "Quận Ngô Quyền có 5 phường",
+    "Trường Lê Quý Đôn tuyển sinh",
+    "Bệnh viện Nguyễn Tri Phương quá tải",
+    "Công ty Trần Anh nhập hàng",
+    "Ngân hàng Phương Nam mở chi nhánh",
+    "Trung tâm Hoàng Gia khai giảng",
+    "Ủy ban Nguyễn Văn Cừ họp",
+    "Môn Ngữ Văn có 120 tiết",
+    "Môn Lịch Sử thi tự luận",
+    "Môn Địa Lý cần atlas",
+    "Giáo dục công dân là môn bắt buộc",
+    "Nhập 50 kg lê về kho",
+    "Giá lê hôm nay 35.000 đồng",
+    "Bán 20 thùng táo",
+    "Gạo ST25 bán chạy",
+    "Cà phê Trung Nguyên xuất khẩu",
+    "Sữa Vinamilk tăng giá",
+    "Vải thiều Bắc Giang được mùa",
+    "Lọc lớp trưởng và tổ trưởng",
+    "Cột Họ tên nằm thứ hai",
+    "Cột Ngày sinh cần định dạng",
+    "Cột Số điện thoại đang trống",
+    "Cột Email cần kiểm tra",
+    "Tổng quỹ 125000000 đồng",
+    "Học phí mỗi bạn 12.345.678 đồng",
+    "Lương tháng 25000000 đồng",
+    "MSSV 52400208 cần cập nhật",
+    "Mã sinh viên 524002081 đã nộp",
+    "Đối chiếu mã hồ sơ 0012345678901",
+    "Mã đơn 20261102001 đã giao",
+    "Năm 2026 có 3 học kỳ",
+    "Điểm từ 8.5 đến 10",
+    "Bảng có 20000 dòng",
+    "Xóa 60 cột trống",
+    "Lọc 5 lớp có điểm cao",
+    "Tính trung bình cộng cột Điểm",
+    "Mai mở file giúp tôi",
+    "Đỗ xe ở bãi phía sau",
+    "Hà Nội hôm nay mưa",
+    "Lê giá sản phẩm lên 10%",
+    "Tạm dừng cập nhật",
 ]
 
 # Cases the current regex design is known to get wrong; measured and printed,
@@ -176,11 +273,14 @@ def main():
     print(f"Non-PII cases: {len(NON_PII_CASES)} | falsely redacted (unexpected): {len(false_hits)}")
     for c, p, o in false_hits:
         print(f"  FALSE [{c}] {p!r} -> {o!r}")
+    false_rate = len(false_hits) / len(NON_PII_CASES)
+    print(f"False-redaction rate: {false_rate:.2%} (target <= 2%)")
     print(f"Known limitations hit: {len(known)}")
     for c, p, o in known:
         print(f"  KNOWN [{c}] {p!r} -> {o!r}")
     assert not leaks, f"{len(leaks)} unexpected PII leaks"
     assert not false_hits, f"{len(false_hits)} unexpected false redactions"
+    assert false_rate <= 0.02, f"false-redaction rate {false_rate:.2%} exceeds 2%"
     print("PrivacyGuard corpus: all unexpected-failure counts are zero.")
 
 _MARKERS = {

@@ -50,3 +50,13 @@ python -X utf8 test_usecases.py
 python -X utf8 test_gui.py
 python -X utf8 test_ui_acceptance.py
 ```
+
+## Kết quả (2026-11-01)
+- Hàm mới `_prepare_lookup` 106 dòng; `prepare_sheets` 262 → **169 dòng**; không đổi hành vi theo 27 kịch bản vàng (bản mới và bản `git show HEAD:app.py` trước tách đều 27/27).
+- AST hằng chuỗi: 92/92 trong khối lookup và 142/142 phần còn lại (khác duy nhất docstring, vị trí đọc `allow_dates`, và chuỗi `'lookup'` của câu `if`).
+- Mutation 6 chỗ (nhãn helper, trạng thái thiếu, escape wildcard, nhãn khóa nguồn, số dòng helper, giá trị False/0) — 6/6 bị bắt.
+- Test thật: `test_app.py --integration` 105/105, `test_usecases.py` 37/37, `test_gui.py` 14/14, `test_ui_acceptance.py` 48/48.
+- `run_all_tests.ps1`: 29 suite (thêm `test_prepare_sheets_golden.py`, `secret_scan.py`, `test_ui_acceptance.py`) — xem bảng trong log `.work/qa-logs/`.
+
+## Việc chuyển sang chu kỳ 5
+- Nhánh `summary`/`clean`/`filter` vẫn nằm trong `prepare_sheets` (169 dòng); lần tách tiếp theo dùng lại quy trình vàng + mutation này.

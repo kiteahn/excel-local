@@ -149,6 +149,7 @@ $offline = @(
     @{ Name = 'test_prepare_sheets_golden.py'; Args = @() },
     @{ Name = 'test_batch_summary.py'; Args = @() },
     @{ Name = 'test_privacy_guard_cases.py'; Args = @() },
+    @{ Name = 'test_cloud_preview.py'; Args = @() },
     @{ Name = 'test_single_file_filter.py'; Args = @() },
     @{ Name = 'test_diverse_scenarios_e2e.py'; Args = @() },
     @{ Name = 'test_batch_processing.py'; Args = @() },
@@ -164,6 +165,7 @@ $excel = @(
     @{ Name = 'test_read_boundary.py'; Args = @() }
 )
 if (-not $SkipGui) { $excel += @{ Name = 'test_gui.py'; Args = @() } }
+if (-not $SkipGui) { $excel += @{ Name = 'test_ui_acceptance.py'; Args = @() } }
 if (-not $SkipBenchmark) { $excel += @{ Name = 'benchmark.py'; Args = @() } }
 
 foreach ($suite in $offline) { Invoke-Suite '1-offline' $suite.Name $suite.Args }
