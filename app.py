@@ -1739,7 +1739,7 @@ def review_plan_dialog(app, source, reference, plan, preview, export_pdf,
     app.status.set('Đang chờ chấp nhận; chưa tạo workbook hoặc PDF.')
 
 
-def gui(smoke=False):
+def gui(smoke=False, on_ready=None):
     import tkinter as tk
     from tkinter import ttk, filedialog, messagebox
 
@@ -2437,6 +2437,14 @@ def gui(smoke=False):
 
     window = tk.Tk()
     window.controller = App(window)
+    if on_ready:
+        def ready():
+            try:
+                on_ready(window)
+            except Exception:
+                window.destroy()
+                raise
+        window.after(300, ready)
     if smoke:
         window.update()
         outer = window.winfo_children()[0]
