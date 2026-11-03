@@ -14,5 +14,5 @@
     "lookup reads zero-padded code from original offset"
   ],
   "scope": "Header parser + native Excel read/write; synthetic files only",
-  "app_sha256": "bf8b0449d629b58bb66baa2a3e5302b125824bd0261403e9d9379e7e6467ee36"
+  "app_sha256": "fbf5b100ed25a789c238454b1f048356a561ff963f3e27e7ce0ebe36af6d3fb5"
 }

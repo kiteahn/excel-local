@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-03 10:48:40",
+  "generated_at": "2026-11-03 11:00:07",
   "workbooks": 9,
   "prompts": 55,
   "curated": 50,
@@ -17,8 +17,8 @@
       {
         "id": "C01",
         "ok": true,
-        "seconds": 5.593,
-        "output": "20261103-104351_clean_9a3590fe.xlsx",
+        "seconds": 5.91,
+        "output": "20261103-105519_clean_2610eebb.xlsx",
         "formula_checks": 0,
         "saved_cell_checks": 744,
         "preserved": true
@@ -26,8 +26,8 @@
       {
         "id": "C02",
         "ok": true,
-        "seconds": 5.553,
-        "output": "20261103-104356_clean_43553f34.xlsx",
+        "seconds": 6.21,
+        "output": "20261103-105526_clean_0e36b5b1.xlsx",
         "formula_checks": 0,
         "saved_cell_checks": 744,
         "preserved": true
@@ -35,8 +35,8 @@
       {
         "id": "C03",
         "ok": true,
-        "seconds": 6.135,
-        "output": "20261103-104402_summary_197e8550.xlsx",
+        "seconds": 6.13,
+        "output": "20261103-105532_summary_af3c40b5.xlsx",
         "formula_checks": 6,
         "saved_cell_checks": 278,
         "preserved": true
@@ -44,8 +44,8 @@
       {
         "id": "C04",
         "ok": true,
-        "seconds": 5.646,
-        "output": "20261103-104408_filter_2ce320f1.xlsx",
+        "seconds": 5.587,
+        "output": "20261103-105537_filter_ea61b24e.xlsx",
         "formula_checks": 0,
         "saved_cell_checks": 266,
         "preserved": true
@@ -53,8 +53,8 @@
       {
         "id": "C05",
         "ok": true,
-        "seconds": 5.476,
-        "output": "20261103-104414_filter_2f741f6d.xlsx",
+        "seconds": 5.338,
+        "output": "20261103-105543_filter_de497e0c.xlsx",
         "formula_checks": 0,
         "saved_cell_checks": 200,
         "preserved": true
@@ -62,8 +62,8 @@
       {
         "id": "C06",
         "ok": true,
-        "seconds": 5.631,
-        "output": "20261103-104419_filter_fd3f16f2.xlsx",
+        "seconds": 5.398,
+        "output": "20261103-105548_filter_581ef2fa.xlsx",
         "formula_checks": 0,
         "saved_cell_checks": 266,
         "preserved": true
@@ -71,8 +71,8 @@
       {
         "id": "C07",
         "ok": true,
-        "seconds": 6.305,
-        "output": "20261103-104426_lookup_bfba9c2c.xlsx",
+        "seconds": 6.244,
+        "output": "20261103-105554_lookup_3d92a3a5.xlsx",
         "formula_checks": 0,
         "saved_cell_checks": 1123,
         "preserved": true
@@ -80,8 +80,8 @@
       {
         "id": "C08",
         "ok": true,
-        "seconds": 7.051,
-        "output": "20261103-104433_lookup_cb5fefd1.xlsx",
+        "seconds": 6.273,
+        "output": "20261103-105601_lookup_076c9ba3.xlsx",
         "formula_checks": 0,
         "saved_cell_checks": 1123,
         "preserved": true
@@ -89,8 +89,8 @@
       {
         "id": "C09",
         "ok": true,
-        "seconds": 5.672,
-        "output": "20261103-104438_clean_cefa0dd8.xlsx",
+        "seconds": 5.385,
+        "output": "20261103-105606_clean_bece92eb.xlsx",
         "formula_checks": 0,
         "saved_cell_checks": 585,
         "preserved": true
@@ -98,8 +98,8 @@
       {
         "id": "C10",
         "ok": true,
-        "seconds": 5.893,
-        "output": "20261103-104444_clean_8c0f010f.xlsx",
+        "seconds": 5.504,
+        "output": "20261103-105611_clean_44782900.xlsx",
         "formula_checks": 0,
         "saved_cell_checks": 585,
         "preserved": true
@@ -107,8 +107,8 @@
       {
         "id": "C11",
         "ok": true,
-        "seconds": 6.368,
-        "output": "20261103-104451_summary_a146153f.xlsx",
+        "seconds": 6.066,
+        "output": "20261103-105618_summary_9f2e1df7.xlsx",
         "formula_checks": 8,
         "saved_cell_checks": 201,
         "preserved": true
@@ -116,8 +116,8 @@
       {
         "id": "C12",
         "ok": true,
-        "seconds": 6.222,
-        "output": "20261103-104457_summary_4d6bdb6d.xlsx",
+        "seconds": 5.754,
+        "output": "20261103-105623_summary_39d800e9.xlsx",
         "formula_checks": 8,
         "saved_cell_checks": 201,
         "preserved": true
@@ -125,8 +125,8 @@
       {
         "id": "C13",
         "ok": true,
-        "seconds": 5.52,
-        "output": "20261103-104502_filter_9826ef7f.xlsx",
+        "seconds": 5.423,
+        "output": "20261103-105629_filter_fc0ae99a.xlsx",
         "formula_checks": 0,
         "saved_cell_checks": 27,
         "preserved": true
@@ -134,8 +134,8 @@
       {
         "id": "C14",
         "ok": true,
-        "seconds": 5.478,
-        "output": "20261103-104508_filter_329951f1.xlsx",
+        "seconds": 5.436,
+        "output": "20261103-105634_filter_8a05c786.xlsx",
         "formula_checks": 0,
         "saved_cell_checks": 167,
         "preserved": true
@@ -143,8 +143,8 @@
       {
         "id": "C15",
         "ok": true,
-        "seconds": 5.675,
-        "output": "20261103-104513_filter_496aa36d.xlsx",
+        "seconds": 5.322,
+        "output": "20261103-105639_filter_90b8b003.xlsx",
         "formula_checks": 0,
         "saved_cell_checks": 398,
         "preserved": true
@@ -152,8 +152,8 @@
       {
         "id": "C16",
         "ok": true,
-        "seconds": 6.048,
-        "output": "20261103-104519_summary_fe1bc226.xlsx",
+        "seconds": 6.032,
+        "output": "20261103-105645_summary_8847a470.xlsx",
         "formula_checks": 8,
         "saved_cell_checks": 201,
         "preserved": true
@@ -161,8 +161,8 @@
       {
         "id": "C17",
         "ok": true,
-        "seconds": 5.999,
-        "output": "20261103-104525_lookup_cee3c37c.xlsx",
+        "seconds": 5.885,
+        "output": "20261103-105651_lookup_e002c21d.xlsx",
         "formula_checks": 80,
         "saved_cell_checks": 1078,
         "preserved": true
@@ -170,8 +170,8 @@
       {
         "id": "C18",
         "ok": true,
-        "seconds": 6.715,
-        "output": "20261103-104532_lookup_459db1ee.xlsx",
+        "seconds": 5.907,
+        "output": "20261103-105657_lookup_559b289e.xlsx",
         "formula_checks": 80,
         "saved_cell_checks": 1078,
         "preserved": true
@@ -179,8 +179,8 @@
       {
         "id": "C19",
         "ok": true,
-        "seconds": 6.021,
-        "output": "20261103-104538_clean_4907a905.xlsx",
+        "seconds": 5.229,
+        "output": "20261103-105703_clean_a2c6327b.xlsx",
         "formula_checks": 0,
         "saved_cell_checks": 732,
         "preserved": true
@@ -188,8 +188,8 @@
       {
         "id": "C20",
         "ok": true,
-        "seconds": 5.45,
-        "output": "20261103-104544_clean_df1fd91f.xlsx",
+        "seconds": 5.247,
+        "output": "20261103-105708_clean_35d591cb.xlsx",
         "formula_checks": 0,
         "saved_cell_checks": 732,
         "preserved": true
@@ -197,8 +197,8 @@
       {
         "id": "C21",
         "ok": true,
-        "seconds": 6.294,
-        "output": "20261103-104550_summary_919afed0.xlsx",
+        "seconds": 6.49,
+        "output": "20261103-105714_summary_a4dcd59f.xlsx",
         "formula_checks": 8,
         "saved_cell_checks": 241,
         "preserved": true
@@ -206,8 +206,8 @@
       {
         "id": "C22",
         "ok": true,
-        "seconds": 6.103,
-        "output": "20261103-104556_summary_9acd006f.xlsx",
+        "seconds": 7.618,
+        "output": "20261103-105722_summary_e25c9571.xlsx",
         "formula_checks": 8,
         "saved_cell_checks": 241,
         "preserved": true
@@ -215,8 +215,8 @@
       {
         "id": "C23",
         "ok": true,
-        "seconds": 5.728,
-        "output": "20261103-104602_filter_f9cfbf34.xlsx",
+        "seconds": 5.987,
+        "output": "20261103-105728_filter_0a33a1a3.xlsx",
         "formula_checks": 0,
         "saved_cell_checks": 188,
         "preserved": true
@@ -224,8 +224,8 @@
       {
         "id": "C24",
         "ok": true,
-        "seconds": 5.935,
-        "output": "20261103-104608_filter_8f4f6b47.xlsx",
+        "seconds": 6.298,
+        "output": "20261103-105734_filter_97946794.xlsx",
         "formula_checks": 0,
         "saved_cell_checks": 727,
         "preserved": true
@@ -233,8 +233,8 @@
       {
         "id": "C25",
         "ok": true,
-        "seconds": 6.136,
-        "output": "20261103-104614_summary_f3c2dc5f.xlsx",
+        "seconds": 6.834,
+        "output": "20261103-105741_summary_946164f3.xlsx",
         "formula_checks": 8,
         "saved_cell_checks": 241,
         "preserved": true
@@ -242,8 +242,8 @@
       {
         "id": "C26",
         "ok": true,
-        "seconds": 8.078,
-        "output": "20261103-104622_lookup_410bdd2c.xlsx",
+        "seconds": 6.211,
+        "output": "20261103-105747_lookup_97e083e7.xlsx",
         "formula_checks": 100,
         "saved_cell_checks": 1288,
         "preserved": true
@@ -251,8 +251,8 @@
       {
         "id": "C27",
         "ok": true,
-        "seconds": 7.381,
-        "output": "20261103-104629_lookup_4712efa3.xlsx",
+        "seconds": 6.258,
+        "output": "20261103-105753_lookup_7e79c9a2.xlsx",
         "formula_checks": 100,
         "saved_cell_checks": 1288,
         "preserved": true
@@ -260,8 +260,8 @@
       {
         "id": "C28",
         "ok": true,
-        "seconds": 6.736,
-        "output": "20261103-104636_clean_af14c478.xlsx",
+        "seconds": 5.465,
+        "output": "20261103-105759_clean_bfe41448.xlsx",
         "formula_checks": 0,
         "saved_cell_checks": 725,
         "preserved": true
@@ -269,8 +269,8 @@
       {
         "id": "C29",
         "ok": true,
-        "seconds": 5.829,
-        "output": "20261103-104642_clean_a5dbf035.xlsx",
+        "seconds": 5.589,
+        "output": "20261103-105804_clean_fa912578.xlsx",
         "formula_checks": 0,
         "saved_cell_checks": 725,
         "preserved": true
@@ -278,8 +278,8 @@
       {
         "id": "C30",
         "ok": true,
-        "seconds": 6.365,
-        "output": "20261103-104648_summary_a753b95e.xlsx",
+        "seconds": 6.521,
+        "output": "20261103-105811_summary_e53bffe6.xlsx",
         "formula_checks": 6,
         "saved_cell_checks": 238,
         "preserved": true
@@ -287,8 +287,8 @@
       {
         "id": "C31",
         "ok": true,
-        "seconds": 6.326,
-        "output": "20261103-104655_summary_ad5c5460.xlsx",
+        "seconds": 6.186,
+        "output": "20261103-105817_summary_52056c70.xlsx",
         "formula_checks": 20,
         "saved_cell_checks": 259,
         "preserved": true
@@ -296,8 +296,8 @@
       {
         "id": "C32",
         "ok": true,
-        "seconds": 5.4,
-        "output": "20261103-104700_filter_20aec608.xlsx",
+        "seconds": 5.792,
+        "output": "20261103-105823_filter_e72177d9.xlsx",
         "formula_checks": 0,
         "saved_cell_checks": 125,
         "preserved": true
@@ -305,8 +305,8 @@
       {
         "id": "C33",
         "ok": true,
-        "seconds": 5.613,
-        "output": "20261103-104706_filter_b66f5639.xlsx",
+        "seconds": 6.355,
+        "output": "20261103-105829_filter_3783a4c2.xlsx",
         "formula_checks": 0,
         "saved_cell_checks": 125,
         "preserved": true
@@ -314,8 +314,8 @@
       {
         "id": "C34",
         "ok": true,
-        "seconds": 5.361,
-        "output": "20261103-104711_filter_a7081bc8.xlsx",
+        "seconds": 5.766,
+        "output": "20261103-105835_filter_e9e79357.xlsx",
         "formula_checks": 0,
         "saved_cell_checks": 258,
         "preserved": true
@@ -323,8 +323,8 @@
       {
         "id": "C35",
         "ok": true,
-        "seconds": 6.217,
-        "output": "20261103-104717_filter_6585990d.xlsx",
+        "seconds": 5.484,
+        "output": "20261103-105841_filter_4f9acec6.xlsx",
         "formula_checks": 0,
         "saved_cell_checks": 97,
         "preserved": true
@@ -332,8 +332,8 @@
       {
         "id": "C36",
         "ok": true,
-        "seconds": 6.509,
-        "output": "20261103-104724_lookup_34c0ba30.xlsx",
+        "seconds": 6.231,
+        "output": "20261103-105847_lookup_b63d2df4.xlsx",
         "formula_checks": 0,
         "saved_cell_checks": 1044,
         "preserved": true
@@ -341,8 +341,8 @@
       {
         "id": "C37",
         "ok": true,
-        "seconds": 5.499,
-        "output": "20261103-104729_clean_0b197f03.xlsx",
+        "seconds": 5.538,
+        "output": "20261103-105852_clean_42c8e716.xlsx",
         "formula_checks": 0,
         "saved_cell_checks": 390,
         "preserved": true
@@ -350,8 +350,8 @@
       {
         "id": "C38",
         "ok": true,
-        "seconds": 6.384,
-        "output": "20261103-104736_summary_c8262e9c.xlsx",
+        "seconds": 6.311,
+        "output": "20261103-105859_summary_03b69dba.xlsx",
         "formula_checks": 6,
         "saved_cell_checks": 160,
         "preserved": true
@@ -359,8 +359,8 @@
       {
         "id": "C39",
         "ok": true,
-        "seconds": 6.075,
-        "output": "20261103-104742_summary_9534232e.xlsx",
+        "seconds": 6.553,
+        "output": "20261103-105905_summary_90cf86a1.xlsx",
         "formula_checks": 120,
         "saved_cell_checks": 329,
         "preserved": true
@@ -375,8 +375,8 @@
       {
         "id": "C41",
         "ok": true,
-        "seconds": 5.549,
-        "output": "20261103-104747_filter_f91b7d2d.xlsx",
+        "seconds": 5.471,
+        "output": "20261103-105911_filter_49aad41c.xlsx",
         "formula_checks": 0,
         "saved_cell_checks": 26,
         "preserved": true
@@ -384,8 +384,8 @@
       {
         "id": "C42",
         "ok": true,
-        "seconds": 5.491,
-        "output": "20261103-104753_filter_c76cd5db.xlsx",
+        "seconds": 5.589,
+        "output": "20261103-105916_filter_2e0145e3.xlsx",
         "formula_checks": 0,
         "saved_cell_checks": 272,
         "preserved": true
@@ -393,8 +393,8 @@
       {
         "id": "C43",
         "ok": true,
-        "seconds": 5.649,
-        "output": "20261103-104758_clean_e9add2e2.xlsx",
+        "seconds": 5.909,
+        "output": "20261103-105922_clean_6a31428c.xlsx",
         "formula_checks": 0,
         "saved_cell_checks": 865,
         "preserved": true
@@ -402,8 +402,8 @@
       {
         "id": "C44",
         "ok": true,
-        "seconds": 6.135,
-        "output": "20261103-104804_summary_eafc46e0.xlsx",
+        "seconds": 6.576,
+        "output": "20261103-105929_summary_3824d7d7.xlsx",
         "formula_checks": 200,
         "saved_cell_checks": 569,
         "preserved": true
@@ -411,8 +411,8 @@
       {
         "id": "C45",
         "ok": true,
-        "seconds": 6.251,
-        "output": "20261103-104811_summary_36a371e6.xlsx",
+        "seconds": 6.559,
+        "output": "20261103-105935_summary_c23ddf33.xlsx",
         "formula_checks": 16,
         "saved_cell_checks": 293,
         "preserved": true
@@ -420,8 +420,8 @@
       {
         "id": "C46",
         "ok": true,
-        "seconds": 5.321,
-        "output": "20261103-104816_filter_791e2d17.xlsx",
+        "seconds": 5.312,
+        "output": "20261103-105941_filter_d5d81ba6.xlsx",
         "formula_checks": 0,
         "saved_cell_checks": 27,
         "preserved": true
@@ -429,8 +429,8 @@
       {
         "id": "C47",
         "ok": true,
-        "seconds": 5.371,
-        "output": "20261103-104821_filter_f82800a9.xlsx",
+        "seconds": 5.613,
+        "output": "20261103-105946_filter_47e5a96e.xlsx",
         "formula_checks": 0,
         "saved_cell_checks": 517,
         "preserved": true
@@ -438,8 +438,8 @@
       {
         "id": "C48",
         "ok": true,
-        "seconds": 6.423,
-        "output": "20261103-104828_lookup_00117300.xlsx",
+        "seconds": 6.631,
+        "output": "20261103-105953_lookup_0c66ad0d.xlsx",
         "formula_checks": 120,
         "saved_cell_checks": 1478,
         "preserved": true
@@ -447,8 +447,8 @@
       {
         "id": "C49",
         "ok": true,
-        "seconds": 6.864,
-        "output": "20261103-104835_lookup_db017eff.xlsx",
+        "seconds": 8.6,
+        "output": "20261103-110002_lookup_8576089c.xlsx",
         "formula_checks": 120,
         "saved_cell_checks": 1478,
         "preserved": true
@@ -456,8 +456,8 @@
       {
         "id": "C50",
         "ok": true,
-        "seconds": 5.607,
-        "output": "20261103-104840_filter_d9e362c4.xlsx",
+        "seconds": 5.761,
+        "output": "20261103-110007_filter_07117a21.xlsx",
         "formula_checks": 0,
         "saved_cell_checks": 132,
         "preserved": true

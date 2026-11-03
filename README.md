@@ -84,13 +84,14 @@ python -X utf8 test_usecases2.py          # 10 use case bất thường (khóa t
 python -X utf8 test_batch_summary.py      # 6 bài test tổng hợp theo lô và chặn thiếu danh mục
 python -X utf8 test_privacy_guard_cases.py # 212 mẫu đo Privacy Guard (125 PII + 87 không phải PII)
 python -X utf8 test_cloud_preview.py     # 20 check xem trước đúng nội dung gửi cloud + hủy (không gọi mạng)
-python -X utf8 test_infer_golden.py       # 28 prompt vàng cho infer_smart_plan (ghim hành vi heuristic)
+python -X utf8 test_infer_golden.py       # 33 prompt vàng cho infer_smart_plan (ghim hành vi heuristic)
 python -X utf8 test_sanitize_plan.py      # 12 bài test sanitize_plan + khóa cache của plan (ép clarify, fuzzy match cột)
 python -X utf8 test_fuzz_light.py         # 20 biến thể fuzz nhẹ cho parser CSV
 python -X utf8 test_fuzz_headers.py       # 15 biến thể fuzz cho detect_header_row/select_header
 python -X utf8 test_fuzz_xlsx.py          # 12 biến thể fuzz cho đường đọc XLSX thuần Python (cần openpyxl, tự SKIP nếu thiếu)
 python -X utf8 test_policy_defaults.py    # 12 bài test quyết định chính sách 2026-10-30 (mặc định Ollama, vn_dot_thousands)
-python -X utf8 test_prepare_sheets_golden.py # 26 kịch bản vàng cho nhánh lookup của prepare_sheets (không cần Excel)
+python -X utf8 test_prepare_sheets_golden.py # 27 kịch bản vàng cho nhánh lookup của prepare_sheets (không cần Excel)
+python -X utf8 test_real_like_plans.py    # 55 câu trên 9 workbook giống thật; đo kế hoạch đúng và chạy Excel đầy đủ
 python -X utf8 test_safety_limits.py      # 6 bài test giới hạn an toàn (80MB, 10.000 thành phần ZIP, chuỗi 2000 ký tự, hash sau đọc)
 powershell -NoProfile -File test_cleanup.ps1 # 4 bài test dọn tiến trình Excel cô lập
 python -X utf8 secret_scan.py               # quét mẫu bí mật trong file được git theo dõi + toàn bộ lịch sử (không gọi mạng)
@@ -98,6 +99,8 @@ powershell -NoProfile -File run_all_tests.ps1 # chạy cả 3 nhóm, in bảng t
 ```
 
 `run_all_tests.ps1` là đường chạy đầy đủ trên Windows: nhóm 1 không cần Excel, nhóm 2 cần DPAPI thật, nhóm 3 cần Excel desktop (và màn hình cho GUI). Script dừng nhóm sau khi ghi lỗi, in bảng tổng hợp kèm số check, trả exit code 1 nếu có lệnh lỗi, nếu `examples/` bị thay đổi trong lượt chạy, hoặc nếu còn tiến trình Excel do bridge tạo. Dùng `-SkipExcel`, `-SkipGui`, `-SkipBenchmark` để bỏ bớt nhóm 3. Log từng suite nằm trong `.work/qa-logs/` (không dùng tên bắt đầu bằng `run-` vì `cleanup_stale_work_dirs()` sẽ xóa).
+
+Bộ dữ liệu giống thật Q4 nằm trong `examples/real_like/` (9 workbook tổng hợp, 6 loại bảng nguồn). `test_real_like_plans.py` đo **53/55 = 96,4%** kế hoạch đúng ngay lần đầu; 50 kế hoạch curated được chạy đầy đủ qua Excel, kết quả **49 thành công, 1 từ chối đúng vì ô `#N/A`, 0 lỗi**. Hai câu còn sai là yêu cầu trung bình/AVG chưa được hỗ trợ. Chi tiết và giới hạn ở `cycles/CYCLE-07.md`.
 
 Các file kết quả kiểm tra và benchmark nằm trong thư mục `results/`. `test_app.py` ghi theo chế độ chạy để các lần chạy không ghi đè lẫn nhau: `results/test-results-unit.json` (chỉ logic), `results/test-results.json` (đủ integration Excel), `results/test-results-ai.json` (có thêm AI cục bộ). Mỗi file ghi từng phép kiểm tra đã chạy. Đây không phải bằng chứng về mọi loại workbook hay khả năng chống mọi tấn công. Kết quả là dữ liệu giả, đáp án số học được tính độc lập.
 

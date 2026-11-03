@@ -1,6 +1,6 @@
 # ROADMAP — Excel Local Expert
 
-Cập nhật: 2026-10-31, sau khi đóng Chu kỳ 3 (tách hộp kiểm tra/chấp nhận khỏi `gui()`).
+Cập nhật: 2026-11-03, sau Chu kỳ 7 (Q4 — dữ liệu giống thật).
 Thứ tự ưu tiên của sản phẩm: đúng > an toàn/riêng tư > dễ bảo trì > hiệu năng >
 trải nghiệm > tính năng mới. Mỗi mục chỉ vào chu kỳ khi có tiêu chí đo được.
 
@@ -18,6 +18,16 @@ Không còn mục mở. S-1..S-4 **ĐÓNG** ở bản 0.3.2; bằng chứng:
 
 Known còn lại (chấp nhận, đã đo): tên 2 từ; tên dân tộc không bắt đầu bằng họ Kinh.
 
+## P0.5 — Đúng trên dữ liệu giống thật (Chu kỳ 7 / Q4)
+
+| # | Việc | Kết quả đo | Ghi chú |
+|---|------|------------|---------|
+| R-1 | 9 workbook tổng hợp, 6 loại bảng nguồn | 9/9 đọc được | `examples/real_like/`, tái sinh bằng `create_real_like_examples.py` |
+| R-2 | 55 câu tiếng Việt, kế hoạch đúng ngay lần đầu | **53/55 = 96,4%** | 50 curated + 5 câu tự nhiên; `results/plan-accuracy-q4.json` |
+| R-3 | Chạy đầy đủ preview → Excel → verify → preserve | **49 thành công, 1 từ chối đúng `#N/A`, 0 lỗi** | Mọi bảng có ít nhất một thao tác chạy thật |
+| R-4 | Ô rỗng `inlineStr` / dòng `TỔNG CỘNG` | ĐÃ VÁ | Crash `NoneType.findall`; dòng tổng bị bỏ qua và ghi `total_rows_skipped` |
+| R-5 | Trung bình/AVG | **CHƯA HỖ TRỢ** | 2 câu còn sai; planner trả `None`, cần clarify và mở F-1 |
+
 ## P1 — Dễ bảo trì (trọng tâm Chu kỳ 2–4)
 
 | # | Vấn đề | Số đo | Hướng |
@@ -26,7 +36,7 @@ Known còn lại (chấp nhận, đã đo): tên 2 từ; tên dân tộc không 
 | M-2 | `open_ai_settings()` ~155 dòng | ĐÓNG Chu kỳ 2 | Đã thành `open_ai_settings_dialog()`; 141 chuỗi giữ nguyên, UI test 48/48 |
 | M-3 | `review()` ~100 dòng | ĐÓNG Chu kỳ 3 | Đã thành `review_plan_dialog()`; 172 chuỗi giữ nguyên, `test_gui` 14/14 |
 | M-4 | `prepare_sheets` 169 dòng sau khi tách nhánh `lookup` (Chu kỳ 4) | `app.py` (AST) | Lát cắt tiếp theo: tách `summary`/`clean`/`filter` theo cùng quy trình vàng + mutation |
-| M-6 | `ai_client._lookup_plan` 180 dòng, `_filter_plan` 178 dòng | `ai_client.py` (AST) | Tách sau M-4, dùng `test_infer_golden` (28 prompt vàng) |
+| M-6 | `ai_client._lookup_plan` 180 dòng, `_filter_plan` 178 dòng | `ai_client.py` (AST) | Tách sau M-4, dùng `test_infer_golden` (33 prompt vàng) |
 | M-5 | ~30 `except Exception` rộng | `app.py`, `ai_client.py` | Thu hẹp dần, mỗi chỗ một test |
 
 ## P2 — Hiệu năng (số đo 5 lần, trung vị; `results/benchmark-q3-summary.json`)

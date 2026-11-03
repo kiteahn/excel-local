@@ -424,6 +424,6 @@
   ],
   "integration": true,
   "ai": false,
-  "example_output": "D:\\Excel_update\\output\\20261102-104404_lookup_59f887b3.xlsx",
+  "example_output": "D:\\Excel_update\\output\\20261103-105346_lookup_624e936b.xlsx",
   "security_scope": "Kiểm tra cục bộ chức năng và trust boundary; chưa nghiệm thu bảo mật toàn máy"
 }

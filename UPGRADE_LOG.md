@@ -397,3 +397,11 @@ Việc còn dở, nói thẳng:
 - Không tệ hơn mốc: `benchmark-final-5000.json` lookup 15,829s / summary 13,601s / clean 11,114s; lượt này 10,714 / 9,351 / 7,040s.
 - Ngoại lệ môi trường: một lần summary 20k mất 261,68s và một lần lookup 5k mất 253,07s do Excel treo; báo cáo dùng trung vị và ghi rõ, không giấu.
 - Test cuối: lượt đầu 1 lỗi do integration timeout 496,1s; chạy riêng 105/105; lượt hai **30 lệnh, 0 lỗi, 292,0s, exit 0** (`run-20261102-104045.log`).
+
+### Chu kỳ 7 — Q4: dữ liệu giống thật và 55 câu đo kế hoạch (2026-11-03)
+- Thêm `create_real_like_examples.py` + 9 workbook tổng hợp trong `examples/real_like/`: sinh viên, lương, kho (có dòng tổng), điểm danh, sổ quỹ (có ô `#N/A`), đơn hàng, 3 danh mục; banner, mã 0 đầu, ngày trộn định dạng, tên NFC/NFD, tiền dạng chuỗi.
+- `test_real_like_plans.py`: **55 câu** (50 curated + 5 câu tự nhiên), đọc 9/9 file, đo kế hoạch đúng ngay lần đầu **46/55 = 83,6%** trước sửa và **53/55 = 96,4%** sau sửa; lưu `results/plan-accuracy-q4.json`. Hai câu còn sai là giới hạn AVG/trung bình, đã ghim vào golden kèm cách sửa.
+- Chạy đầy đủ preview → chấp nhận → Excel ghi → verify → preserve cho 50 kế hoạch curated: **49 thành công, 1 từ chối đúng vì `#N/A`, 0 lỗi**. Mọi bảng có ít nhất một thao tác chạy thật.
+- Sửa lỗi thật: `xml_value` crash khi ô rỗng `t="inlineStr"` không có `<is>`; tổng hợp bỏ qua dòng `TỔNG CỘNG` có khóa nhóm trống và ghi `total_rows_skipped`; cải thiện chọn cột clean/lookup, nhận giá trị categorical, `khác rỗng`, và cột `Có mặt`.
+- `test_infer_golden.py` tăng lên **33 prompt vàng** (5 ca Q4). Các bộ liên quan: usecases 37/37, usecases2 10/10, prepare-sheets 27/27, headers 11/11, diverse 6/6.
+- Chi tiết: `cycles/CYCLE-07.md`.
