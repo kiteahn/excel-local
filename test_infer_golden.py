@@ -1,10 +1,11 @@
 """Golden tests for ai_client.infer_smart_plan (rounds 13-14).
 
-Pins the current, verified behaviour of the heuristic plan inference for 20
+Pins the current, verified behaviour of the heuristic plan inference for 33
 representative Vietnamese prompts across all branches (Q&A clarify, lookup,
 summary, clean, filter, no-match). Created when infer_smart_plan was split
 into _qa_clarify_plan/_summary_plan/_filter_plan/_clean_plan; any future
-refactor of those helpers must keep these outputs identical.
+refactor of those helpers must keep these outputs identical. Five cases were
+added in Q4 from natural prompts against the synthetic real-like workbooks.
 """
 import sys
 if sys.stdout and hasattr(sys.stdout, 'reconfigure'):
@@ -61,6 +62,19 @@ CASES = [
     # columns must stay a filter; the lookup branch requires reference columns.
     ("Lấy riêng danh sách lớp trưởng", ["Họ tên", "Chức vụ"], (), ("filter", "Chức vụ", "lớp trưởng", "", None)),
     ("Hôm nay thời tiết đẹp", ["A", "B"], (), None),
+    # Q4 real-like probes (2026-11-03). L01-L03 were misplanned before the
+    # Q4 fixes; they now pin the corrected behaviour. L04-L05 are known
+    # limitations: AVERAGE is not implemented and the planner returns None
+    # instead of an honest clarify. Intended fix: recognise "trung bình" and
+    # return clarify with a message that only sums are supported.
+    ("Lọc nhân viên Kinh doanh", ["Mã NV", "Họ tên", "Phòng ban"], (),
+     ("filter", "Phòng ban", "kinh doanh", "", None)),
+    ("Cho tôi danh sách sinh viên lớp CNTT01", ["MSSV", "Họ và tên", "Lớp"], (),
+     ("filter", "Lớp", "cntt01", "", None)),
+    ("Lọc ra những sinh viên vắng", ["Mã SV", "Họ tên", "Lớp", "Trạng thái"], (),
+     ("filter", "Trạng thái", "vắng", "", None)),
+    ("Tính điểm trung bình theo lớp", ["MSSV", "Họ và tên", "Lớp", "Điểm TB"], (), None),
+    ("Lương trung bình mỗi phòng ban", ["Mã NV", "Họ tên", "Phòng ban", "Lương cơ bản"], (), None),
 ]
 
 def run():

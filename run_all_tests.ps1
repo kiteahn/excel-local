@@ -162,7 +162,8 @@ $windows = @(
 )
 $excel = @(
     @{ Name = 'test_app.py'; Args = @('--integration') },
-    @{ Name = 'test_read_boundary.py'; Args = @() }
+    @{ Name = 'test_read_boundary.py'; Args = @() },
+    @{ Name = 'test_real_like_plans.py'; Args = @() }
 )
 if (-not $SkipGui) { $excel += @{ Name = 'test_gui.py'; Args = @() } }
 if (-not $SkipGui) { $excel += @{ Name = 'test_ui_acceptance.py'; Args = @() } }

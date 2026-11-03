@@ -767,7 +767,8 @@ def _summary_plan(p_lower: str, source_columns) -> dict | None:
                 if any(k in sc_low for k in ['kho', 'lớp', 'khoa', 'nhóm', 'phòng', 'đơn vị', 'ngành', 'bộ môn']):
                     group_col = sc
             if not val_col and (sc_clean in p_lower or sc_low in p_lower):
-                if any(k in sc_low for k in ['tiền', 'phí', 'điểm', 'lượng', 'lương', 'thu nhập']):
+                if any(k in sc_low for k in ['tiền', 'phí', 'điểm', 'lượng', 'lương', 'thu nhập',
+                                             'có mặt', 'ngày công', 'số ngày', 'số buổi']):
                     if not any(k in sc_low for k in ['hạng mục', 'loại', 'tên', 'mã']):
                         val_col = sc
 
@@ -816,7 +817,7 @@ def _filter_plan(prompt: str, p_lower: str, source_columns) -> dict | None:
     is_filter = any(w in p_lower for w in [
         'lọc', 'filter', 'trích xuất', 'lấy ra', 'lấy riêng', 'tách riêng',
         'cán sự', 'lớp trưởng', 'tổ trưởng', 'bí thư', 'thủ quỹ', 'chỉ lấy',
-        'danh sách các', 'danh sách ban cán sự', 'những ai', 'đăng ký đơn', 'đăng ký team', 'đăng ký đội'
+        'danh sách các', 'danh sách', 'danh sách ban cán sự', 'những ai', 'đăng ký đơn', 'đăng ký team', 'đăng ký đội'
     ])
     if is_filter:
         filter_col = None
@@ -917,11 +918,15 @@ def _filter_plan(prompt: str, p_lower: str, source_columns) -> dict | None:
             elif 'nhỏ hơn' in op_text or 'dưới' in op_text: op = '<'
             else: op = op_text
 
-            for sc in source_columns:
-                sc_low = sc.strip().lower()
-                if sc_low in p_lower or any(w in sc_low for w in ['điểm', 'tiền', 'học phí', 'lương', 'số lượng']):
-                    filter_col = sc
-                    break
+            mentioned = [sc for sc in source_columns if sc.strip().lower() in p_lower]
+            if mentioned:
+                filter_col = max(mentioned, key=len)
+            else:
+                for sc in source_columns:
+                    sc_low = sc.strip().lower()
+                    if any(w in sc_low for w in ['điểm', 'tiền', 'học phí', 'lương', 'số lượng']):
+                        filter_col = sc
+                        break
             if not filter_col and source_columns:
                 filter_col = source_columns[0]
             filter_val = f"{op} {num_clean}"
@@ -952,8 +957,51 @@ def _filter_plan(prompt: str, p_lower: str, source_columns) -> dict | None:
                 filter_col = sc
                 break
 
+        # 5d-bis. When the prompt names a value but not a column, map common
+        # Vietnamese value shapes to the matching categorical column. This is
+        # deliberately narrow: it only runs before the generic wildcard
+        # fallback, so an explicitly named column (5d) always wins.
+        if not filter_col:
+            status_words = ['không có mặt', 'vắng mặt', 'vắng', 'có mặt', 'đi muộn',
+                            'đi trễ', 'nghỉ phép', 'nghỉ', 'chưa hoàn thành',
+                            'hoàn thành', 'chờ duyệt', 'đã duyệt']
+            status_col = next((sc for sc in source_columns
+                               if any(k in sc.lower() for k in ['trạng thái', 'tình trạng', 'tình hình'])), None)
+            if status_col:
+                for word in status_words:
+                    if word in p_lower:
+                        filter_col, filter_val = status_col, word
+                        break
+            if not filter_col:
+                class_match = re.search(r'\blớp\s+([a-zà-ỹ]{1,12}\d[\w-]*)', p_lower)
+                if class_match:
+                    class_col = next((sc for sc in source_columns if 'lớp' in sc.lower()), None)
+                    if class_col:
+                        filter_col, filter_val = class_col, class_match.group(1)
+            if not filter_col and any(k in p_lower for k in ['khách', 'người mua']):
+                customer_col = next((sc for sc in source_columns if 'khách' in sc.lower()), None)
+                if customer_col:
+                    customer_match = re.search(r'(?:của|cho)\s+(khách(?:\s+[a-z0-9à-ỹ]+)?)', p_lower)
+                    if customer_match:
+                        filter_col, filter_val = customer_col, customer_match.group(1).strip()
+            if not filter_col:
+                dept_col = next((sc for sc in source_columns
+                                 if any(k in sc.lower() for k in ['phòng ban', 'bộ phận', 'đơn vị'])), None)
+                if dept_col:
+                    dept_match = re.search(
+                        r'(?:nhân viên|nhân sự|người lao động)\s+([a-zà-ỹ][a-zà-ỹ\s]{1,40})$',
+                        p_lower,
+                    )
+                    if dept_match:
+                        dept_val = dept_match.group(1).strip(' .,;')
+                        if dept_val:
+                            filter_col, filter_val = dept_col, dept_val
+
         if filter_col:
             if not filter_val:
+                filter_val = '*'
+            elif filter_val.strip().lower() in ('khác rỗng', 'không rỗng'):
+                # The filter engine represents "has any value" as '*'.
                 filter_val = '*'
             msg = f"Lọc dữ liệu bảng nguồn theo cột '{filter_col}' với điều kiện '{filter_val}'."
             if req_cols_str:
@@ -970,7 +1018,8 @@ def _filter_plan(prompt: str, p_lower: str, source_columns) -> dict | None:
         # 5e. General fallback for single file filtering
         if source_columns:
             for sc in source_columns:
-                if any(k in sc.lower() for k in ['chức vụ', 'trạng thái', 'tình trạng', 'loại', 'lớp', 'khoa']):
+                if any(k in sc.lower() for k in ['chức vụ', 'trạng thái', 'tình trạng', 'loại', 'lớp',
+                                                  'khoa', 'phòng ban', 'bộ phận', 'nhóm']):
                     filter_col = sc
                     break
             if not filter_col:
@@ -996,10 +1045,22 @@ def _clean_plan(p_lower: str, source_columns) -> dict | None:
     is_clean = any(w in p_lower for w in ['làm sạch', 'chuẩn hóa', 'khoảng trắng', 'dấu cách', 'clean', 'trim'])
     if is_clean:
         clean_col = None
-        for sc in source_columns:
-            if sc.strip().lower() in p_lower or any(w in p_lower for w in sc.strip().lower().split() if len(w) >= 3):
-                clean_col = sc
-                break
+        # Prefer the longest full column name that actually appears in the
+        # prompt. This avoids a generic shared word ("hàng" in "Tên hàng")
+        # stealing the match to an earlier column ("Mã hàng").
+        exact = [sc for sc in source_columns if sc.strip().lower() in p_lower]
+        if exact:
+            clean_col = max(exact, key=len)
+        if not clean_col:
+            scored = []
+            for sc in source_columns:
+                words = [w for w in sc.strip().lower().split() if len(w) >= 3]
+                score = sum(1 for w in words if w in p_lower)
+                if score:
+                    scored.append((score, len(sc), sc))
+            scored.sort(reverse=True)
+            if scored and (len(scored) == 1 or scored[0][0] > scored[1][0]):
+                clean_col = scored[0][2]
         if not clean_col:
             clean_col = find_synonym_match('tên', source_columns) or (source_columns[0] if source_columns else '')
         if clean_col:
@@ -1076,10 +1137,15 @@ def _lookup_plan(prompt: str, p_lower: str, source_columns, reference_columns) -
         m_val = re.search(r'(?:lấy|kéo|điền|chèn|bổ sung)\s+(?:cột\s+|giá trị\s+)?([^\s,;]+(?:\s+[^\s,;]+){0,3}?)\s+(?:ở|từ|trong|sang|vào|lên|áp|theo|$)', p_lower)
         if m_val:
             cand_val = m_val.group(1).strip()
-            for rc in reference_columns:
-                if rc.strip().lower() == cand_val or clean_col_key(rc) == clean_col_key(cand_val) or find_synonym_match(cand_val, [rc]):
-                    target_val = rc
-                    break
+            exact_vals = [rc for rc in reference_columns
+                          if rc.strip().lower() == cand_val or clean_col_key(rc) == clean_col_key(cand_val)]
+            if exact_vals:
+                target_val = exact_vals[0]
+            else:
+                for rc in reference_columns:
+                    if find_synonym_match(cand_val, [rc]):
+                        target_val = rc
+                        break
 
         if not target_val:
             for rc in reference_columns:
@@ -1101,12 +1167,29 @@ def _lookup_plan(prompt: str, p_lower: str, source_columns, reference_columns) -
         avail_ref = [c for c in reference_columns if c not in exclude_ref and c.strip().lower() not in exclude_ref]
 
         shared_key = None
-        # Check if user explicitly mentioned key: "theo <col>", "dựa vào <col>", "khóa <col>", "khớp <col>"
+        # Check if user explicitly mentioned key: "theo <col>", "dựa vào <col>", "khóa <col>", "khớp <col>".
+        # Prefer a full column phrase over the regex capture: "theo Mã hàng"
+        # must not stop at the single token "Mã" and fuzzy-match "Mã đơn".
+        def exact_key(cols, name):
+            for col in cols:
+                if col.strip().lower() == name or clean_col_key(col) == clean_col_key(name):
+                    return col
+            return None
+
+        explicit_key = None
+        all_key_cols = list(dict.fromkeys(list(avail_src) + list(avail_ref)))
+        for prefix in ('theo cột ', 'dựa vào cột ', 'khóa ', 'khớp ', 'bằng ', 'theo ', 'dựa vào '):
+            matches = [col for col in all_key_cols if f'{prefix}{col.strip().lower()}' in p_lower]
+            if matches:
+                explicit_key = max(matches, key=len)
+                break
         m_key = re.search(r'(?:theo|dựa vào|khóa|khớp|bằng)\s+(?:cột\s+)?([^\s,;]+(?:\s+[^\s,;]+){0,2}?)', p_lower)
-        if m_key:
-            cand_k = m_key.group(1).strip()
-            sk = fuzzy_match_column(cand_k, avail_src)
-            rk = fuzzy_match_column(cand_k, avail_ref)
+        cand_k = explicit_key or (m_key.group(1).strip() if m_key else None)
+        if cand_k:
+            # Exact column names beat fuzzy prefixes ("Mã hàng" must not lose
+            # to "Mã đơn" just because both start with "Mã").
+            sk = exact_key(avail_src, cand_k) or fuzzy_match_column(cand_k, avail_src)
+            rk = exact_key(avail_ref, cand_k) or fuzzy_match_column(cand_k, avail_ref)
             # Same passthrough guard as VD-15: a fuzzy result that is not a
             # real column is no match at all.
             if sk not in avail_src:

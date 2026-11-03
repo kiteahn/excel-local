@@ -1,0 +1,1722 @@
+{
+  "generated_at": "2026-11-03 10:48:40",
+  "workbooks": 9,
+  "prompts": 55,
+  "curated": 50,
+  "known_limitations": 5,
+  "curated_correct": 50,
+  "known_limitations_correct": 3,
+  "first_plan_accuracy": 0.9636,
+  "accuracy_note": "Correct plans / all 55 prompts, counted before repair.",
+  "execution": {
+    "requested": true,
+    "passed": 49,
+    "refused_as_expected": 1,
+    "failed": 0,
+    "cases": [
+      {
+        "id": "C01",
+        "ok": true,
+        "seconds": 5.593,
+        "output": "20261103-104351_clean_9a3590fe.xlsx",
+        "formula_checks": 0,
+        "saved_cell_checks": 744,
+        "preserved": true
+      },
+      {
+        "id": "C02",
+        "ok": true,
+        "seconds": 5.553,
+        "output": "20261103-104356_clean_43553f34.xlsx",
+        "formula_checks": 0,
+        "saved_cell_checks": 744,
+        "preserved": true
+      },
+      {
+        "id": "C03",
+        "ok": true,
+        "seconds": 6.135,
+        "output": "20261103-104402_summary_197e8550.xlsx",
+        "formula_checks": 6,
+        "saved_cell_checks": 278,
+        "preserved": true
+      },
+      {
+        "id": "C04",
+        "ok": true,
+        "seconds": 5.646,
+        "output": "20261103-104408_filter_2ce320f1.xlsx",
+        "formula_checks": 0,
+        "saved_cell_checks": 266,
+        "preserved": true
+      },
+      {
+        "id": "C05",
+        "ok": true,
+        "seconds": 5.476,
+        "output": "20261103-104414_filter_2f741f6d.xlsx",
+        "formula_checks": 0,
+        "saved_cell_checks": 200,
+        "preserved": true
+      },
+      {
+        "id": "C06",
+        "ok": true,
+        "seconds": 5.631,
+        "output": "20261103-104419_filter_fd3f16f2.xlsx",
+        "formula_checks": 0,
+        "saved_cell_checks": 266,
+        "preserved": true
+      },
+      {
+        "id": "C07",
+        "ok": true,
+        "seconds": 6.305,
+        "output": "20261103-104426_lookup_bfba9c2c.xlsx",
+        "formula_checks": 0,
+        "saved_cell_checks": 1123,
+        "preserved": true
+      },
+      {
+        "id": "C08",
+        "ok": true,
+        "seconds": 7.051,
+        "output": "20261103-104433_lookup_cb5fefd1.xlsx",
+        "formula_checks": 0,
+        "saved_cell_checks": 1123,
+        "preserved": true
+      },
+      {
+        "id": "C09",
+        "ok": true,
+        "seconds": 5.672,
+        "output": "20261103-104438_clean_cefa0dd8.xlsx",
+        "formula_checks": 0,
+        "saved_cell_checks": 585,
+        "preserved": true
+      },
+      {
+        "id": "C10",
+        "ok": true,
+        "seconds": 5.893,
+        "output": "20261103-104444_clean_8c0f010f.xlsx",
+        "formula_checks": 0,
+        "saved_cell_checks": 585,
+        "preserved": true
+      },
+      {
+        "id": "C11",
+        "ok": true,
+        "seconds": 6.368,
+        "output": "20261103-104451_summary_a146153f.xlsx",
+        "formula_checks": 8,
+        "saved_cell_checks": 201,
+        "preserved": true
+      },
+      {
+        "id": "C12",
+        "ok": true,
+        "seconds": 6.222,
+        "output": "20261103-104457_summary_4d6bdb6d.xlsx",
+        "formula_checks": 8,
+        "saved_cell_checks": 201,
+        "preserved": true
+      },
+      {
+        "id": "C13",
+        "ok": true,
+        "seconds": 5.52,
+        "output": "20261103-104502_filter_9826ef7f.xlsx",
+        "formula_checks": 0,
+        "saved_cell_checks": 27,
+        "preserved": true
+      },
+      {
+        "id": "C14",
+        "ok": true,
+        "seconds": 5.478,
+        "output": "20261103-104508_filter_329951f1.xlsx",
+        "formula_checks": 0,
+        "saved_cell_checks": 167,
+        "preserved": true
+      },
+      {
+        "id": "C15",
+        "ok": true,
+        "seconds": 5.675,
+        "output": "20261103-104513_filter_496aa36d.xlsx",
+        "formula_checks": 0,
+        "saved_cell_checks": 398,
+        "preserved": true
+      },
+      {
+        "id": "C16",
+        "ok": true,
+        "seconds": 6.048,
+        "output": "20261103-104519_summary_fe1bc226.xlsx",
+        "formula_checks": 8,
+        "saved_cell_checks": 201,
+        "preserved": true
+      },
+      {
+        "id": "C17",
+        "ok": true,
+        "seconds": 5.999,
+        "output": "20261103-104525_lookup_cee3c37c.xlsx",
+        "formula_checks": 80,
+        "saved_cell_checks": 1078,
+        "preserved": true
+      },
+      {
+        "id": "C18",
+        "ok": true,
+        "seconds": 6.715,
+        "output": "20261103-104532_lookup_459db1ee.xlsx",
+        "formula_checks": 80,
+        "saved_cell_checks": 1078,
+        "preserved": true
+      },
+      {
+        "id": "C19",
+        "ok": true,
+        "seconds": 6.021,
+        "output": "20261103-104538_clean_4907a905.xlsx",
+        "formula_checks": 0,
+        "saved_cell_checks": 732,
+        "preserved": true
+      },
+      {
+        "id": "C20",
+        "ok": true,
+        "seconds": 5.45,
+        "output": "20261103-104544_clean_df1fd91f.xlsx",
+        "formula_checks": 0,
+        "saved_cell_checks": 732,
+        "preserved": true
+      },
+      {
+        "id": "C21",
+        "ok": true,
+        "seconds": 6.294,
+        "output": "20261103-104550_summary_919afed0.xlsx",
+        "formula_checks": 8,
+        "saved_cell_checks": 241,
+        "preserved": true
+      },
+      {
+        "id": "C22",
+        "ok": true,
+        "seconds": 6.103,
+        "output": "20261103-104556_summary_9acd006f.xlsx",
+        "formula_checks": 8,
+        "saved_cell_checks": 241,
+        "preserved": true
+      },
+      {
+        "id": "C23",
+        "ok": true,
+        "seconds": 5.728,
+        "output": "20261103-104602_filter_f9cfbf34.xlsx",
+        "formula_checks": 0,
+        "saved_cell_checks": 188,
+        "preserved": true
+      },
+      {
+        "id": "C24",
+        "ok": true,
+        "seconds": 5.935,
+        "output": "20261103-104608_filter_8f4f6b47.xlsx",
+        "formula_checks": 0,
+        "saved_cell_checks": 727,
+        "preserved": true
+      },
+      {
+        "id": "C25",
+        "ok": true,
+        "seconds": 6.136,
+        "output": "20261103-104614_summary_f3c2dc5f.xlsx",
+        "formula_checks": 8,
+        "saved_cell_checks": 241,
+        "preserved": true
+      },
+      {
+        "id": "C26",
+        "ok": true,
+        "seconds": 8.078,
+        "output": "20261103-104622_lookup_410bdd2c.xlsx",
+        "formula_checks": 100,
+        "saved_cell_checks": 1288,
+        "preserved": true
+      },
+      {
+        "id": "C27",
+        "ok": true,
+        "seconds": 7.381,
+        "output": "20261103-104629_lookup_4712efa3.xlsx",
+        "formula_checks": 100,
+        "saved_cell_checks": 1288,
+        "preserved": true
+      },
+      {
+        "id": "C28",
+        "ok": true,
+        "seconds": 6.736,
+        "output": "20261103-104636_clean_af14c478.xlsx",
+        "formula_checks": 0,
+        "saved_cell_checks": 725,
+        "preserved": true
+      },
+      {
+        "id": "C29",
+        "ok": true,
+        "seconds": 5.829,
+        "output": "20261103-104642_clean_a5dbf035.xlsx",
+        "formula_checks": 0,
+        "saved_cell_checks": 725,
+        "preserved": true
+      },
+      {
+        "id": "C30",
+        "ok": true,
+        "seconds": 6.365,
+        "output": "20261103-104648_summary_a753b95e.xlsx",
+        "formula_checks": 6,
+        "saved_cell_checks": 238,
+        "preserved": true
+      },
+      {
+        "id": "C31",
+        "ok": true,
+        "seconds": 6.326,
+        "output": "20261103-104655_summary_ad5c5460.xlsx",
+        "formula_checks": 20,
+        "saved_cell_checks": 259,
+        "preserved": true
+      },
+      {
+        "id": "C32",
+        "ok": true,
+        "seconds": 5.4,
+        "output": "20261103-104700_filter_20aec608.xlsx",
+        "formula_checks": 0,
+        "saved_cell_checks": 125,
+        "preserved": true
+      },
+      {
+        "id": "C33",
+        "ok": true,
+        "seconds": 5.613,
+        "output": "20261103-104706_filter_b66f5639.xlsx",
+        "formula_checks": 0,
+        "saved_cell_checks": 125,
+        "preserved": true
+      },
+      {
+        "id": "C34",
+        "ok": true,
+        "seconds": 5.361,
+        "output": "20261103-104711_filter_a7081bc8.xlsx",
+        "formula_checks": 0,
+        "saved_cell_checks": 258,
+        "preserved": true
+      },
+      {
+        "id": "C35",
+        "ok": true,
+        "seconds": 6.217,
+        "output": "20261103-104717_filter_6585990d.xlsx",
+        "formula_checks": 0,
+        "saved_cell_checks": 97,
+        "preserved": true
+      },
+      {
+        "id": "C36",
+        "ok": true,
+        "seconds": 6.509,
+        "output": "20261103-104724_lookup_34c0ba30.xlsx",
+        "formula_checks": 0,
+        "saved_cell_checks": 1044,
+        "preserved": true
+      },
+      {
+        "id": "C37",
+        "ok": true,
+        "seconds": 5.499,
+        "output": "20261103-104729_clean_0b197f03.xlsx",
+        "formula_checks": 0,
+        "saved_cell_checks": 390,
+        "preserved": true
+      },
+      {
+        "id": "C38",
+        "ok": true,
+        "seconds": 6.384,
+        "output": "20261103-104736_summary_c8262e9c.xlsx",
+        "formula_checks": 6,
+        "saved_cell_checks": 160,
+        "preserved": true
+      },
+      {
+        "id": "C39",
+        "ok": true,
+        "seconds": 6.075,
+        "output": "20261103-104742_summary_9534232e.xlsx",
+        "formula_checks": 120,
+        "saved_cell_checks": 329,
+        "preserved": true
+      },
+      {
+        "id": "C40",
+        "ok": true,
+        "refused": true,
+        "expected_refusal": "#N/A",
+        "error": "ValueError: Không thể chuyển đổi giá trị \"#N/A\" sang số."
+      },
+      {
+        "id": "C41",
+        "ok": true,
+        "seconds": 5.549,
+        "output": "20261103-104747_filter_f91b7d2d.xlsx",
+        "formula_checks": 0,
+        "saved_cell_checks": 26,
+        "preserved": true
+      },
+      {
+        "id": "C42",
+        "ok": true,
+        "seconds": 5.491,
+        "output": "20261103-104753_filter_c76cd5db.xlsx",
+        "formula_checks": 0,
+        "saved_cell_checks": 272,
+        "preserved": true
+      },
+      {
+        "id": "C43",
+        "ok": true,
+        "seconds": 5.649,
+        "output": "20261103-104758_clean_e9add2e2.xlsx",
+        "formula_checks": 0,
+        "saved_cell_checks": 865,
+        "preserved": true
+      },
+      {
+        "id": "C44",
+        "ok": true,
+        "seconds": 6.135,
+        "output": "20261103-104804_summary_eafc46e0.xlsx",
+        "formula_checks": 200,
+        "saved_cell_checks": 569,
+        "preserved": true
+      },
+      {
+        "id": "C45",
+        "ok": true,
+        "seconds": 6.251,
+        "output": "20261103-104811_summary_36a371e6.xlsx",
+        "formula_checks": 16,
+        "saved_cell_checks": 293,
+        "preserved": true
+      },
+      {
+        "id": "C46",
+        "ok": true,
+        "seconds": 5.321,
+        "output": "20261103-104816_filter_791e2d17.xlsx",
+        "formula_checks": 0,
+        "saved_cell_checks": 27,
+        "preserved": true
+      },
+      {
+        "id": "C47",
+        "ok": true,
+        "seconds": 5.371,
+        "output": "20261103-104821_filter_f82800a9.xlsx",
+        "formula_checks": 0,
+        "saved_cell_checks": 517,
+        "preserved": true
+      },
+      {
+        "id": "C48",
+        "ok": true,
+        "seconds": 6.423,
+        "output": "20261103-104828_lookup_00117300.xlsx",
+        "formula_checks": 120,
+        "saved_cell_checks": 1478,
+        "preserved": true
+      },
+      {
+        "id": "C49",
+        "ok": true,
+        "seconds": 6.864,
+        "output": "20261103-104835_lookup_db017eff.xlsx",
+        "formula_checks": 120,
+        "saved_cell_checks": 1478,
+        "preserved": true
+      },
+      {
+        "id": "C50",
+        "ok": true,
+        "seconds": 5.607,
+        "output": "20261103-104840_filter_d9e362c4.xlsx",
+        "formula_checks": 0,
+        "saved_cell_checks": 132,
+        "preserved": true
+      }
+    ]
+  },
+  "cases": [
+    {
+      "id": "C01",
+      "kind": "curated",
+      "source": "sinh_vien.xlsx",
+      "reference": null,
+      "prompt": "Làm sạch cột Họ và tên, bỏ khoảng trắng thừa",
+      "expected": [
+        "clean",
+        "Họ và tên",
+        "",
+        "",
+        ""
+      ],
+      "actual": [
+        "clean",
+        "Họ và tên",
+        "",
+        "",
+        ""
+      ],
+      "plan_matches": true,
+      "fix_note": null
+    },
+    {
+      "id": "C02",
+      "kind": "curated",
+      "source": "sinh_vien.xlsx",
+      "reference": null,
+      "prompt": "Chuẩn hóa unicode cột Họ và tên",
+      "expected": [
+        "clean",
+        "Họ và tên",
+        "",
+        "",
+        ""
+      ],
+      "actual": [
+        "clean",
+        "Họ và tên",
+        "",
+        "",
+        ""
+      ],
+      "plan_matches": true,
+      "fix_note": null
+    },
+    {
+      "id": "C03",
+      "kind": "curated",
+      "source": "sinh_vien.xlsx",
+      "reference": null,
+      "prompt": "Tính tổng Điểm TB theo Lớp",
+      "expected": [
+        "summary",
+        "Lớp",
+        "Điểm TB",
+        "",
+        ""
+      ],
+      "actual": [
+        "summary",
+        "Lớp",
+        "Điểm TB",
+        "",
+        ""
+      ],
+      "plan_matches": true,
+      "fix_note": null
+    },
+    {
+      "id": "C04",
+      "kind": "curated",
+      "source": "sinh_vien.xlsx",
+      "reference": null,
+      "prompt": "Lọc sinh viên có Điểm TB >= 8",
+      "expected": [
+        "filter",
+        "Điểm TB",
+        ">= 8",
+        "",
+        ""
+      ],
+      "actual": [
+        "filter",
+        "Điểm TB",
+        ">= 8",
+        "",
+        ""
+      ],
+      "plan_matches": true,
+      "fix_note": null
+    },
+    {
+      "id": "C05",
+      "kind": "curated",
+      "source": "sinh_vien.xlsx",
+      "reference": null,
+      "prompt": "Lọc sinh viên có Điểm TB dưới 6",
+      "expected": [
+        "filter",
+        "Điểm TB",
+        "< 6",
+        "",
+        ""
+      ],
+      "actual": [
+        "filter",
+        "Điểm TB",
+        "< 6",
+        "",
+        ""
+      ],
+      "plan_matches": true,
+      "fix_note": null
+    },
+    {
+      "id": "C06",
+      "kind": "curated",
+      "source": "sinh_vien.xlsx",
+      "reference": null,
+      "prompt": "Lọc lớp CNTT01",
+      "expected": [
+        "filter",
+        "Lớp",
+        "cntt01",
+        "",
+        ""
+      ],
+      "actual": [
+        "filter",
+        "Lớp",
+        "cntt01",
+        "",
+        ""
+      ],
+      "plan_matches": true,
+      "fix_note": null
+    },
+    {
+      "id": "C07",
+      "kind": "curated",
+      "source": "sinh_vien.xlsx",
+      "reference": "danh_muc_lop.xlsx",
+      "prompt": "Đối chiếu MSSV để lấy Tên lớp từ danh mục lớp",
+      "expected": [
+        "lookup",
+        "MSSV",
+        "",
+        "Mã lớp",
+        "Tên lớp"
+      ],
+      "actual": [
+        "lookup",
+        "MSSV",
+        "",
+        "Mã lớp",
+        "Tên lớp"
+      ],
+      "plan_matches": true,
+      "fix_note": null
+    },
+    {
+      "id": "C08",
+      "kind": "curated",
+      "source": "sinh_vien.xlsx",
+      "reference": "danh_muc_lop.xlsx",
+      "prompt": "Tra cứu theo MSSV lấy Giảng viên",
+      "expected": [
+        "lookup",
+        "MSSV",
+        "",
+        "Mã lớp",
+        "Giảng viên"
+      ],
+      "actual": [
+        "lookup",
+        "MSSV",
+        "",
+        "Mã lớp",
+        "Giảng viên"
+      ],
+      "plan_matches": true,
+      "fix_note": null
+    },
+    {
+      "id": "C09",
+      "kind": "curated",
+      "source": "bang_luong.xlsx",
+      "reference": null,
+      "prompt": "Làm sạch cột Họ tên",
+      "expected": [
+        "clean",
+        "Họ tên",
+        "",
+        "",
+        ""
+      ],
+      "actual": [
+        "clean",
+        "Họ tên",
+        "",
+        "",
+        ""
+      ],
+      "plan_matches": true,
+      "fix_note": null
+    },
+    {
+      "id": "C10",
+      "kind": "curated",
+      "source": "bang_luong.xlsx",
+      "reference": null,
+      "prompt": "Làm sạch cột Phòng ban",
+      "expected": [
+        "clean",
+        "Phòng ban",
+        "",
+        "",
+        ""
+      ],
+      "actual": [
+        "clean",
+        "Phòng ban",
+        "",
+        "",
+        ""
+      ],
+      "plan_matches": true,
+      "fix_note": null
+    },
+    {
+      "id": "C11",
+      "kind": "curated",
+      "source": "bang_luong.xlsx",
+      "reference": null,
+      "prompt": "Tính tổng Thực lĩnh theo Phòng ban",
+      "expected": [
+        "summary",
+        "Phòng ban",
+        "Thực lĩnh",
+        "",
+        ""
+      ],
+      "actual": [
+        "summary",
+        "Phòng ban",
+        "Thực lĩnh",
+        "",
+        ""
+      ],
+      "plan_matches": true,
+      "fix_note": null
+    },
+    {
+      "id": "C12",
+      "kind": "curated",
+      "source": "bang_luong.xlsx",
+      "reference": null,
+      "prompt": "Cộng tổng Lương cơ bản theo Phòng ban",
+      "expected": [
+        "summary",
+        "Phòng ban",
+        "Lương cơ bản",
+        "",
+        ""
+      ],
+      "actual": [
+        "summary",
+        "Phòng ban",
+        "Lương cơ bản",
+        "",
+        ""
+      ],
+      "plan_matches": true,
+      "fix_note": null
+    },
+    {
+      "id": "C13",
+      "kind": "curated",
+      "source": "bang_luong.xlsx",
+      "reference": null,
+      "prompt": "Lọc nhân viên có Lương cơ bản >= 10000000",
+      "expected": [
+        "filter",
+        "Lương cơ bản",
+        ">= 10000000",
+        "",
+        ""
+      ],
+      "actual": [
+        "filter",
+        "Lương cơ bản",
+        ">= 10000000",
+        "",
+        ""
+      ],
+      "plan_matches": true,
+      "fix_note": null
+    },
+    {
+      "id": "C14",
+      "kind": "curated",
+      "source": "bang_luong.xlsx",
+      "reference": null,
+      "prompt": "Lọc nhân viên Phòng ban Kỹ thuật",
+      "expected": [
+        "filter",
+        "Phòng ban",
+        "kỹ thuật",
+        "",
+        ""
+      ],
+      "actual": [
+        "filter",
+        "Phòng ban",
+        "kỹ thuật",
+        "",
+        ""
+      ],
+      "plan_matches": true,
+      "fix_note": null
+    },
+    {
+      "id": "C15",
+      "kind": "curated",
+      "source": "bang_luong.xlsx",
+      "reference": null,
+      "prompt": "Lọc nhân viên có Ngày công >= 20",
+      "expected": [
+        "filter",
+        "Ngày công",
+        ">= 20",
+        "",
+        ""
+      ],
+      "actual": [
+        "filter",
+        "Ngày công",
+        ">= 20",
+        "",
+        ""
+      ],
+      "plan_matches": true,
+      "fix_note": null
+    },
+    {
+      "id": "C16",
+      "kind": "curated",
+      "source": "bang_luong.xlsx",
+      "reference": null,
+      "prompt": "Tính tổng Phụ cấp theo Phòng ban",
+      "expected": [
+        "summary",
+        "Phòng ban",
+        "Phụ cấp",
+        "",
+        ""
+      ],
+      "actual": [
+        "summary",
+        "Phòng ban",
+        "Phụ cấp",
+        "",
+        ""
+      ],
+      "plan_matches": true,
+      "fix_note": null
+    },
+    {
+      "id": "C17",
+      "kind": "curated",
+      "source": "bang_luong.xlsx",
+      "reference": "danh_muc_nhan_vien.xlsx",
+      "prompt": "Đối chiếu Mã NV để lấy Họ tên chuẩn",
+      "expected": [
+        "lookup",
+        "Mã NV",
+        "",
+        "Mã NV",
+        "Họ tên chuẩn"
+      ],
+      "actual": [
+        "lookup",
+        "Mã NV",
+        "",
+        "Mã NV",
+        "Họ tên chuẩn"
+      ],
+      "plan_matches": true,
+      "fix_note": null
+    },
+    {
+      "id": "C18",
+      "kind": "curated",
+      "source": "bang_luong.xlsx",
+      "reference": "danh_muc_nhan_vien.xlsx",
+      "prompt": "Tra cứu theo Mã NV lấy Phòng ban chuẩn",
+      "expected": [
+        "lookup",
+        "Mã NV",
+        "",
+        "Mã NV",
+        "Phòng ban chuẩn"
+      ],
+      "actual": [
+        "lookup",
+        "Mã NV",
+        "",
+        "Mã NV",
+        "Phòng ban chuẩn"
+      ],
+      "plan_matches": true,
+      "fix_note": null
+    },
+    {
+      "id": "C19",
+      "kind": "curated",
+      "source": "kho_hang.xlsx",
+      "reference": null,
+      "prompt": "Làm sạch cột Tên hàng",
+      "expected": [
+        "clean",
+        "Tên hàng",
+        "",
+        "",
+        ""
+      ],
+      "actual": [
+        "clean",
+        "Tên hàng",
+        "",
+        "",
+        ""
+      ],
+      "plan_matches": true,
+      "fix_note": null
+    },
+    {
+      "id": "C20",
+      "kind": "curated",
+      "source": "kho_hang.xlsx",
+      "reference": null,
+      "prompt": "Làm sạch cột Nhóm hàng",
+      "expected": [
+        "clean",
+        "Nhóm hàng",
+        "",
+        "",
+        ""
+      ],
+      "actual": [
+        "clean",
+        "Nhóm hàng",
+        "",
+        "",
+        ""
+      ],
+      "plan_matches": true,
+      "fix_note": null
+    },
+    {
+      "id": "C21",
+      "kind": "curated",
+      "source": "kho_hang.xlsx",
+      "reference": null,
+      "prompt": "Tính tổng Thành tiền theo Nhóm hàng",
+      "expected": [
+        "summary",
+        "Nhóm hàng",
+        "Thành tiền",
+        "",
+        ""
+      ],
+      "actual": [
+        "summary",
+        "Nhóm hàng",
+        "Thành tiền",
+        "",
+        ""
+      ],
+      "plan_matches": true,
+      "fix_note": null
+    },
+    {
+      "id": "C22",
+      "kind": "curated",
+      "source": "kho_hang.xlsx",
+      "reference": null,
+      "prompt": "Cộng tổng Số lượng theo Nhóm hàng",
+      "expected": [
+        "summary",
+        "Nhóm hàng",
+        "Số lượng",
+        "",
+        ""
+      ],
+      "actual": [
+        "summary",
+        "Nhóm hàng",
+        "Số lượng",
+        "",
+        ""
+      ],
+      "plan_matches": true,
+      "fix_note": null
+    },
+    {
+      "id": "C23",
+      "kind": "curated",
+      "source": "kho_hang.xlsx",
+      "reference": null,
+      "prompt": "Lọc các mặt hàng có Số lượng >= 30",
+      "expected": [
+        "filter",
+        "Số lượng",
+        ">= 30",
+        "",
+        ""
+      ],
+      "actual": [
+        "filter",
+        "Số lượng",
+        ">= 30",
+        "",
+        ""
+      ],
+      "plan_matches": true,
+      "fix_note": null
+    },
+    {
+      "id": "C24",
+      "kind": "curated",
+      "source": "kho_hang.xlsx",
+      "reference": null,
+      "prompt": "Lọc hàng có Đơn giá dưới 20000",
+      "expected": [
+        "filter",
+        "Đơn giá",
+        "< 20000",
+        "",
+        ""
+      ],
+      "actual": [
+        "filter",
+        "Đơn giá",
+        "< 20000",
+        "",
+        ""
+      ],
+      "plan_matches": true,
+      "fix_note": null
+    },
+    {
+      "id": "C25",
+      "kind": "curated",
+      "source": "kho_hang.xlsx",
+      "reference": null,
+      "prompt": "Tính tổng Đơn giá theo Nhóm hàng",
+      "expected": [
+        "summary",
+        "Nhóm hàng",
+        "Đơn giá",
+        "",
+        ""
+      ],
+      "actual": [
+        "summary",
+        "Nhóm hàng",
+        "Đơn giá",
+        "",
+        ""
+      ],
+      "plan_matches": true,
+      "fix_note": null
+    },
+    {
+      "id": "C26",
+      "kind": "curated",
+      "source": "kho_hang.xlsx",
+      "reference": "danh_muc_hang.xlsx",
+      "prompt": "Đối chiếu Mã hàng lấy Tên hàng từ danh mục hàng",
+      "expected": [
+        "lookup",
+        "Mã hàng",
+        "",
+        "Mã hàng",
+        "Tên hàng"
+      ],
+      "actual": [
+        "lookup",
+        "Mã hàng",
+        "",
+        "Mã hàng",
+        "Tên hàng"
+      ],
+      "plan_matches": true,
+      "fix_note": null
+    },
+    {
+      "id": "C27",
+      "kind": "curated",
+      "source": "kho_hang.xlsx",
+      "reference": "danh_muc_hang.xlsx",
+      "prompt": "Điền Đơn giá từ danh mục theo Mã hàng",
+      "expected": [
+        "lookup",
+        "Mã hàng",
+        "",
+        "Mã hàng",
+        "Đơn giá"
+      ],
+      "actual": [
+        "lookup",
+        "Mã hàng",
+        "",
+        "Mã hàng",
+        "Đơn giá"
+      ],
+      "plan_matches": true,
+      "fix_note": null
+    },
+    {
+      "id": "C28",
+      "kind": "curated",
+      "source": "diem_danh.xlsx",
+      "reference": null,
+      "prompt": "Làm sạch cột Ghi chú",
+      "expected": [
+        "clean",
+        "Ghi chú",
+        "",
+        "",
+        ""
+      ],
+      "actual": [
+        "clean",
+        "Ghi chú",
+        "",
+        "",
+        ""
+      ],
+      "plan_matches": true,
+      "fix_note": null
+    },
+    {
+      "id": "C29",
+      "kind": "curated",
+      "source": "diem_danh.xlsx",
+      "reference": null,
+      "prompt": "Làm sạch cột Họ tên",
+      "expected": [
+        "clean",
+        "Họ tên",
+        "",
+        "",
+        ""
+      ],
+      "actual": [
+        "clean",
+        "Họ tên",
+        "",
+        "",
+        ""
+      ],
+      "plan_matches": true,
+      "fix_note": null
+    },
+    {
+      "id": "C30",
+      "kind": "curated",
+      "source": "diem_danh.xlsx",
+      "reference": null,
+      "prompt": "Thống kê số lượng Có mặt theo Lớp",
+      "expected": [
+        "summary",
+        "Lớp",
+        "Có mặt",
+        "",
+        ""
+      ],
+      "actual": [
+        "summary",
+        "Lớp",
+        "Có mặt",
+        "",
+        ""
+      ],
+      "plan_matches": true,
+      "fix_note": null
+    },
+    {
+      "id": "C31",
+      "kind": "curated",
+      "source": "diem_danh.xlsx",
+      "reference": null,
+      "prompt": "Tính tổng Có mặt theo Buổi",
+      "expected": [
+        "summary",
+        "Buổi",
+        "Có mặt",
+        "",
+        ""
+      ],
+      "actual": [
+        "summary",
+        "Buổi",
+        "Có mặt",
+        "",
+        ""
+      ],
+      "plan_matches": true,
+      "fix_note": null
+    },
+    {
+      "id": "C32",
+      "kind": "curated",
+      "source": "diem_danh.xlsx",
+      "reference": null,
+      "prompt": "Lọc các bạn vắng",
+      "expected": [
+        "filter",
+        "Trạng thái",
+        "vắng",
+        "",
+        ""
+      ],
+      "actual": [
+        "filter",
+        "Trạng thái",
+        "vắng",
+        "",
+        ""
+      ],
+      "plan_matches": true,
+      "fix_note": null
+    },
+    {
+      "id": "C33",
+      "kind": "curated",
+      "source": "diem_danh.xlsx",
+      "reference": null,
+      "prompt": "Lọc sinh viên có Trạng thái Vắng",
+      "expected": [
+        "filter",
+        "Trạng thái",
+        "vắng",
+        "",
+        ""
+      ],
+      "actual": [
+        "filter",
+        "Trạng thái",
+        "vắng",
+        "",
+        ""
+      ],
+      "plan_matches": true,
+      "fix_note": null
+    },
+    {
+      "id": "C34",
+      "kind": "curated",
+      "source": "diem_danh.xlsx",
+      "reference": null,
+      "prompt": "Lọc Lớp CNTT01",
+      "expected": [
+        "filter",
+        "Lớp",
+        "cntt01",
+        "",
+        ""
+      ],
+      "actual": [
+        "filter",
+        "Lớp",
+        "cntt01",
+        "",
+        ""
+      ],
+      "plan_matches": true,
+      "fix_note": null
+    },
+    {
+      "id": "C35",
+      "kind": "curated",
+      "source": "diem_danh.xlsx",
+      "reference": null,
+      "prompt": "Lọc Buổi 3",
+      "expected": [
+        "filter",
+        "Buổi",
+        "3",
+        "",
+        ""
+      ],
+      "actual": [
+        "filter",
+        "Buổi",
+        "3",
+        "",
+        ""
+      ],
+      "plan_matches": true,
+      "fix_note": null
+    },
+    {
+      "id": "C36",
+      "kind": "curated",
+      "source": "diem_danh.xlsx",
+      "reference": "danh_muc_lop.xlsx",
+      "prompt": "Đối chiếu Mã SV lấy Tên lớp",
+      "expected": [
+        "lookup",
+        "Mã SV",
+        "",
+        "Mã lớp",
+        "Tên lớp"
+      ],
+      "actual": [
+        "lookup",
+        "Mã SV",
+        "",
+        "Mã lớp",
+        "Tên lớp"
+      ],
+      "plan_matches": true,
+      "fix_note": null
+    },
+    {
+      "id": "C37",
+      "kind": "curated",
+      "source": "so_quy.xlsx",
+      "reference": null,
+      "prompt": "Làm sạch cột Diễn giải",
+      "expected": [
+        "clean",
+        "Diễn giải",
+        "",
+        "",
+        ""
+      ],
+      "actual": [
+        "clean",
+        "Diễn giải",
+        "",
+        "",
+        ""
+      ],
+      "plan_matches": true,
+      "fix_note": null
+    },
+    {
+      "id": "C38",
+      "kind": "curated",
+      "source": "so_quy.xlsx",
+      "reference": null,
+      "prompt": "Tính tổng Chi theo Diễn giải",
+      "expected": [
+        "summary",
+        "Diễn giải",
+        "Chi",
+        "",
+        ""
+      ],
+      "actual": [
+        "summary",
+        "Diễn giải",
+        "Chi",
+        "",
+        ""
+      ],
+      "plan_matches": true,
+      "fix_note": null
+    },
+    {
+      "id": "C39",
+      "kind": "curated",
+      "source": "so_quy.xlsx",
+      "reference": null,
+      "prompt": "Tính tổng Thu theo Ngày",
+      "expected": [
+        "summary",
+        "Ngày",
+        "Thu",
+        "",
+        ""
+      ],
+      "actual": [
+        "summary",
+        "Ngày",
+        "Thu",
+        "",
+        ""
+      ],
+      "plan_matches": true,
+      "fix_note": null
+    },
+    {
+      "id": "C40",
+      "kind": "curated",
+      "source": "so_quy.xlsx",
+      "reference": null,
+      "prompt": "Tính tổng Số dư theo Ngày",
+      "expected": [
+        "summary",
+        "Ngày",
+        "Số dư",
+        "",
+        ""
+      ],
+      "actual": [
+        "summary",
+        "Ngày",
+        "Số dư",
+        "",
+        ""
+      ],
+      "plan_matches": true,
+      "fix_note": null
+    },
+    {
+      "id": "C41",
+      "kind": "curated",
+      "source": "so_quy.xlsx",
+      "reference": null,
+      "prompt": "Lọc các phiếu có Chi >= 500000",
+      "expected": [
+        "filter",
+        "Chi",
+        ">= 500000",
+        "",
+        ""
+      ],
+      "actual": [
+        "filter",
+        "Chi",
+        ">= 500000",
+        "",
+        ""
+      ],
+      "plan_matches": true,
+      "fix_note": null
+    },
+    {
+      "id": "C42",
+      "kind": "curated",
+      "source": "so_quy.xlsx",
+      "reference": null,
+      "prompt": "Lọc các dòng Thu khác rỗng",
+      "expected": [
+        "filter",
+        "Thu",
+        "*",
+        "",
+        ""
+      ],
+      "actual": [
+        "filter",
+        "Thu",
+        "*",
+        "",
+        ""
+      ],
+      "plan_matches": true,
+      "fix_note": null
+    },
+    {
+      "id": "C43",
+      "kind": "curated",
+      "source": "don_hang.xlsx",
+      "reference": null,
+      "prompt": "Làm sạch cột Khách hàng",
+      "expected": [
+        "clean",
+        "Khách hàng",
+        "",
+        "",
+        ""
+      ],
+      "actual": [
+        "clean",
+        "Khách hàng",
+        "",
+        "",
+        ""
+      ],
+      "plan_matches": true,
+      "fix_note": null
+    },
+    {
+      "id": "C44",
+      "kind": "curated",
+      "source": "don_hang.xlsx",
+      "reference": null,
+      "prompt": "Tính tổng Thành tiền theo Mã hàng",
+      "expected": [
+        "summary",
+        "Mã hàng",
+        "Thành tiền",
+        "",
+        ""
+      ],
+      "actual": [
+        "summary",
+        "Mã hàng",
+        "Thành tiền",
+        "",
+        ""
+      ],
+      "plan_matches": true,
+      "fix_note": null
+    },
+    {
+      "id": "C45",
+      "kind": "curated",
+      "source": "don_hang.xlsx",
+      "reference": null,
+      "prompt": "Cộng tổng Số lượng theo Khách hàng",
+      "expected": [
+        "summary",
+        "Khách hàng",
+        "Số lượng",
+        "",
+        ""
+      ],
+      "actual": [
+        "summary",
+        "Khách hàng",
+        "Số lượng",
+        "",
+        ""
+      ],
+      "plan_matches": true,
+      "fix_note": null
+    },
+    {
+      "id": "C46",
+      "kind": "curated",
+      "source": "don_hang.xlsx",
+      "reference": null,
+      "prompt": "Lọc đơn hàng có Thành tiền >= 100000",
+      "expected": [
+        "filter",
+        "Thành tiền",
+        ">= 100000",
+        "",
+        ""
+      ],
+      "actual": [
+        "filter",
+        "Thành tiền",
+        ">= 100000",
+        "",
+        ""
+      ],
+      "plan_matches": true,
+      "fix_note": null
+    },
+    {
+      "id": "C47",
+      "kind": "curated",
+      "source": "don_hang.xlsx",
+      "reference": null,
+      "prompt": "Lọc các đơn hàng có Số lượng > 5",
+      "expected": [
+        "filter",
+        "Số lượng",
+        "> 5",
+        "",
+        ""
+      ],
+      "actual": [
+        "filter",
+        "Số lượng",
+        "> 5",
+        "",
+        ""
+      ],
+      "plan_matches": true,
+      "fix_note": null
+    },
+    {
+      "id": "C48",
+      "kind": "curated",
+      "source": "don_hang.xlsx",
+      "reference": "danh_muc_hang.xlsx",
+      "prompt": "Đối chiếu Mã hàng lấy Tên hàng",
+      "expected": [
+        "lookup",
+        "Mã hàng",
+        "",
+        "Mã hàng",
+        "Tên hàng"
+      ],
+      "actual": [
+        "lookup",
+        "Mã hàng",
+        "",
+        "Mã hàng",
+        "Tên hàng"
+      ],
+      "plan_matches": true,
+      "fix_note": null
+    },
+    {
+      "id": "C49",
+      "kind": "curated",
+      "source": "don_hang.xlsx",
+      "reference": "danh_muc_hang.xlsx",
+      "prompt": "Điền Nhóm hàng theo Mã hàng",
+      "expected": [
+        "lookup",
+        "Mã hàng",
+        "",
+        "Mã hàng",
+        "Nhóm hàng"
+      ],
+      "actual": [
+        "lookup",
+        "Mã hàng",
+        "",
+        "Mã hàng",
+        "Nhóm hàng"
+      ],
+      "plan_matches": true,
+      "fix_note": null
+    },
+    {
+      "id": "C50",
+      "kind": "curated",
+      "source": "don_hang.xlsx",
+      "reference": null,
+      "prompt": "Lọc đơn hàng của Khách A",
+      "expected": [
+        "filter",
+        "Khách hàng",
+        "khách a",
+        "",
+        ""
+      ],
+      "actual": [
+        "filter",
+        "Khách hàng",
+        "khách a",
+        "",
+        ""
+      ],
+      "plan_matches": true,
+      "fix_note": null
+    },
+    {
+      "id": "L01",
+      "kind": "known_limitation",
+      "source": "bang_luong.xlsx",
+      "reference": null,
+      "prompt": "Lọc nhân viên Kinh doanh",
+      "expected": [
+        "filter",
+        "Phòng ban",
+        "kinh doanh",
+        "",
+        ""
+      ],
+      "actual": [
+        "filter",
+        "Phòng ban",
+        "kinh doanh",
+        "",
+        ""
+      ],
+      "plan_matches": true,
+      "fix_note": "Heuristic picks the first identity column and a wildcard; it should map the department word to \"Phòng ban\" and use it as the value."
+    },
+    {
+      "id": "L02",
+      "kind": "known_limitation",
+      "source": "sinh_vien.xlsx",
+      "reference": null,
+      "prompt": "Cho tôi danh sách sinh viên lớp CNTT01",
+      "expected": [
+        "filter",
+        "Lớp",
+        "cntt01",
+        "",
+        ""
+      ],
+      "actual": [
+        "filter",
+        "Lớp",
+        "cntt01",
+        "",
+        ""
+      ],
+      "plan_matches": true,
+      "fix_note": "A \"danh sách\" request is not treated as a filter; it should detect the known value after the class noun (\"lớp CNTT01\")."
+    },
+    {
+      "id": "L03",
+      "kind": "known_limitation",
+      "source": "diem_danh.xlsx",
+      "reference": null,
+      "prompt": "Lọc ra những sinh viên vắng",
+      "expected": [
+        "filter",
+        "Trạng thái",
+        "vắng",
+        "",
+        ""
+      ],
+      "actual": [
+        "filter",
+        "Trạng thái",
+        "vắng",
+        "",
+        ""
+      ],
+      "plan_matches": true,
+      "fix_note": "The value is mistaken for a column name (\"Lớp\"); filter values should be matched against categorical column names in prompts."
+    },
+    {
+      "id": "L04",
+      "kind": "known_limitation",
+      "source": "sinh_vien.xlsx",
+      "reference": null,
+      "prompt": "Tính điểm trung bình theo lớp",
+      "expected": [
+        "clarify",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "actual": null,
+      "plan_matches": false,
+      "fix_note": "AVERAGE is not supported. The planner returns None instead of an honest clarify saying that only sums are supported."
+    },
+    {
+      "id": "L05",
+      "kind": "known_limitation",
+      "source": "bang_luong.xlsx",
+      "reference": null,
+      "prompt": "Lương trung bình mỗi phòng ban",
+      "expected": [
+        "clarify",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "actual": null,
+      "plan_matches": false,
+      "fix_note": "AVERAGE is not supported. The planner returns None instead of an honest clarify saying that only sums are supported."
+    }
+  ]
+}

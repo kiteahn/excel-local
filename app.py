@@ -900,13 +900,21 @@ def prepare_sheets(source, reference, plan, token):
         counts = collections.Counter()
         grouped = collections.defaultdict(list)
         table = [['Nhom_chuan_hoa', 'Gia_tri']]
+        skipped_total_rows = 0
         for row, key in zip(rows, keys):
             if not key:
+                text = ' '.join(str(v).strip().lower() for v in row if v not in (None, ''))
+                if any(marker in text for marker in ('tổng cộng', 'tong cong', 'tổng:', 'tong:')):
+                    # A printed total row is not a data group. Skipping it is
+                    # safer than double-counting it; the skip is reported.
+                    skipped_total_rows += 1
+                    continue
                 raise ValueError('Cột nhóm có khóa trống; cần xử lý rõ trước khi tổng hợp.')
             val_num = number(row[value_col], lenient=lenient_nums, dot_thousands=dot_thousands)
             totals[key] += val_num
             counts[key] += 1
             grouped[key].append(float(val_num))
+        stats['total_rows_skipped'] = skipped_total_rows
         headers = ['Nhom_chuan_hoa', 'So_dong', 'Tong']
         rows = []
         for i, key in enumerate(totals, 2):
@@ -1279,7 +1287,10 @@ def xml_value(cell, strings):
     if kind == 's':
         return ('text', strings[int(value)])
     if kind == 'inlineStr':
-        return ('text', xml_text(cell.find('s:is', NS)))
+        node = cell.find('s:is', NS)
+        # openpyxl writes empty text cells as <c t="inlineStr"/> with no <is>.
+        # Treat those as empty rather than dereferencing None.
+        return ('text', xml_text(node)) if node is not None else ('empty', None)
     if kind == 'b':
         return ('bool', value == '1')
     if kind == 'str':
