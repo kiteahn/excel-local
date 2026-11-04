@@ -1,21 +1,21 @@
 # Gói nghiệm thu Windows — Excel Local Expert, nhánh `muse-upgrade`
 
-Ngày xuất: **2026-11-04** (sau Chu kỳ 9 — Q4, Q5, Q6).
-Nhánh `muse-upgrade`, **không push**. Hành vi gần nhất trước đợt này là v0.3.2
-(tag cục bộ `v0.3.2`); bản phát hành mới là v0.4.0.
+Ngày xuất: **2026-11-04** (sau Chu kỳ 10 — Q4, Q5, Q6, Q7).
+Nhánh `muse-upgrade`, **không push**. Bản phát hành mới là **v0.4.0** (tag cục
+bộ `v0.4.0`); hành vi trước đợt này là v0.3.2.
 Toàn bộ phần chạy được trên máy Windows có Excel đã có bằng chứng; các mục cần
 mắt người được đánh dấu **CẦN NGƯỜI XÁC NHẬN** trong `NEXT.md`.
 
 ## Gói này gồm
-- `handoff/excel-local-muse-upgrade-cycle9.bundle` — toàn bộ repo + lịch sử
-  nhánh `muse-upgrade`.
-- `handoff/excel-local-muse-upgrade-cycle9.zip` — cây thư mục tại đúng commit
+- `handoff/excel-local-muse-upgrade-cycle10.bundle` — toàn bộ repo + lịch sử
+  nhánh `muse-upgrade` và tag `v0.4.0`.
+- `handoff/excel-local-muse-upgrade-cycle10.zip` — cây thư mục tại đúng commit
   đầu nhánh (chỉ file git theo dõi; không chứa `config.json` hay `.work/`).
-- `handoff/muse-upgrade-cycle9.patch` — diff đầy đủ so với bản gốc `28f5679`.
+- `handoff/muse-upgrade-cycle10.patch` — diff đầy đủ so với bản gốc `28f5679`.
 - `handoff/HANDOFF.md` — tóm tắt commit, cách chạy test, việc còn lại.
 - File này.
 
-## Cập nhật sau Chu kỳ 9 (Q4–Q6)
+## Cập nhật sau Chu kỳ 10 (Q4–Q7)
 - **Q4:** 9 workbook tổng hợp trong `examples/real_like/`, 6 loại bảng nguồn;
   55 câu tiếng Việt, **53/55 = 96,4%** kế hoạch đúng ngay lần đầu. Chạy đầy đủ
   preview → Excel → verify → preserve: **49 thành công, 1 từ chối đúng vì
@@ -27,6 +27,10 @@ mắt người được đánh dấu **CẦN NGƯỜI XÁC NHẬN** trong `NEXT.
   dòng**, `App.__init__` 213 → **16 dòng**, `_build_ui` 199 dòng. Vàng tăng lên
   **34 ca**; mutation **6/6** bị bắt; không đổi hành vi. Dừng tách lớp `App`
   còn 699 dòng vì rủi ro giao diện lớn hơn lợi ích.
+- **Q7:** phiên bản **0.4.0**, đồng bộ tiêu đề app/cửa sổ, chụp lại 3 ảnh GUI;
+  `.github/workflows/tests.yml` chạy 17 test không cần Excel trên Windows +
+  Ubuntu, Windows thêm 2 bộ bảo mật/DPAPI. **Không push, không thêm LICENSE.**
+  YAML đã kiểm bằng PyYAML; **CHƯA KIỂM CHỨNG** runner Ubuntu thật.
 - **Test đầy đủ cuối:** `run_all_tests.ps1` **31 lệnh, 0 lỗi, 1018,7s, exit 0**
   (`run-20261104-105727.log`); `examples/` không đổi, không còn Excel mồ côi,
   không có thư mục tạm mới. `test_real_like_plans.py` mất **703,6s** thay vì
@@ -40,12 +44,13 @@ mắt người được đánh dấu **CẦN NGƯỜI XÁC NHẬN** trong `NEXT.
 
 ## Cách lấy code (chọn 1)
 ```powershell
-# Cách A — từ bundle (giữ lịch sử git):
-git clone handoff/excel-local-muse-upgrade-cycle9.bundle excel-local-check
+# Cách A — từ bundle (giữ lịch sử git + tag v0.4.0):
+git clone handoff/excel-local-muse-upgrade-cycle10.bundle excel-local-check
 cd excel-local-check
 git checkout muse-upgrade
+git tag --list v0.4.0
 
-# Cách B — giải nén file handoff/excel-local-muse-upgrade-cycle9.zip vào một thư mục mới, mở PowerShell tại đó.
+# Cách B — giải nén file handoff/excel-local-muse-upgrade-cycle10.zip vào một thư mục mới, mở PowerShell tại đó.
 ```
 
 ## Lệnh chạy test trên Windows

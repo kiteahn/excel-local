@@ -1,0 +1,67 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: ${{ matrix.os }} / offline
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    env:
+      PYTHONUTF8: "1"
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run tests that do not need Excel
+        shell: bash
+        run: |
+          set -euo pipefail
+          # test_headers.py, test_single_file_filter.py and
+          # test_diverse_scenarios_e2e.py are intentionally excluded: on
+          # Windows they call native Excel, which GitHub runners do not have.
+          tests=(
+            test_app.py
+            test_all_edge_cases.py
+            test_upgrades.py
+            test_cli.py
+            test_usecases.py
+            test_usecases2.py
+            test_fuzz_light.py
+            test_fuzz_headers.py
+            test_fuzz_xlsx.py
+            test_infer_golden.py
+            test_sanitize_plan.py
+            test_policy_defaults.py
+            test_safety_limits.py
+            test_prepare_sheets_golden.py
+            test_batch_summary.py
+            test_privacy_guard_cases.py
+            test_cloud_preview.py
+          )
+          for test in "${tests[@]}"; do
+            echo "::group::$test"
+            python -X utf8 "$test"
+            echo "::endgroup::"
+          done
+
+      - name: Run Windows security checks
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -X utf8 test_router.py
+          python -X utf8 test_security_privacy.py

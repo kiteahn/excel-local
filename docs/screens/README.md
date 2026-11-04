@@ -2,8 +2,9 @@
 
 Chụp ngày **2026-11-03** từ ứng dụng Tk thật trên Windows, bằng
 `capture_gui_screens.py`. Script dùng `examples/real_like/sinh_vien.xlsx`
-(dữ liệu tổng hợp), không gọi AI/cloud, không chạy Excel, và thay cấu hình bằng
-một dict rỗng để không lộ khóa API thật.
+(dữ liệu tổng hợp), không gọi AI/cloud, không ghi workbook, và thay cấu hình
+bằng một dict rỗng để không lộ khóa API thật. Việc đọc file XLSX đi qua bridge
+Excel như luồng thật; script chỉ đọc, không thực thi tác vụ.
 
 Màn hình hiện tại: **1536×864, DPI 120 (125%)**.
 
@@ -16,8 +17,9 @@ Màn hình hiện tại: **1536×864, DPI 120 (125%)**.
 ## Đã đo / đã sửa
 
 - Ảnh chính cho thấy tiêu đề ứng dụng ghi `Excel Local Expert v0.3` trong khi
-  tiêu đề cửa sổ là `v0.3.2`. Đây là lệch số phiên bản hiển thị; sẽ đồng bộ khi
-  tăng phiên bản ở Q7.
+  tiêu đề cửa sổ là `v0.3.2`. Đây là lệch số phiên bản hiển thị; bản 0.4.0 đã
+  đồng bộ cả hai thành `v0.4.0`. Ảnh cũ vẫn giữ nguyên để đối chiếu lịch sử,
+  không chụp lại và không chỉnh sửa ảnh.
 - Ba ảnh đều nằm trong màn hình 1536×864; không có nút chính nào bị cắt ở
   125% DPI.
 - Script chụp lần đầu bị lỗi thứ tự callback (chỉ lưu ảnh chính); đã sửa thành

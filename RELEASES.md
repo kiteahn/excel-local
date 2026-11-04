@@ -7,6 +7,7 @@
 | 0.3 | 2026-10 | Lọc & trích xuất, tự chữa lành ô gộp, Smart Router | `release-notes-0.3.md` |
 | 0.3.1 | 2026-10-30 | Ổn định Windows, DPAPI, chính sách mặc định Ollama | `release-notes-0.3.1.md` |
 | 0.3.2 | 2026-10-31 | Privacy Guard: bịt lọt tên đứng một mình, bỏ che nhầm số tiền/MSSV/mã 13 số, sửa ăn khoảng trắng; bộ đo 62 PII + 37 non-PII | `release-notes-0.3.2.md` |
+| 0.4.0 | 2026-11-04 | Q1–Q7: tách lookup/filter/GUI, PrivacyGuard 212 câu, xem trước cloud, đo hiệu năng, 9 workbook giống thật (96,4% kế hoạch đúng), ảnh GUI, CI không cần Excel | `release-notes-0.4.0.md`, `cycles/CYCLE-04.md` … `CYCLE-10.md` |
 
 ## Chu kỳ không tăng phiên bản
 - **Chu kỳ 0 (2026-10-31)** — nghiệm thu nền Windows, sửa 4 lỗi bố cục giao diện,

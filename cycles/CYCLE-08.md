@@ -1,7 +1,8 @@
 # Chu kỳ 8 — Q5: giao diện, ảnh chụp và lỗi đo được
 
 Ngày: 2026-11-03. Nhánh `muse-upgrade`; không push; không dùng file thật, không
-gọi cloud, không chạy Excel.
+gọi cloud. Việc đọc file XLSX mẫu đi qua bridge Excel như luồng thật; script chỉ
+đọc, không ghi workbook và không thực thi tác vụ.
 
 ## Ảnh chụp
 

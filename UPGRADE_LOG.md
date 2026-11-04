@@ -421,3 +421,9 @@ Việc còn dở, nói thẳng:
 - Dừng tách lớp `App` vì rủi ro giao diện lớn hơn lợi ích; `_filter_plan` còn 121 dòng cho thứ tự ưu tiên 5d/5e.
 - Toàn bộ `run_all_tests.ps1` gồm Excel thật: **31 lệnh, 0 lỗi, 1018,7s, exit 0**; `examples/` sạch, không Excel mồ côi, không thư mục tạm mới (`run-20261104-105727.log`). `test_real_like_plans` mất 703,6s, có khoảng trễ ~4 phút giữa hai workbook chưa rõ nguyên nhân; đã ghi, không giấu.
 - Chi tiết: `cycles/CYCLE-09.md`.
+
+### Chu kỳ 10 — Q7: nền tảng phát hành (2026-11-04)
+- Tăng phiên bản lên **0.4.0**, đồng bộ tiêu đề cửa sổ/nhãn đầu trang, chụp lại 3 ảnh GUI; cập nhật README/RELEASES/release notes; tag cục bộ `v0.4.0`, **không push**, **không thêm LICENSE**.
+- `.github/workflows/tests.yml`: **17 test không cần Excel** trên Windows + Ubuntu; Windows thêm `test_router.py` và `test_security_privacy.py`. Loại 3 bộ cần Excel trên Windows (`test_headers`, `test_single_file_filter`, `test_diverse_scenarios_e2e`). Cú pháp YAML kiểm bằng PyYAML; **CHƯA KIỂM CHỨNG** runner Ubuntu thật.
+- Sau đổi tiêu đề: `py_compile` đạt, `test_gui` 14/14, `test_ui_acceptance` 48/48. Lưới Excel gần nhất vẫn 31 lệnh/0 lỗi/1018,7s; Q7 chỉ đổi chuỗi hiển thị, tài liệu, workflow và ảnh.
+- Chi tiết: `cycles/CYCLE-10.md`.

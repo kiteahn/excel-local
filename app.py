@@ -1761,7 +1761,7 @@ def _build_app_class(tk, ttk, filedialog, messagebox):
 
 
         def _build_ui(self, window):
-            window.title('Excel Local Expert · Trợ Lý Bảng Tính Cục Bộ & AI v0.3.2')
+            window.title('Excel Local Expert · Trợ Lý Bảng Tính Cục Bộ & AI v0.4.0')
             window.protocol('WM_DELETE_WINDOW', self.close)
             width = min(1160, window.winfo_screenwidth() - 60)
             height = min(900, window.winfo_screenheight() - 80)
@@ -1783,7 +1783,7 @@ def _build_app_class(tk, ttk, filedialog, messagebox):
             # Header
             header_frame = ttk.Frame(outer)
             header_frame.pack(fill='x', pady=(0, 6))
-            ttk.Label(header_frame, text='Excel Local Expert v0.3', style='Title.TLabel').pack(side='left')
+            ttk.Label(header_frame, text='Excel Local Expert v0.4.0', style='Title.TLabel').pack(side='left')
             ttk.Label(header_frame, text='Dual-Engine AI · Tự chữa lành ô gộp & dòng tiêu đề · Đối soát độc lập', style='Sub.TLabel').pack(side='left', padx=12, pady=6)
             ttk.Button(header_frame, text='⚙ Cài đặt AI & API Key', command=self.open_ai_settings).pack(side='right')
 

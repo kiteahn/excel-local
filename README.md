@@ -1,6 +1,16 @@
-# Excel Local Expert (v0.3.2)
+# Excel Local Expert (v0.4.0)
 
 Ứng dụng Windows xử lý bảng tính với Smart Multi-Model Router (luân phiên các nhà cung cấp người dùng đã cấu hình khóa: Google Gemini, Groq Cloud, OpenAI/OpenRouter hoặc endpoint tương thích, và Ollama Local), tính năng tự chữa lành ô gộp/tiêu đề và đối soát độc lập bằng native Excel Desktop. Người dùng tự chọn động cơ: chế độ cục bộ (heuristic/Ollama) không gửi gì ra ngoài; chế độ cloud gửi **tên cột và câu yêu cầu đã qua bước che PII bằng regex** tới nhà cung cấp đã chọn — không gửi dữ liệu hàng (xem mục "Bảo mật & quyền riêng tư" để biết giới hạn).
+
+## Yêu cầu
+
+- **Windows 10/11** và **Microsoft Excel Desktop**. Đã kiểm chứng với Excel
+  Microsoft 365 16.0.20430.20092; chưa kiểm chứng với Excel cài từ Microsoft
+  Store, Excel Online, LibreOffice hay máy Mac.
+- **Python 3.12 trở lên** (đã chạy thật với Python 3.14 trên máy Windows của dự
+  án). Không cần cài thư viện ngoài: ứng dụng dùng 100% Python Standard Library.
+- Cần màn hình để dùng giao diện Tk; các test Excel cần Excel Desktop đóng/mở
+  được bằng COM. Test không cần Excel vẫn chạy được trên Linux trong CI.
 
 ## Mở ứng dụng
 
@@ -70,8 +80,8 @@ python -X utf8 test_router.py             # 7 mục kiểm tra Smart Multi-Model
 python -X utf8 test_all_edge_cases.py     # 61 bài test stress-test biên (Malformed, CSV, Unicode, Injection)
 python -X utf8 test_security_privacy.py   # 43 bài test bảo mật PII, DPAPI, cache, số âm, ngày tháng
 python -X utf8 test_upgrades.py           # 28 bài test tự chữa lành ô gộp, cột trùng, tiền tệ VN
-python -X utf8 test_app.py                # 80 bài test logic, trust boundary và console UTF-8
-python -X utf8 test_app.py --integration  # 98 bài test Excel Desktop COM thật, tính toán và xuất PDF
+python -X utf8 test_app.py                # 87 bài test logic, trust boundary và console UTF-8
+python -X utf8 test_app.py --integration  # 105 bài test Excel Desktop COM thật, tính toán và xuất PDF
 python -X utf8 test_gui.py                # 14 bài test kiểm tra giao diện Stepper, treeview, xem trước/hủy/chấp nhận
 python -X utf8 test_cli.py                # 6 bài test kiểm tra cổng chấp nhận an toàn của CLI
 python -X utf8 test_headers.py            # 11 bài test chẩn đoán tiêu đề, lề trống, định dạng
@@ -84,10 +94,10 @@ python -X utf8 test_usecases2.py          # 10 use case bất thường (khóa t
 python -X utf8 test_batch_summary.py      # 6 bài test tổng hợp theo lô và chặn thiếu danh mục
 python -X utf8 test_privacy_guard_cases.py # 212 mẫu đo Privacy Guard (125 PII + 87 không phải PII)
 python -X utf8 test_cloud_preview.py     # 20 check xem trước đúng nội dung gửi cloud + hủy (không gọi mạng)
-python -X utf8 test_infer_golden.py       # 33 prompt vàng cho infer_smart_plan (ghim hành vi heuristic)
+python -X utf8 test_infer_golden.py       # 34 prompt vàng cho infer_smart_plan (ghim hành vi heuristic)
 python -X utf8 test_sanitize_plan.py      # 12 bài test sanitize_plan + khóa cache của plan (ép clarify, fuzzy match cột)
 python -X utf8 test_fuzz_light.py         # 20 biến thể fuzz nhẹ cho parser CSV
-python -X utf8 test_fuzz_headers.py       # 15 biến thể fuzz cho detect_header_row/select_header
+python -X utf8 test_fuzz_headers.py       # 16 biến thể fuzz cho detect_header_row/select_header
 python -X utf8 test_fuzz_xlsx.py          # 12 biến thể fuzz cho đường đọc XLSX thuần Python (cần openpyxl, tự SKIP nếu thiếu)
 python -X utf8 test_policy_defaults.py    # 12 bài test quyết định chính sách 2026-10-30 (mặc định Ollama, vn_dot_thousands)
 python -X utf8 test_prepare_sheets_golden.py # 27 kịch bản vàng cho nhánh lookup của prepare_sheets (không cần Excel)
@@ -101,6 +111,12 @@ powershell -NoProfile -File run_all_tests.ps1 # chạy cả 3 nhóm, in bảng t
 `run_all_tests.ps1` là đường chạy đầy đủ trên Windows: nhóm 1 không cần Excel, nhóm 2 cần DPAPI thật, nhóm 3 cần Excel desktop (và màn hình cho GUI). Script dừng nhóm sau khi ghi lỗi, in bảng tổng hợp kèm số check, trả exit code 1 nếu có lệnh lỗi, nếu `examples/` bị thay đổi trong lượt chạy, hoặc nếu còn tiến trình Excel do bridge tạo. Dùng `-SkipExcel`, `-SkipGui`, `-SkipBenchmark` để bỏ bớt nhóm 3. Log từng suite nằm trong `.work/qa-logs/` (không dùng tên bắt đầu bằng `run-` vì `cleanup_stale_work_dirs()` sẽ xóa).
 
 Bộ dữ liệu giống thật Q4 nằm trong `examples/real_like/` (9 workbook tổng hợp, 6 loại bảng nguồn). `test_real_like_plans.py` đo **53/55 = 96,4%** kế hoạch đúng ngay lần đầu; 50 kế hoạch curated được chạy đầy đủ qua Excel, kết quả **49 thành công, 1 từ chối đúng vì ô `#N/A`, 0 lỗi**. Hai câu còn sai là yêu cầu trung bình/AVG chưa được hỗ trợ. Chi tiết và giới hạn ở `cycles/CYCLE-07.md`.
+
+Q6 tách tiếp phần dễ bảo trì mà không đổi hành vi: `_filter_plan` 226 → 121 dòng, `gui()` 713 → 23 dòng, `App.__init__` 213 → 16 dòng. Bộ vàng tăng lên 34 ca; mutation 6/6 chỗ bị bắt. Phần lớn lớp `App` còn 699 dòng trong `_build_app_class`; dừng tách vì rủi ro giao diện lớn hơn lợi ích. Chi tiết ở `cycles/CYCLE-09.md`.
+
+### CI không cần Excel
+
+`.github/workflows/tests.yml` chạy **17 test không cần Excel** trên cả `windows-latest` và `ubuntu-latest`; trên Windows chạy thêm `test_router.py` và `test_security_privacy.py` (có phần DPAPI thật). Workflow **không chạy Excel, không gọi cloud, không dùng khóa thật**. Các test cần Excel/GUI (`test_app.py --integration`, `test_read_boundary.py`, `test_real_like_plans.py`, `test_gui.py`, `test_ui_acceptance.py`, `test_headers.py`, `test_single_file_filter.py`, `test_diverse_scenarios_e2e.py`, benchmark) chỉ chạy trong `run_all_tests.ps1` trên máy Windows có Excel. Lượt này mới kiểm tra cú pháp YAML và chạy bộ chọn trên Windows; **CHƯA KIỂM CHỨNG** một lượt GitHub Actions thật trên Ubuntu.
 
 Các file kết quả kiểm tra và benchmark nằm trong thư mục `results/`. `test_app.py` ghi theo chế độ chạy để các lần chạy không ghi đè lẫn nhau: `results/test-results-unit.json` (chỉ logic), `results/test-results.json` (đủ integration Excel), `results/test-results-ai.json` (có thêm AI cục bộ). Mỗi file ghi từng phép kiểm tra đã chạy. Đây không phải bằng chứng về mọi loại workbook hay khả năng chống mọi tấn công. Kết quả là dữ liệu giả, đáp án số học được tính độc lập.
 
@@ -126,4 +142,4 @@ python -X utf8 app.py --source "examples/ho-so-mau.xlsx" --reference "examples/d
 
 Sau khi kiểm tra JSON, lưu đúng đối tượng `preview.plan` thành `plan.json`. Chạy lại cùng nguồn/sheet/hàng tiêu đề và tùy chọn PDF, dùng `--plan plan.json --approve TOKEN`, với TOKEN là `preview.approval_token` đã xem. Thay đổi bất kỳ thành phần được chấp nhận sẽ bị từ chối và cần xem trước lại. `--ref-header-row` hỗ trợ hàng tiêu đề riêng cho danh mục.
 
-Khởi động ứng dụng bằng `start.cmd` hoặc `python app.py` để trải nghiệm phiên bản **v0.3.2** với đầy đủ các nâng cấp mới nhất.
+Khởi động ứng dụng bằng `start.cmd` hoặc `python app.py` để trải nghiệm phiên bản **v0.4.0** với đầy đủ các nâng cấp mới nhất.
