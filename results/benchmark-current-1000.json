@@ -2,12 +2,12 @@
   "label": "current",
   "rows": 1000,
   "seconds": {
-    "preflight": 0.031,
+    "preflight": 0.032,
     "inspect_source": 4.131,
-    "inspect_reference": 4.195,
-    "lookup": 6.566,
-    "summary": 6.493,
-    "clean": 5.817
+    "inspect_reference": 4.067,
+    "lookup": 6.779,
+    "summary": 6.615,
+    "clean": 5.647
   },
   "formula_checks": {
     "lookup": 1000,
@@ -16,69 +16,69 @@
   },
   "bridge_phases": {
     "lookup": {
-      "save_seconds": 0.10308030000000024,
-      "excel_start_seconds": 0.814427,
-      "verify_seconds": 0.14959200000000017,
-      "open_seconds": 1.1502195,
-      "calculate_seconds": 0.01793610000000001,
+      "save_seconds": 0.16653649999999987,
+      "excel_start_seconds": 0.7659311999999999,
+      "verify_seconds": 0.1563819999999998,
+      "open_seconds": 1.0469287,
+      "calculate_seconds": 0.014494600000000357,
       "write_detail": {
-        "numeric_format_seconds": 2.8199999999999998e-05,
-        "wrap_autofit_rows_seconds": 0.46474309999999996,
-        "build_seconds": 2.7e-05,
-        "style_autofit_columns_seconds": 0.0224427,
-        "paste_seconds": 0.0048845
+        "numeric_format_seconds": 2.87e-05,
+        "wrap_autofit_rows_seconds": 0.48070419999999997,
+        "build_seconds": 3.4099999999999995e-05,
+        "style_autofit_columns_seconds": 0.025504199999999998,
+        "paste_seconds": 0.0045084
       },
-      "write_seconds": 2.129194
+      "write_seconds": 2.2798305
     },
     "summary": {
-      "save_seconds": 0.1133242000000001,
-      "excel_start_seconds": 0.7956559,
-      "verify_seconds": 0.1561192,
-      "open_seconds": 1.0741920999999999,
-      "calculate_seconds": 0.024374899999999755,
+      "save_seconds": 0.12171339999999997,
+      "excel_start_seconds": 0.8397669,
+      "verify_seconds": 0.13823149999999984,
+      "open_seconds": 1.1379645,
+      "calculate_seconds": 0.011719400000000046,
       "write_detail": {
-        "numeric_format_seconds": 2.35e-05,
-        "wrap_autofit_rows_seconds": 0.5080119,
-        "build_seconds": 0.0006998999999999999,
-        "style_autofit_columns_seconds": 0.0187961,
-        "paste_seconds": 0.0036652
+        "numeric_format_seconds": 2.6e-05,
+        "wrap_autofit_rows_seconds": 0.47665379999999996,
+        "build_seconds": 0.001022,
+        "style_autofit_columns_seconds": 0.020139,
+        "paste_seconds": 0.0047563
       },
-      "write_seconds": 2.0837191
+      "write_seconds": 2.155185
     },
     "clean": {
-      "save_seconds": 0.12487599999999999,
-      "excel_start_seconds": 0.8776314,
-      "verify_seconds": 0.0343741999999998,
-      "open_seconds": 1.2038555,
-      "calculate_seconds": 0.008731399999999834,
+      "save_seconds": 0.08600450000000004,
+      "excel_start_seconds": 0.7745167,
+      "verify_seconds": 0.02640129999999985,
+      "open_seconds": 1.0788328,
+      "calculate_seconds": 0.007040799999999958,
       "write_detail": {
-        "numeric_format_seconds": 6.269999999999999e-05,
-        "wrap_autofit_rows_seconds": 0.48941199999999996,
-        "build_seconds": 4.15e-05,
-        "style_autofit_columns_seconds": 0.0283466,
-        "paste_seconds": 0.0057986999999999995
+        "numeric_format_seconds": 2.4699999999999997e-05,
+        "wrap_autofit_rows_seconds": 0.495786,
+        "build_seconds": 2.98e-05,
+        "style_autofit_columns_seconds": 0.021722699999999998,
+        "paste_seconds": 0.0036795
       },
-      "write_seconds": 1.5419166999999998
+      "write_seconds": 1.533721
     }
   },
   "inspect_phases": {
     "source": {
-      "find_seconds": 0.2144315000000001,
-      "convert_seconds": 0.024175099999999894,
-      "excel_start_seconds": 0.8462673,
-      "read_seconds": 0.020111299999999943,
-      "open_seconds": 1.1849684,
-      "calculate_seconds": 0.008542700000000014
+      "find_seconds": 0.24163069999999998,
+      "convert_seconds": 0.027912900000000018,
+      "excel_start_seconds": 0.771589,
+      "read_seconds": 0.023414899999999905,
+      "open_seconds": 1.0983947,
+      "calculate_seconds": 0.009608800000000084
     },
     "reference": {
-      "find_seconds": 0.20337740000000015,
-      "convert_seconds": 0.015855399999999964,
-      "excel_start_seconds": 0.8916177,
-      "read_seconds": 0.018632500000000052,
-      "open_seconds": 1.2520845,
-      "calculate_seconds": 0.009740500000000152
+      "find_seconds": 0.21333310000000005,
+      "convert_seconds": 0.01705940000000017,
+      "excel_start_seconds": 0.8534239,
+      "read_seconds": 0.02242920000000015,
+      "open_seconds": 1.1469384999999999,
+      "calculate_seconds": 0.009096600000000121
     }
   },
-  "app_sha256": "fbf5b100ed25a789c238454b1f048356a561ff963f3e27e7ce0ebe36af6d3fb5",
+  "app_sha256": "ac1969e8f4758da91a8f17db6a60e4cffd589d025c2364205649ec9f5b364820",
   "bridge_sha256": "0e21abfb13452d4f4fe74e94a2ff7def25ed6f39b67ac3a497b926ae86f0abbb"
 }

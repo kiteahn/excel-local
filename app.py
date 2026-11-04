@@ -1739,10 +1739,8 @@ def review_plan_dialog(app, source, reference, plan, preview, export_pdf,
     app.status.set('Đang chờ chấp nhận; chưa tạo workbook hoặc PDF.')
 
 
-def gui(smoke=False, on_ready=None):
-    import tkinter as tk
-    from tkinter import ttk, filedialog, messagebox
-
+def _build_app_class(tk, ttk, filedialog, messagebox):
+    """Build the Tk App class with the Tk modules from gui()."""
     class App:
         def __init__(self, window):
             cleanup_stale_work_dirs()
@@ -1759,6 +1757,10 @@ def gui(smoke=False, on_ready=None):
             cfg = ai_client.get_config()
             self.ai_provider = tk.StringVar(value=cfg.get('provider', 'ollama'))
 
+            self._build_ui(window)
+
+
+        def _build_ui(self, window):
             window.title('Excel Local Expert · Trợ Lý Bảng Tính Cục Bộ & AI v0.3.2')
             window.protocol('WM_DELETE_WINDOW', self.close)
             width = min(1160, window.winfo_screenwidth() - 60)
@@ -2434,6 +2436,15 @@ def gui(smoke=False, on_ready=None):
             self.status.set('Đã làm mới phiên làm việc. Hãy chọn file để bắt đầu.')
             self.set_step(1)
             self.note('Đã làm mới phiên làm việc.')
+
+    return App
+
+
+def gui(smoke=False, on_ready=None):
+    import tkinter as tk
+    from tkinter import ttk, filedialog, messagebox
+
+    App = _build_app_class(tk, ttk, filedialog, messagebox)
 
     window = tk.Tk()
     window.controller = App(window)

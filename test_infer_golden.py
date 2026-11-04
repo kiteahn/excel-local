@@ -1,11 +1,12 @@
 """Golden tests for ai_client.infer_smart_plan (rounds 13-14).
 
-Pins the current, verified behaviour of the heuristic plan inference for 33
+Pins the current, verified behaviour of the heuristic plan inference for 34
 representative Vietnamese prompts across all branches (Q&A clarify, lookup,
 summary, clean, filter, no-match). Created when infer_smart_plan was split
 into _qa_clarify_plan/_summary_plan/_filter_plan/_clean_plan; any future
 refactor of those helpers must keep these outputs identical. Five cases were
-added in Q4 from natural prompts against the synthetic real-like workbooks.
+added in Q4 from natural prompts against the synthetic real-like workbooks;
+one team-registration case was added in Q6 for mutation coverage.
 """
 import sys
 if sys.stdout and hasattr(sys.stdout, 'reconfigure'):
@@ -57,6 +58,9 @@ CASES = [
     ("Lọc sinh viên có Điểm >= 8.0", ["Họ tên", "Điểm"], (), ("filter", "Điểm", ">= 8.0", "", None)),
     ("Lọc các dòng lớp KTPM1", ["Họ tên", "Lớp"], (), ("filter", "Lớp", "ktpm1", "", None)),
     ("Đăng ký đơn cho sinh viên", ["Họ tên", "Hình thức"], (), ("filter", "Hình thức", "Đơn", "", None)),
+    # Q6 mutation coverage: the team branch of _filter_registration_plan was
+    # previously unexercised by the golden suite.
+    ("Đăng ký đội cho sinh viên", ["Họ tên", "Hình thức"], (), ("filter", "Hình thức", "Đội", "", None)),
     ("Cho tôi danh sách các sinh viên", ["Họ tên", "Lớp"], (), ("filter", "Lớp", "*", "", None)),
     # M2-4 regression (round 15): a filter-intent prompt with NO reference
     # columns must stay a filter; the lookup branch requires reference columns.

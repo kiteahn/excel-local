@@ -413,3 +413,11 @@ Việc còn dở, nói thẳng:
 - `test_gui.py` 14/14, `test_ui_acceptance.py` 48/48, `gui-smoke` đạt. Không đổi bố cục/luồng thao tác.
 - Cần người xác nhận bằng mắt: chữ/khoảng cách/tương phản; bố cục 100% và 150% DPI (**CHƯA KIỂM CHỨNG**); trạng thái nút; hộp xem trước cloud.
 - Chi tiết: `cycles/CYCLE-08.md`.
+
+### Chu kỳ 9 — Q6: tách `_filter_plan`, `App.__init__`, `gui()` (2026-11-04)
+- AST trước/sau: `_filter_plan` 226 → **121 dòng** (3 helper đăng ký 46, cán sự 40, điều kiện số 38); `gui()` 713 → **23 dòng**; `App.__init__` 213 → **16 dòng**, phần dựng widget thành `_build_ui` 199 dòng. Lớp `App` 699 dòng nằm trong `_build_app_class`, giữ chữ ký `gui(smoke=False, on_ready=None)`.
+- Bộ vàng thêm ca **đăng ký đội**, tăng lên **34 prompt**; mutation 6 chỗ (nhánh đơn/đội, dấu cách điều kiện số, danh sách cán sự, khóa đăng ký, giá trị phòng ban) **6/6 bị bắt**; script ghi bytes giữ CRLF và phục hồi file, SHA-256 trước/sau khớp.
+- Test đích: infer golden 34/34, single-file filter 30/30, usecases 37/37, real-like `--no-execute` 50/50 curated (53/55 tổng), GUI 14/14, UI acceptance 48/48, gui-smoke đạt.
+- Dừng tách lớp `App` vì rủi ro giao diện lớn hơn lợi ích; `_filter_plan` còn 121 dòng cho thứ tự ưu tiên 5d/5e.
+- Toàn bộ `run_all_tests.ps1` gồm Excel thật: **31 lệnh, 0 lỗi, 1018,7s, exit 0**; `examples/` sạch, không Excel mồ côi, không thư mục tạm mới (`run-20261104-105727.log`). `test_real_like_plans` mất 703,6s, có khoảng trễ ~4 phút giữa hai workbook chưa rõ nguyên nhân; đã ghi, không giấu.
+- Chi tiết: `cycles/CYCLE-09.md`.

@@ -811,6 +811,136 @@ def _summary_plan(p_lower: str, source_columns) -> dict | None:
     return None
 
 
+def _filter_registration_plan(prompt, p_lower, source_columns, req_cols_str):
+    """5a: form registration (đăng ký đơn vs đăng ký team/đội)."""
+    reg_col = None
+    for sc in source_columns:
+        if any(k in sc.lower() for k in ['hình thức', 'loại đăng ký', 'đăng ký']):
+            reg_col = sc
+            break
+
+    if reg_col and any(w in p_lower for w in ['đơn', 'team', 'đội', 'tv1']):
+        has_don = any(w in p_lower for w in ['đăng ký đơn', 'đơn', 'cá nhân'])
+        has_team = any(w in p_lower for w in ['đăng ký team', 'đăng ký đội', 'team', 'đội', 'tv1'])
+        idx_don = p_lower.find('đơn') if has_don else 9999
+        team_indices = [p_lower.find(w) for w in ['team', 'đội', 'tv1'] if w in p_lower]
+        idx_team = min(team_indices) if team_indices else 9999
+
+        if has_don and idx_don <= idx_team:
+            cols_target = extract_requested_columns(prompt, source_columns, target='don')
+            cols_str = ', '.join(cols_target) if cols_target else ('MSSV, Họ và tên, Số điện thoại / Zalo' if any(c in source_columns for c in ['MSSV', 'Họ và tên']) else '')
+            msg = f"Lọc người Đăng ký Đơn theo cột '{reg_col}'"
+            if cols_str:
+                msg += f", trích xuất các cột: {cols_str}."
+            if has_team:
+                msg += " (Mẹo: Sau khi xuất kết quả này, bạn có thể lọc tiếp nhóm Đội/TV1)."
+            return {
+                'action': 'filter',
+                'key': reg_col,
+                'value': 'Đơn',
+                'ref_key': cols_str,
+                'selected_columns': cols_str,
+                'message': msg
+            }
+        elif has_team:
+            cols_target = extract_requested_columns(prompt, source_columns, target='doi')
+            cols_str = ', '.join(cols_target) if cols_target else ('Tên đội, TV1 - Họ và tên, TV1 - MSSV' if any('TV1' in c for c in source_columns) else '')
+            msg = f"Lọc người Đăng ký theo Đội theo cột '{reg_col}'"
+            if cols_str:
+                msg += f", trích xuất các cột: {cols_str}."
+            return {
+                'action': 'filter',
+                'key': reg_col,
+                'value': 'Đội',
+                'ref_key': cols_str,
+                'selected_columns': cols_str,
+                'message': msg
+            }
+    return None
+
+
+def _filter_officer_plan(p_lower, source_columns, req_cols_str):
+    """5b: class officer/role extraction (cán sự, lớp trưởng, ...)."""
+    is_can_su = any(w in p_lower for w in ['cán sự', 'lớp trưởng', 'tổ trưởng', 'bí thư', 'ban cán sự', 'chức vụ', 'chức danh'])
+    if not is_can_su:
+        return None
+
+    filter_col = None
+    for sc in source_columns:
+        sc_low = sc.strip().lower()
+        if any(k in sc_low for k in ['chức vụ', 'chức danh', 'vai trò', 'vị trí', 'nhiệm vụ', 'cán sự']):
+            filter_col = sc
+            break
+    if not filter_col:
+        filter_col = find_synonym_match('chức vụ', source_columns)
+    if not filter_col:
+        for sc in source_columns:
+            if sc.strip().lower() in p_lower:
+                filter_col = sc
+                break
+    if not filter_col and source_columns:
+        filter_col = source_columns[0]
+
+    # If user mentions 'cán sự' or 'ban cán sự', include all canonical roles.
+    if any(w in p_lower for w in ['cán sự', 'ban cán sự']):
+        filter_val = 'lớp trưởng, tổ trưởng, bí thư, phó bí thư, lớp phó, thủ quỹ, cán sự'
+    else:
+        found_roles = [r for r in ['lớp trưởng', 'tổ trưởng', 'bí thư', 'phó bí thư', 'lớp phó', 'thủ quỹ', 'cán sự', 'chi hội trưởng', 'ủy viên'] if r in p_lower]
+        filter_val = ', '.join(found_roles) if found_roles else 'lớp trưởng, tổ trưởng, bí thư, phó bí thư, lớp phó, thủ quỹ, cán sự'
+
+    msg = f"Lọc danh sách các cán sự ({filter_val}) theo cột '{filter_col}'."
+    if req_cols_str:
+        msg += f" Trích xuất các cột: {req_cols_str}."
+    return {
+        'action': 'filter',
+        'key': filter_col,
+        'value': filter_val,
+        'ref_key': req_cols_str,
+        'selected_columns': req_cols_str,
+        'message': msg
+    }
+
+
+def _filter_numeric_plan(p_lower, source_columns, req_cols_str):
+    """5c: numeric comparison (điểm > 8, lớn hơn hoặc bằng 8.0, ...)."""
+    num_cond = re.search(r'([><!=]=?|\blớn hơn hoặc bằng\b|\bnhỏ hơn hoặc bằng\b|\blớn hơn\b|\bnhỏ hơn\b|\btừ\b|\btrên\b|\bdưới\b)\s*([0-9]+(?:[\.,][0-9]+)?)', p_lower)
+    if not num_cond:
+        return None
+
+    op_text, num_val = num_cond.groups()
+    num_clean = num_val.replace(',', '.')
+    if 'lớn hơn hoặc bằng' in op_text or 'từ' in op_text: op = '>='
+    elif 'nhỏ hơn hoặc bằng' in op_text: op = '<='
+    elif 'lớn hơn' in op_text or 'trên' in op_text: op = '>'
+    elif 'nhỏ hơn' in op_text or 'dưới' in op_text: op = '<'
+    else: op = op_text
+
+    mentioned = [sc for sc in source_columns if sc.strip().lower() in p_lower]
+    if mentioned:
+        filter_col = max(mentioned, key=len)
+    else:
+        filter_col = None
+        for sc in source_columns:
+            sc_low = sc.strip().lower()
+            if any(w in sc_low for w in ['điểm', 'tiền', 'học phí', 'lương', 'số lượng']):
+                filter_col = sc
+                break
+    if not filter_col and source_columns:
+        filter_col = source_columns[0]
+    filter_val = f"{op} {num_clean}"
+    msg = f"Lọc các dòng có '{filter_col}' {filter_val}."
+    if req_cols_str:
+        msg += f" Trích xuất các cột: {req_cols_str}."
+    return {
+        'action': 'filter',
+        'key': filter_col,
+        'value': filter_val,
+        'ref_key': req_cols_str,
+        'selected_columns': req_cols_str,
+        'message': msg
+    }
+
+
 def _filter_plan(prompt: str, p_lower: str, source_columns) -> dict | None:
     """Filter heuristics (section 5 of infer_smart_plan): single-file extraction."""
     # 5. Filter Heuristics (Single-file extraction & filtering, no reference needed)
@@ -825,122 +955,17 @@ def _filter_plan(prompt: str, p_lower: str, source_columns) -> dict | None:
         req_cols = extract_requested_columns(prompt, source_columns)
         req_cols_str = ', '.join(req_cols) if req_cols else ''
 
-        # 5a. Form registration heuristics (đăng ký đơn vs đăng ký team/đội)
-        reg_col = None
-        for sc in source_columns:
-            if any(k in sc.lower() for k in ['hình thức', 'loại đăng ký', 'đăng ký']):
-                reg_col = sc
-                break
+        registration_plan = _filter_registration_plan(prompt, p_lower, source_columns, req_cols_str)
+        if registration_plan is not None:
+            return registration_plan
 
-        if reg_col and any(w in p_lower for w in ['đơn', 'team', 'đội', 'tv1']):
-            has_don = any(w in p_lower for w in ['đăng ký đơn', 'đơn', 'cá nhân'])
-            has_team = any(w in p_lower for w in ['đăng ký team', 'đăng ký đội', 'team', 'đội', 'tv1'])
-            idx_don = p_lower.find('đơn') if has_don else 9999
-            team_indices = [p_lower.find(w) for w in ['team', 'đội', 'tv1'] if w in p_lower]
-            idx_team = min(team_indices) if team_indices else 9999
+        officer_plan = _filter_officer_plan(p_lower, source_columns, req_cols_str)
+        if officer_plan is not None:
+            return officer_plan
 
-            if has_don and idx_don <= idx_team:
-                cols_target = extract_requested_columns(prompt, source_columns, target='don')
-                cols_str = ', '.join(cols_target) if cols_target else ('MSSV, Họ và tên, Số điện thoại / Zalo' if any(c in source_columns for c in ['MSSV', 'Họ và tên']) else '')
-                msg = f"Lọc người Đăng ký Đơn theo cột '{reg_col}'"
-                if cols_str:
-                    msg += f", trích xuất các cột: {cols_str}."
-                if has_team:
-                    msg += " (Mẹo: Sau khi xuất kết quả này, bạn có thể lọc tiếp nhóm Đội/TV1)."
-                return {
-                    'action': 'filter',
-                    'key': reg_col,
-                    'value': 'Đơn',
-                    'ref_key': cols_str,
-                    'selected_columns': cols_str,
-                    'message': msg
-                }
-            elif has_team:
-                cols_target = extract_requested_columns(prompt, source_columns, target='doi')
-                cols_str = ', '.join(cols_target) if cols_target else ('Tên đội, TV1 - Họ và tên, TV1 - MSSV' if any('TV1' in c for c in source_columns) else '')
-                msg = f"Lọc người Đăng ký theo Đội theo cột '{reg_col}'"
-                if cols_str:
-                    msg += f", trích xuất các cột: {cols_str}."
-                return {
-                    'action': 'filter',
-                    'key': reg_col,
-                    'value': 'Đội',
-                    'ref_key': cols_str,
-                    'selected_columns': cols_str,
-                    'message': msg
-                }
-
-        # 5b. Specific class officer / role extraction: cán sự, lớp trưởng, tổ trưởng, bí thư...
-        is_can_su = any(w in p_lower for w in ['cán sự', 'lớp trưởng', 'tổ trưởng', 'bí thư', 'ban cán sự', 'chức vụ', 'chức danh'])
-        if is_can_su:
-            for sc in source_columns:
-                sc_low = sc.strip().lower()
-                if any(k in sc_low for k in ['chức vụ', 'chức danh', 'vai trò', 'vị trí', 'nhiệm vụ', 'cán sự']):
-                    filter_col = sc
-                    break
-            if not filter_col:
-                filter_col = find_synonym_match('chức vụ', source_columns)
-            if not filter_col:
-                for sc in source_columns:
-                    if sc.strip().lower() in p_lower:
-                        filter_col = sc
-                        break
-            if not filter_col and source_columns:
-                filter_col = source_columns[0]
-
-            # If user mentions 'cán sự' or 'ban cán sự', include all canonical class officer roles
-            if any(w in p_lower for w in ['cán sự', 'ban cán sự']):
-                filter_val = 'lớp trưởng, tổ trưởng, bí thư, phó bí thư, lớp phó, thủ quỹ, cán sự'
-            else:
-                found_roles = [r for r in ['lớp trưởng', 'tổ trưởng', 'bí thư', 'phó bí thư', 'lớp phó', 'thủ quỹ', 'cán sự', 'chi hội trưởng', 'ủy viên'] if r in p_lower]
-                filter_val = ', '.join(found_roles) if found_roles else 'lớp trưởng, tổ trưởng, bí thư, phó bí thư, lớp phó, thủ quỹ, cán sự'
-
-            msg = f"Lọc danh sách các cán sự ({filter_val}) theo cột '{filter_col}'."
-            if req_cols_str:
-                msg += f" Trích xuất các cột: {req_cols_str}."
-            return {
-                'action': 'filter',
-                'key': filter_col,
-                'value': filter_val,
-                'ref_key': req_cols_str,
-                'selected_columns': req_cols_str,
-                'message': msg
-            }
-
-        # 5c. Numeric comparison: e.g. "điểm > 8", "lớn hơn hoặc bằng 8.0", "điểm trên 80"
-        num_cond = re.search(r'([><!=]=?|\blớn hơn hoặc bằng\b|\bnhỏ hơn hoặc bằng\b|\blớn hơn\b|\bnhỏ hơn\b|\btừ\b|\btrên\b|\bdưới\b)\s*([0-9]+(?:[\.,][0-9]+)?)', p_lower)
-        if num_cond:
-            op_text, num_val = num_cond.groups()
-            num_clean = num_val.replace(',', '.')
-            if 'lớn hơn hoặc bằng' in op_text or 'từ' in op_text: op = '>='
-            elif 'nhỏ hơn hoặc bằng' in op_text: op = '<='
-            elif 'lớn hơn' in op_text or 'trên' in op_text: op = '>'
-            elif 'nhỏ hơn' in op_text or 'dưới' in op_text: op = '<'
-            else: op = op_text
-
-            mentioned = [sc for sc in source_columns if sc.strip().lower() in p_lower]
-            if mentioned:
-                filter_col = max(mentioned, key=len)
-            else:
-                for sc in source_columns:
-                    sc_low = sc.strip().lower()
-                    if any(w in sc_low for w in ['điểm', 'tiền', 'học phí', 'lương', 'số lượng']):
-                        filter_col = sc
-                        break
-            if not filter_col and source_columns:
-                filter_col = source_columns[0]
-            filter_val = f"{op} {num_clean}"
-            msg = f"Lọc các dòng có '{filter_col}' {filter_val}."
-            if req_cols_str:
-                msg += f" Trích xuất các cột: {req_cols_str}."
-            return {
-                'action': 'filter',
-                'key': filter_col,
-                'value': filter_val,
-                'ref_key': req_cols_str,
-                'selected_columns': req_cols_str,
-                'message': msg
-            }
+        numeric_plan = _filter_numeric_plan(p_lower, source_columns, req_cols_str)
+        if numeric_plan is not None:
+            return numeric_plan
 
         # 5d. Filter by specific column mentioned in prompt: e.g. "lọc theo Lớp 12A1", "quê ở Hà Nội"
         for sc in source_columns:

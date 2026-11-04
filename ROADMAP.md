@@ -32,11 +32,11 @@ Known còn lại (chấp nhận, đã đo): tên 2 từ; tên dân tộc không 
 
 | # | Vấn đề | Số đo | Hướng |
 |---|--------|-------|-------|
-| M-1 | `gui()` còn 697 dòng (App lồng trong hàm) | `app.py` (AST) | Tách từng khối ra hàm cấp module, mỗi lát một commit, `test_gui` + `test_ui_acceptance` phải xanh |
+| M-1 | `gui()` 713 → **23 dòng**; `App` chuyển vào `_build_app_class` 699 dòng | `app.py` (AST) | ĐÓNG phần vỏ `gui()` ở Chu kỳ 9; không tách tiếp lớp `App` vì rủi ro giao diện lớn hơn lợi ích |
 | M-2 | `open_ai_settings()` ~155 dòng | ĐÓNG Chu kỳ 2 | Đã thành `open_ai_settings_dialog()`; 141 chuỗi giữ nguyên, UI test 48/48 |
 | M-3 | `review()` ~100 dòng | ĐÓNG Chu kỳ 3 | Đã thành `review_plan_dialog()`; 172 chuỗi giữ nguyên, `test_gui` 14/14 |
-| M-4 | `prepare_sheets` 169 dòng sau khi tách nhánh `lookup` (Chu kỳ 4) | `app.py` (AST) | Lát cắt tiếp theo: tách `summary`/`clean`/`filter` theo cùng quy trình vàng + mutation |
-| M-6 | `ai_client._lookup_plan` 180 dòng, `_filter_plan` 178 dòng | `ai_client.py` (AST) | Tách sau M-4, dùng `test_infer_golden` (33 prompt vàng) |
+| M-4 | `prepare_sheets` 177 dòng sau Q4 (đã tách nhánh `lookup` ở Chu kỳ 4) | `app.py` (AST) | Lát cắt tiếp theo: tách `summary`/`clean`/`filter` theo cùng quy trình vàng + mutation |
+| M-6 | `_filter_plan` 226 → **121 dòng**; `_lookup_plan` còn 202 dòng | `ai_client.py` (AST) | ĐÓNG phần `_filter_plan` ở Chu kỳ 9 (3 helper, 6/6 mutation); `_lookup_plan` để vòng sau |
 | M-5 | ~30 `except Exception` rộng | `app.py`, `ai_client.py` | Thu hẹp dần, mỗi chỗ một test |
 
 ## P2 — Hiệu năng (số đo 5 lần, trung vị; `results/benchmark-q3-summary.json`)
