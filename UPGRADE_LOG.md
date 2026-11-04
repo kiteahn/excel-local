@@ -405,3 +405,11 @@ Việc còn dở, nói thẳng:
 - Sửa lỗi thật: `xml_value` crash khi ô rỗng `t="inlineStr"` không có `<is>`; tổng hợp bỏ qua dòng `TỔNG CỘNG` có khóa nhóm trống và ghi `total_rows_skipped`; cải thiện chọn cột clean/lookup, nhận giá trị categorical, `khác rỗng`, và cột `Có mặt`.
 - `test_infer_golden.py` tăng lên **33 prompt vàng** (5 ca Q4). Các bộ liên quan: usecases 37/37, usecases2 10/10, prepare-sheets 27/27, headers 11/11, diverse 6/6.
 - Chi tiết: `cycles/CYCLE-07.md`.
+
+### Chu kỳ 8 — Q5: ảnh giao diện và lỗi đo được (2026-11-03)
+- `capture_gui_screens.py` mở ứng dụng Tk thật, dùng dữ liệu tổng hợp và cấu hình rỗng (không có khóa API), chụp 3 ảnh vào `docs/screens/`: màn hình chính, hộp kiểm tra trước khi chấp nhận, hộp Cài đặt AI. Máy chụp 1536×864, DPI 125%.
+- Sửa lỗi chụp thật: callback lồng nhau làm lần đầu chỉ lưu ảnh chính; đã tách chuỗi callback và chụp lại đủ 3 ảnh.
+- Ghi nhận lệch hiển thị: thanh tiêu đề app ghi `v0.3`, tiêu đề cửa sổ ghi `v0.3.2`; sẽ đồng bộ khi tăng phiên bản ở Q7.
+- `test_gui.py` 14/14, `test_ui_acceptance.py` 48/48, `gui-smoke` đạt. Không đổi bố cục/luồng thao tác.
+- Cần người xác nhận bằng mắt: chữ/khoảng cách/tương phản; bố cục 100% và 150% DPI (**CHƯA KIỂM CHỨNG**); trạng thái nút; hộp xem trước cloud.
+- Chi tiết: `cycles/CYCLE-08.md`.
