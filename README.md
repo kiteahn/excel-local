@@ -1,4 +1,4 @@
-# Excel Local Expert (v0.4.0)
+# Excel Local Lazy (v0.6.0)
 
 Ứng dụng Windows xử lý bảng tính với Smart Multi-Model Router (luân phiên các nhà cung cấp người dùng đã cấu hình khóa: Google Gemini, Groq Cloud, OpenAI/OpenRouter hoặc endpoint tương thích, và Ollama Local), tính năng tự chữa lành ô gộp/tiêu đề và đối soát độc lập bằng native Excel Desktop. Người dùng tự chọn động cơ: chế độ cục bộ (heuristic/Ollama) không gửi gì ra ngoài; chế độ cloud gửi **tên cột và câu yêu cầu đã qua bước che PII bằng regex** tới nhà cung cấp đã chọn — không gửi dữ liệu hàng (xem mục "Bảo mật & quyền riêng tư" để biết giới hạn).
 
@@ -14,7 +14,7 @@
 
 ## Mở ứng dụng
 
-Nhấp đúp `start.cmd` hoặc chạy `python app.py`. Máy hiện tại đã có Python 3.14 và Excel Microsoft 365. Không cần cài thêm bất kỳ thư viện ngoài nào (100% Python Standard Library).
+Chạy một lần `Tao-Shortcut.bat` để tạo biểu tượng **Excel Local Lazy** trên Desktop và Start Menu (kèm `icon.ico`) — từ đó chỉ cần nhấp đúp biểu tượng là app mở ngay, không cửa sổ đen, không cần vào thư mục. Cách cũ vẫn dùng được: nhấp đúp `start.cmd` hoặc chạy `python app.py`. Máy hiện tại đã có Python 3.14 và Excel Microsoft 365. Không cần cài thêm bất kỳ thư viện ngoài nào (100% Python Standard Library).
 
 1. Chọn **File nguồn** XLSX/CSV (định dạng XLS cũ chưa được hỗ trợ — xem mục Giới hạn). Bấm **🔍 Tự tìm dòng** nếu file có các dòng tiêu đề/banner phía trên. Bật tùy chọn **Tự chữa lành ô gộp & cột khuyết** để tự động xử lý ô gộp và cột trùng tên.
 2. Với đối chiếu, chọn thêm **Danh mục đối chiếu** và các cột khóa/giá trị.
@@ -31,9 +31,10 @@ Nhấp đúp `start.cmd` hoặc chạy `python app.py`. Máy hiện tại đã c
 |---|---|
 | Lọc & Trích xuất | Lọc dòng dữ liệu theo từ khóa/chức vụ (cán sự, lớp trưởng, tổ trưởng...), điều kiện số (>=, <=, >, <) hoặc không trống từ **1 file đơn lẻ** (KHÔNG CẦN file đối chiếu); hỗ trợ trích xuất riêng các cột mong muốn (Column Projection / Trích chọn cột); tự động bỏ qua banner hành chính ("Cộng hòa...", "Độc lập...") |
 | Đối chiếu | Khớp khóa chính xác, công thức INDEX/MATCH từ mẫu cố định, liệt kê `KHOP`, `KHONG_TIM_THAY`, `KHOA_TRUNG`, `KHOA_TRONG` |
+| Kiểm chứng đối chiếu | **Chỉ đọc**: so từng dòng file gốc với file đối chiếu theo khóa, báo cáo dòng khớp / dòng lệch (kèm giá trị hai bên) / thiếu trong file đối chiếu / khóa trùng / khóa chỉ có ở file đối chiếu; xuất báo cáo CSV, không sửa file nào. Số so theo giá trị (`500.000` = `500000`), chữ so sau chuẩn NFC, bỏ khoảng trắng thừa, không phân biệt hoa thường |
 | Tổng hợp | Cộng một cột số theo nhóm; SUM/COUNT trên vùng riêng của từng nhóm trong Excel được so với tổng Decimal và số dòng tính độc lập bằng Python |
 | Làm sạch | Bỏ khoảng trắng đầu/cuối và chuẩn NFC ở một cột, trên sheet kết quả; không xóa dòng trùng |
-| AI tiếng Việt | Tự động phân tích yêu cầu ngôn ngữ tự nhiên thành một trong các thao tác lookup/summary/clean/filter (hoặc clarify để hỏi lại); tự động nhận diện ý định lọc cán sự/điểm số |
+| AI tiếng Việt | Tự động phân tích yêu cầu ngôn ngữ tự nhiên thành một trong các thao tác lookup/summary/clean/filter/verify (hoặc clarify để hỏi lại); tự động nhận diện ý định lọc cán sự/điểm số và ý định kiểm chứng dữ liệu |
 | Xem trước và chấp nhận | Dự kiến tính trong RAM; thay đổi file, dữ liệu, cột, PDF hoặc thư mục đầu ra làm mất hiệu lực bản chấp nhận |
 | Xuất bản | Sau khi chấp nhận và đối soát: workbook XLSX mới, biên bản JSON, sheet kiểm tra và PDF tùy chọn |
 
@@ -69,7 +70,7 @@ Máy đã kiểm tra: RAM khoảng 16 GB, i5-12450H, RTX 2050 VRAM 4 GB, Excel M
 3. **Mã hóa khóa API bằng Windows DPAPI:** Khóa OpenAI API Key được mã hóa bằng chuẩn Windows Data Protection API (DPAPI). Không lưu văn bản thô trên ổ đĩa; chỉ tài khoản Windows hiện tại mới có thể giải mã.
 4. **Bộ nhớ đệm kế hoạch cục bộ (Local Plan Cache):** Yêu cầu lặp lại cùng ý định được phục vụ ngay từ RAM trong 0ms, không phát sinh bất kỳ kết nối mạng nào ra ngoài (Zero Egress).
 5. **Cách ly chỉ thị & Chống Prompt Injection:** Sử dụng ranh giới XML (`<danh_sach_cot_nguon>`, `<yeu_cau_nguoi_dung>`) và chỉ thị hệ thống cấm mô hình thực thi shell hoặc phá vỡ cấu trúc schema.
-6. **Dữ liệu hàng không vào prompt:** Theo thiết kế, prompt gửi cho AI chỉ gồm tên cột (đã thay bí danh nếu nhạy cảm) và câu yêu cầu đã che PII; giá trị các hàng dữ liệu không được đưa vào prompt ở bất kỳ chế độ nào. AI chỉ trả JSON kế hoạch thuộc 5 loại: 4 thao tác thực thi (`lookup`, `summary`, `clean`, `filter`) và `clarify` (hỏi lại, không thực thi). Mọi công thức được sinh từ template cố định và đối soát độc lập trong native Excel Desktop.
+6. **Dữ liệu hàng không vào prompt:** Theo thiết kế, prompt gửi cho AI chỉ gồm tên cột (đã thay bí danh nếu nhạy cảm) và câu yêu cầu đã che PII; giá trị các hàng dữ liệu không được đưa vào prompt ở bất kỳ chế độ nào. AI chỉ trả JSON kế hoạch thuộc 6 loại: 5 thao tác thực thi (`lookup`, `summary`, `clean`, `filter`, `verify` — riêng `verify` chỉ đọc và xuất báo cáo) và `clarify` (hỏi lại, không thực thi). Mọi công thức được sinh từ template cố định và đối soát độc lập trong native Excel Desktop.
 7. **Tự động dọn dẹp file tạm:** Hàm `cleanup_stale_work_dirs()` tự động dọn sạch các thư mục tạm trong `.work/` khi ứng dụng khởi động.
 
 ## Kiểm tra và mã nguồn
@@ -103,6 +104,7 @@ python -X utf8 test_policy_defaults.py    # 12 bài test quyết định chính 
 python -X utf8 test_prepare_sheets_golden.py # 27 kịch bản vàng cho nhánh lookup của prepare_sheets (không cần Excel)
 python -X utf8 test_real_like_plans.py    # 55 câu trên 9 workbook giống thật; đo kế hoạch đúng và chạy Excel đầy đủ
 python -X utf8 test_safety_limits.py      # 6 bài test giới hạn an toàn (80MB, 10.000 thành phần ZIP, chuỗi 2000 ký tự, hash sau đọc)
+python -X utf8 test_usage_stats.py        # 13 bài test nhật ký & thống kê sử dụng (dashboard Thống kê)
 powershell -NoProfile -File test_cleanup.ps1 # 4 bài test dọn tiến trình Excel cô lập
 python -X utf8 secret_scan.py               # quét mẫu bí mật trong file được git theo dõi + toàn bộ lịch sử (không gọi mạng)
 powershell -NoProfile -File run_all_tests.ps1 # chạy cả 3 nhóm, in bảng tổng hợp, kiểm tra examples/ sạch và Excel mồ côi
@@ -142,4 +144,4 @@ python -X utf8 app.py --source "examples/ho-so-mau.xlsx" --reference "examples/d
 
 Sau khi kiểm tra JSON, lưu đúng đối tượng `preview.plan` thành `plan.json`. Chạy lại cùng nguồn/sheet/hàng tiêu đề và tùy chọn PDF, dùng `--plan plan.json --approve TOKEN`, với TOKEN là `preview.approval_token` đã xem. Thay đổi bất kỳ thành phần được chấp nhận sẽ bị từ chối và cần xem trước lại. `--ref-header-row` hỗ trợ hàng tiêu đề riêng cho danh mục.
 
-Khởi động ứng dụng bằng `start.cmd` hoặc `python app.py` để trải nghiệm phiên bản **v0.4.0** với đầy đủ các nâng cấp mới nhất.
+Khởi động ứng dụng bằng `start.cmd` hoặc `python app.py` để trải nghiệm phiên bản **v0.6.0** với đầy đủ các nâng cấp mới nhất.

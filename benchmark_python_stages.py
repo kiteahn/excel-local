@@ -1,4 +1,4 @@
-"""Staged benchmark for the pure-Python parts of Excel Local Expert.
+"""Staged benchmark for the pure-Python parts of Excel Local Lazy.
 
 Measures what can be measured without Excel Desktop: xlsx preflight, the
 openpyxl fast reader (lenient inspect path), CSV inspect, and preview_plan

@@ -1,6 +1,6 @@
 #Requires -Version 5.1
 <#
-    run_all_tests.ps1 — chạy toàn bộ lưới kiểm thử của Excel Local Expert trên Windows.
+    run_all_tests.ps1 — chạy toàn bộ lưới kiểm thử của Excel Local Lazy trên Windows.
 
     Nhóm 1: không cần Excel, không cần màn hình.
     Nhóm 2: cần Windows (DPAPI thật), không cần Excel.

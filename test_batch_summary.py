@@ -42,7 +42,7 @@ def run():
         (src_dir / ' bo qua.txt').write_text('x', encoding='utf-8')
         out_dir = d / 'out'
 
-        def fake_execute(source, reference, plan, export_pdf=False, output_dir=None, *, approval_token):
+        def fake_execute(source, reference, plan, export_pdf=False, output_dir=None, *, approval_token, _usage_batch=False):
             return {'output': str(Path(output_dir) / 'fake.xlsx'), 'pdf': None, 'stats': {'rows': 1}}
 
         with patch.object(app, 'execute', fake_execute):

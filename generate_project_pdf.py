@@ -1,4 +1,4 @@
-"""Script to generate the comprehensive, publication-grade PDF report for Excel Local Expert."""
+"""Script to generate the comprehensive, publication-grade PDF report for Excel Local Lazy."""
 from pathlib import Path
 import subprocess
 import sys
@@ -12,7 +12,7 @@ html_content = r"""<!DOCTYPE html>
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>Báo Cáo Đánh Giá Toàn Diện Dự Án · Excel Local Expert v0.3.1</title>
+<title>Báo Cáo Đánh Giá Toàn Diện Dự Án · Excel Local Lazy v0.3.1</title>
 <style>
   @page {
     size: A4 portrait;
@@ -362,7 +362,7 @@ html_content = r"""<!DOCTYPE html>
   <li><strong>Bế tắc của Cloud AI truyền thống:</strong> Tải toàn bộ file lên Cloud LLM vi phạm nghiêm trọng luật bảo vệ dữ liệu cá nhân (PII); chi phí token đắt đỏ; gặp giới hạn tần suất API (Rate Limit / Quota Exceeded) làm đình trệ công việc khi xử lý hàng trăm file.</li>
 </ul>
 
-<h2>1.2. Giải Pháp Toàn Diện Của Excel Local Expert</h2>
+<h2>1.2. Giải Pháp Toàn Diện Của Excel Local Lazy</h2>
 <div class="card-grid">
   <div class="card">
     <div class="card-header">⚡ Động Cơ Cục Bộ 0-Token Siêu Tốc</div>
@@ -473,12 +473,12 @@ html_content = r"""<!DOCTYPE html>
 <h1>3. Phân Tích Chuyên Sâu Các Lớp Bảo Mật Cấp Hệ Thống & Mã Hóa</h1>
 
 <p>
-  Trong môi trường giáo dục và doanh nghiệp, an toàn thông tin là yêu cầu sống còn. Excel Local Expert thiết lập một <strong>hệ thống phòng thủ chiều sâu 6 lớp (6-Layer Defense-in-Depth)</strong> đảm bảo dữ liệu học đường không bao giờ bị lộ lọt, bị tráo đổi, hay bị thay đổi ngoài ý muốn.
+  Trong môi trường giáo dục và doanh nghiệp, an toàn thông tin là yêu cầu sống còn. Excel Local Lazy thiết lập một <strong>hệ thống phòng thủ chiều sâu 6 lớp (6-Layer Defense-in-Depth)</strong> đảm bảo dữ liệu học đường không bao giờ bị lộ lọt, bị tráo đổi, hay bị thay đổi ngoài ý muốn.
 </p>
 
 <h2>3.1. Lớp 1: Cô Lập Dữ Liệu Trong Bộ Nhớ RAM (Zero-Egress Memory Isolation)</h2>
 <p>
-  Các giải pháp AI đám mây thông thường tải toàn bộ tệp Excel (chứa tên sinh viên, điểm số, học phí, số điện thoại) lên máy chủ của bên thứ ba. Excel Local Expert áp dụng nguyên lý <strong>Boundary Isolation</strong>:
+  Các giải pháp AI đám mây thông thường tải toàn bộ tệp Excel (chứa tên sinh viên, điểm số, học phí, số điện thoại) lên máy chủ của bên thứ ba. Excel Local Lazy áp dụng nguyên lý <strong>Boundary Isolation</strong>:
 </p>
 <ul>
   <li>Toàn bộ hàng nghìn dòng dữ liệu chi tiết của bảng tính chỉ được nạp vào cấu trúc mảng <code>snapshot['data']</code> trong bộ nhớ RAM cục bộ của máy tính người dùng.</li>
@@ -548,7 +548,7 @@ html_content = r"""<!DOCTYPE html>
   Lưu trữ khóa API (OpenAI, Gemini, Groq) dưới dạng văn bản thô (Plaintext) trong file JSON/ENV là một lỗ hổng nghiêm trọng. Kẻ xấu hoặc mã độc trên máy tính có thể đọc trộm và tiêu tốn hạn mức tài khoản.
 </p>
 <p>
-  Excel Local Expert sử dụng <strong>Windows Data Protection API (DPAPI)</strong> tích hợp sâu vào nhân hệ điều hành thông qua thư viện <code>ctypes.windll.crypt32</code>:
+  Excel Local Lazy sử dụng <strong>Windows Data Protection API (DPAPI)</strong> tích hợp sâu vào nhân hệ điều hành thông qua thư viện <code>ctypes.windll.crypt32</code>:
 </p>
 
 <pre>
@@ -639,7 +639,7 @@ public static extern uint GetWindowThreadProcessId(IntPtr handle, out uint proce
 
 <h2>4.1. Động Cơ Phân Tích OOXML Thuần Túy (Zero-Dependency OOXML Engine)</h2>
 <p>
-  Các thư viện phổ biến như <code>openpyxl</code> hay <code>pandas</code> thường nặng nề, đòi hỏi biên dịch C/C++ và dễ phát sinh xung đột phiên bản. Excel Local Expert tiếp cận trực tiếp cấu trúc OpenXML chuẩn quốc tế (ISO/IEC 29500):
+  Các thư viện phổ biến như <code>openpyxl</code> hay <code>pandas</code> thường nặng nề, đòi hỏi biên dịch C/C++ và dễ phát sinh xung đột phiên bản. Excel Local Lazy tiếp cận trực tiếp cấu trúc OpenXML chuẩn quốc tế (ISO/IEC 29500):
 </p>
 <ul>
   <li>Tệp <code>.xlsx</code> về bản chất là một gói nén ZIP chứa các tệp XML. Hệ thống sử dụng mô-đun <code>zipfile</code> để đọc trực tiếp các luồng dữ liệu <code>xl/worksheets/sheet1.xml</code> và <code>xl/sharedStrings.xml</code>.</li>
@@ -782,7 +782,7 @@ public static extern uint GetWindowThreadProcessId(IntPtr handle, out uint proce
   Nhiều phần mềm tạo file Excel bằng thư viện nguồn mở thường tạo ra các tệp bị lỗi định dạng công thức, khiến người dùng mở file lên bị báo lỗi <em>"Excel found a problem with some content in workbook"</em>.
 </p>
 <p>
-  Excel Local Expert ngăn chặn triệt để điều này thông qua <strong>cầu nối PowerShell COM Bridge (<code>excel_bridge.ps1</code>)</strong>:
+  Excel Local Lazy ngăn chặn triệt để điều này thông qua <strong>cầu nối PowerShell COM Bridge (<code>excel_bridge.ps1</code>)</strong>:
 </p>
 <ul>
   <li>Khởi tạo một phiên bản Excel Desktop chính hãng cài đặt trên máy trạm trong chế độ chạy ngầm vô hình.</li>
@@ -1026,7 +1026,7 @@ python app.py --batch-dir "./classes" --reference "./danh_muc.xlsx" --plan "./lo
 <h2>6.3. Đánh Giá Tổng Kết & Lời Khuyên Dành Riêng Cho Người Dùng</h2>
 <div class="callout callout-success">
   <div class="callout-title">🏆 Đánh Giá Tổng Thể: ĐẠT CHUẨN XUẤT SẮC (EXCELLENT / PRODUCTION GRADE)</div>
-  Dự án <strong>Excel Local Expert v0.3.1</strong> đã hoàn thiện ở cấp độ chuyên nghiệp cao nhất. Mọi luồng xử lý từ đơn lẻ đến hàng loạt, từ kiểm duyệt dữ liệu cá nhân PII đến đối soát sai số bằng phần mềm Microsoft Excel thật đều hoạt động hoàn hảo 100%.
+  Dự án <strong>Excel Local Lazy v0.3.1</strong> đã hoàn thiện ở cấp độ chuyên nghiệp cao nhất. Mọi luồng xử lý từ đơn lẻ đến hàng loạt, từ kiểm duyệt dữ liệu cá nhân PII đến đối soát sai số bằng phần mềm Microsoft Excel thật đều hoạt động hoàn hảo 100%.
 </div>
 
 <p>
@@ -1039,7 +1039,7 @@ python app.py --batch-dir "./classes" --reference "./danh_muc.xlsx" --plan "./lo
 </ul>
 
 <div style="margin-top: 30px; padding-top: 15px; border-top: 1px solid #cbd5e1; display: flex; justify-content: space-between; font-size: 8.5pt; color: #64748b;">
-  <div>Báo Cáo Kỹ Thuật Độc Quyền · Excel Local Expert v0.3.1</div>
+  <div>Báo Cáo Kỹ Thuật Độc Quyền · Excel Local Lazy v0.3.1</div>
   <div>Hoàn tất kiểm định & Bàn giao: Tháng 10/2026</div>
 </div>
 

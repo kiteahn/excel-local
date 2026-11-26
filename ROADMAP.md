@@ -1,4 +1,4 @@
-# ROADMAP — Excel Local Expert
+# ROADMAP — Excel Local Lazy
 
 Cập nhật: 2026-11-03, sau Chu kỳ 7 (Q4 — dữ liệu giống thật).
 Thứ tự ưu tiên của sản phẩm: đúng > an toàn/riêng tư > dễ bảo trì > hiệu năng >

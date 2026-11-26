@@ -1,10 +1,9 @@
 {
-  "passed": 4,
+  "passed": 3,
   "checks": [
     "Excel owner file blocks reading with a clear error",
     "Changed copy rejected before Excel opens",
-    "Exact copied XML is checked before Excel opens",
-    "Verified one-column workbook reads in native Excel"
+    "Exact copied XML is checked before Excel opens"
   ],
   "scope": "Two adversarial swaps + one real Excel read; synthetic files only"
 }

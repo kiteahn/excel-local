@@ -1,4 +1,4 @@
-# Gói nghiệm thu Windows — Excel Local Expert, nhánh `muse-upgrade`
+# Gói nghiệm thu Windows — Excel Local Lazy, nhánh `muse-upgrade`
 
 Ngày xuất: **2026-11-04** (sau Chu kỳ 10 — Q4, Q5, Q6, Q7).
 Nhánh `muse-upgrade`, **không push**. Bản phát hành mới là **v0.4.0** (tag cục

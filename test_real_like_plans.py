@@ -152,6 +152,10 @@ CURATED = [
      ('lookup', 'Mã hàng', '', 'Mã hàng', 'Nhóm hàng')),
     ('C50', 'don_hang', None, 'Lọc đơn hàng của Khách A',
      ('filter', 'Khách hàng', 'khách a', '', '')),
+    ('L04', 'sinh_vien', None, 'Tính điểm trung bình theo lớp',
+     ('summary', 'Lớp', 'Điểm TB', '', '')),
+    ('L05', 'bang_luong', None, 'Lương trung bình mỗi phòng ban',
+     ('summary', 'Phòng ban', 'Lương cơ bản', '', '')),
 ]
 
 # Natural requests that currently fail.  Expected = the correct plan a user
@@ -169,14 +173,6 @@ KNOWN_LIMITATIONS = [    ('L01', 'bang_luong', None, 'Lọc nhân viên Kinh doa
      ('filter', 'Trạng thái', 'vắng', '', ''),
      'The value is mistaken for a column name ("Lớp"); filter values should be '
      'matched against categorical column names in prompts.'),
-    ('L04', 'sinh_vien', None, 'Tính điểm trung bình theo lớp',
-     ('clarify', '', '', '', ''),
-     'AVERAGE is not supported. The planner returns None instead of an honest '
-     'clarify saying that only sums are supported.'),
-    ('L05', 'bang_luong', None, 'Lương trung bình mỗi phòng ban',
-     ('clarify', '', '', '', ''),
-     'AVERAGE is not supported. The planner returns None instead of an honest '
-     'clarify saying that only sums are supported.'),
 ]
 
 # Execution is expected to be refused (not silently patched) when the source
@@ -201,12 +197,14 @@ def load_snapshots():
     errors = []
     for name, filename in FILES.items():
         path = DATA / filename
+        started = time.perf_counter()
         try:
             snap = app.inspect_file(
                 str(path), header_row='auto',
                 lenient=(name == 'so_quy'),
             )
             cache[name] = snap
+            print(f'[READ] {filename} {time.perf_counter() - started:.1f}s')
         except Exception as exc:  # pragma: no cover - reported, not hidden
             errors.append({'file': filename, 'error': f'{type(exc).__name__}: {exc}'})
     return cache, errors
@@ -317,6 +315,14 @@ def main(argv=None):
                             'error': message,
                         })
                         print(f'[EXEC FAIL] {case[0]}: {message}')
+
+    timed = sorted((c for c in execution['cases'] if 'seconds' in c), key=lambda c: -c['seconds'])
+    if timed:
+        total_exec = sum(c['seconds'] for c in timed)
+        print(f'[TIMING] execution total {total_exec:.1f}s across {len(timed)} cases; slowest:')
+        for c in timed[:5]:
+            print(f"         {c['id']}: {c['seconds']}s")
+        execution['timing_summary'] = {'total_seconds': round(total_exec, 1), 'slowest': [{'id': c['id'], 'seconds': c['seconds']} for c in timed[:5]]}
 
     payload = {
         'generated_at': time.strftime('%Y-%m-%d %H:%M:%S'),

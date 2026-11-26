@@ -1,4 +1,4 @@
-"""Excel Local Expert: fixed operations, independent checks, native Excel, dual-engine AI (OpenAI & Ollama).
+"""Excel Local Lazy: fixed operations, independent checks, native Excel, dual-engine AI (OpenAI & Ollama).
 
 Python standard library only. Run `python app.py` or use start.cmd.
 """
@@ -286,6 +286,7 @@ def bridge(job, directory, timeout=240, attempts=2):
         try:
             completed = subprocess.run(command, timeout=timeout, **options)
         except subprocess.TimeoutExpired as exc:
+            print(f'[bridge] attempt {attempt}/{attempts} TIMED OUT after {timeout}s (op={job.get("operation")})', file=sys.stderr, flush=True)
             cleaned = _bridge_cleanup(command, options)
             if cleaned and attempt < attempts:
                 time.sleep(min(2, attempt))
@@ -295,6 +296,7 @@ def bridge(job, directory, timeout=240, attempts=2):
                 message += f' Đã thử tối đa {attempts} lần.'
             raise RuntimeError(message) from exc
         if not result.exists():
+            print(f'[bridge] attempt {attempt}/{attempts} produced NO result file (op={job.get("operation")})', file=sys.stderr, flush=True)
             _bridge_cleanup(command, options)
             if attempt < attempts:
                 time.sleep(min(2, attempt))
@@ -676,7 +678,7 @@ def number(value, lenient=False, dot_thousands=None):
 
 
 def validate_plan(plan, source, reference=None, allow_clarify=False):
-    allowed = {'action', 'key', 'value', 'ref_key', 'ref_value', 'message', 'lenient_numbers', 'allow_dates', 'provider', 'clean_output', 'engine_used', 'condition', 'selected_columns'}
+    allowed = {'action', 'key', 'value', 'ref_key', 'ref_value', 'message', 'lenient_numbers', 'allow_dates', 'provider', 'clean_output', 'engine_used', 'condition', 'selected_columns', 'agg'}
     if not isinstance(plan, dict) or set(plan) - allowed:
         raise ValueError('Kế hoạch chứa trường không được phép.')
     for k in ('action', 'key', 'value', 'ref_key', 'ref_value', 'message', 'engine_used', 'condition', 'selected_columns'):
@@ -685,7 +687,7 @@ def validate_plan(plan, source, reference=None, allow_clarify=False):
             if not isinstance(val, str) or len(val) > 2000:
                 raise ValueError(f'Tham số kế hoạch {k} phải là chuỗi ngắn.')
     action = plan.get('action')
-    if action not in ('lookup', 'summary', 'clean', 'filter', 'clarify'):
+    if action not in ('lookup', 'summary', 'clean', 'filter', 'verify', 'clarify'):
         raise ValueError('Thao tác ngoài danh sách được phép.')
     if action == 'clarify':
         if allow_clarify:
@@ -732,6 +734,11 @@ def validate_plan(plan, source, reference=None, allow_clarify=False):
                 return {'action': 'clarify', 'key': plan.get('key', ''), 'value': '', 'ref_key': '', 'ref_value': '', 'message': f'Không tìm thấy cột cần cộng "{plan.get("value")}" trong nguồn.'}
             else:
                 raise ValueError(f'Cột cần cộng "{plan.get("value")}" không tồn tại trong nguồn.')
+    if action == 'summary':
+        agg = plan.get('agg', 'sum')
+        if agg not in ('sum', 'avg'):
+            raise ValueError(f"Phép tổng hợp \"{agg}\" chưa được hỗ trợ (chỉ 'sum' hoặc 'avg').")
+        plan['agg'] = agg
     if action == 'lookup':
         if reference is None:
             if allow_clarify:
@@ -753,7 +760,151 @@ def validate_plan(plan, source, reference=None, allow_clarify=False):
                 return {'action': 'clarify', 'key': plan.get('key', ''), 'value': '', 'ref_key': '', 'ref_value': '', 'message': f'Không tìm thấy cột trả về "{plan.get("ref_value")}" trong danh mục.'}
             else:
                 raise ValueError(f'Cột trả về "{plan.get("ref_value")}" không tồn tại trong danh mục.')
+    if action == 'verify':
+        if reference is None:
+            if allow_clarify:
+                return {'action': 'clarify', 'key': plan.get('key', ''), 'value': '', 'ref_key': '', 'ref_value': '', 'message': 'Kiểm chứng cần có file đối chiếu. Vui lòng chọn và nạp file ở khung "File đối chiếu / Danh mục" trước khi tiếp tục.'}
+            raise ValueError('Kiểm chứng cần một file đối chiếu.')
+        if plan.get('ref_key') not in reference['headers']:
+            match = ai_client.fuzzy_match_column(plan.get('ref_key', ''), reference['headers'])
+            if match in reference['headers']:
+                plan['ref_key'] = match
+            elif allow_clarify:
+                return {'action': 'clarify', 'key': plan.get('key', ''), 'value': '', 'ref_key': '', 'ref_value': '', 'message': f'Không tìm thấy cột khóa "{plan.get("ref_key")}" trong file đối chiếu.'}
+            else:
+                raise ValueError(f'Cột khóa "{plan.get("ref_key")}" không tồn tại trong file đối chiếu.')
+        raw_sel = plan.get('selected_columns') or ''
+        candidates = [c.strip() for c in re.split(r'[,;\n]', str(raw_sel)) if c.strip()]
+        if not candidates:
+            if allow_clarify:
+                return {'action': 'clarify', 'key': plan.get('key', ''), 'value': '', 'ref_key': plan.get('ref_key', ''), 'ref_value': '', 'message': 'Chưa chọn cột cần kiểm chứng. Hãy liệt kê các cột cần so (có cùng tên ở cả hai file), ngăn cách bằng dấu phẩy.'}
+            raise ValueError('Kiểm chứng cần ít nhất một cột để so sánh.')
+        resolved = []
+        for cand in candidates:
+            src_match = cand if cand in source['headers'] else ai_client.fuzzy_match_column(cand, source['headers'])
+            ref_match = cand if cand in reference['headers'] else ai_client.fuzzy_match_column(cand, reference['headers'])
+            if src_match not in source['headers'] or ref_match not in reference['headers'] or src_match != ref_match:
+                raise ValueError(f'Cột kiểm chứng "{cand}" phải tồn tại với cùng một tên ở cả file gốc và file đối chiếu.')
+            if src_match != plan.get('key') and src_match not in resolved:
+                resolved.append(src_match)
+        if not resolved:
+            raise ValueError('Không còn cột nào để kiểm chứng ngoài cột khóa.')
+        plan['selected_columns'] = ', '.join(resolved)
+        plan['value'] = ''
+        plan['ref_value'] = ''
     return plan
+
+
+def _verify_norm(value, format_code, allow_dates):
+    """Normalize one cell for verification comparison; never raises."""
+    try:
+        return key_value(value, format_code, allow_dates=allow_dates)
+    except (ValueError, TypeError):
+        return unicodedata.normalize('NFC', str(value)).strip().casefold()
+
+
+def _verify_cell_equal(source, s_row, s_col, reference, r_row, r_col, allow_dates):
+    a = source['data'][s_row][s_col]
+    b = reference['data'][r_row][r_col]
+    a_blank = a is None or a == ''
+    b_blank = b is None or b == ''
+    if a_blank or b_blank:
+        return a_blank and b_blank
+    if _verify_norm(a, format_at(source, s_row, s_col), allow_dates) == \
+            _verify_norm(b, format_at(reference, r_row, r_col), allow_dates):
+        return True
+    # Numeric equivalence across representations: '500.000' vs 500000,
+    # '1,5' vs 1.5, '1000' vs 1000. Text that does not parse stays unequal.
+    try:
+        return parse_lenient_number(a, allow_blank_zero=False) == \
+            parse_lenient_number(b, allow_blank_zero=False)
+    except (ValueError, TypeError):
+        return False
+
+
+def run_verify(source, reference, plan):
+    """Read-only reconciliation: check every source row against the reference
+    file by key and report per-cell differences. Writes nothing anywhere.
+
+    Returns {'summary': {...counts...}, 'issues': [ {row, key, column,
+    source_value, reference_value, status}, ... ]}.
+    """
+    allow_dates = bool(plan.get('allow_dates', False))
+    key_col = source['headers'].index(plan['key'])
+    ref_key_col = reference['headers'].index(plan['ref_key'])
+    compare = [c.strip() for c in str(plan.get('selected_columns', '')).split(',') if c.strip()]
+    src_keys = normalized_keys(source, key_col, allow_dates=allow_dates)
+    ref_keys = normalized_keys(reference, ref_key_col, allow_dates=allow_dates)
+    ref_index = {}
+    ref_dup_keys = set()
+    for j, k in enumerate(ref_keys):
+        if not k:
+            continue
+        if k in ref_index:
+            ref_dup_keys.add(k)
+        else:
+            ref_index[k] = j
+    src_idx = {c: source['headers'].index(c) for c in compare}
+    ref_idx = {c: reference['headers'].index(c) for c in compare}
+
+    def disp(value):
+        return '' if value is None else str(value)
+
+    issues = []
+    matched_rows = mismatch_rows = missing_rows = 0
+    duplicate_ref_rows = blank_key_rows = 0
+    cells_compared = cells_mismatch = 0
+    used_ref = set()
+    for i, row in enumerate(source['data']):
+        excel_row = source['header_row'] + 1 + i
+        k = src_keys[i]
+        key_disp = disp(row[key_col])
+        if not k:
+            blank_key_rows += 1
+            issues.append({'row': excel_row, 'key': key_disp, 'column': '', 'source_value': '', 'reference_value': '', 'status': 'Khóa trống'})
+            continue
+        if k in ref_dup_keys:
+            duplicate_ref_rows += 1
+            used_ref.add(k)
+            issues.append({'row': excel_row, 'key': key_disp, 'column': '', 'source_value': '', 'reference_value': '', 'status': 'Khóa trùng trong file đối chiếu'})
+            continue
+        j = ref_index.get(k)
+        if j is None:
+            missing_rows += 1
+            issues.append({'row': excel_row, 'key': key_disp, 'column': '', 'source_value': '', 'reference_value': '', 'status': 'Không có trong file đối chiếu'})
+            continue
+        used_ref.add(k)
+        row_bad = False
+        for col_name in compare:
+            cells_compared += 1
+            if not _verify_cell_equal(source, i, src_idx[col_name], reference, j, ref_idx[col_name], allow_dates):
+                cells_mismatch += 1
+                row_bad = True
+                issues.append({'row': excel_row, 'key': key_disp, 'column': col_name,
+                               'source_value': disp(row[src_idx[col_name]]),
+                               'reference_value': disp(reference['data'][j][ref_idx[col_name]]),
+                               'status': 'Lệch'})
+        if row_bad:
+            mismatch_rows += 1
+        else:
+            matched_rows += 1
+    extra_ref_keys = [k for k in ref_index if k not in used_ref]
+    summary = {
+        'action': 'verify',
+        'source_rows': len(source['data']),
+        'reference_rows': len(reference['data']),
+        'compared_columns': len(compare),
+        'matched_rows': matched_rows,
+        'mismatch_rows': mismatch_rows,
+        'missing_rows': missing_rows,
+        'duplicate_ref_rows': duplicate_ref_rows,
+        'blank_key_rows': blank_key_rows,
+        'extra_ref_rows': len(extra_ref_keys),
+        'reference_duplicate_keys': len(ref_dup_keys),
+        'cells_compared': cells_compared,
+        'cells_mismatch': cells_mismatch,
+    }
+    return {'summary': summary, 'issues': issues, 'extra_ref_keys': extra_ref_keys}
 
 
 def escape_criteria(cell):
@@ -915,7 +1066,8 @@ def prepare_sheets(source, reference, plan, token):
             counts[key] += 1
             grouped[key].append(float(val_num))
         stats['total_rows_skipped'] = skipped_total_rows
-        headers = ['Nhom_chuan_hoa', 'So_dong', 'Tong']
+        agg = plan.get('agg', 'sum')
+        headers = ['Nhom_chuan_hoa', 'So_dong', 'Trung_binh' if agg == 'avg' else 'Tong']
         rows = []
         for i, key in enumerate(totals, 2):
             number(totals[key], lenient=lenient_nums, dot_thousands=dot_thousands)
@@ -927,10 +1079,10 @@ def prepare_sheets(source, reference, plan, token):
             values = f"'{helper}'!$B${first}:$B${last}"
             formulas.extend([
                 {'row': i, 'col': 2, 'formula': f'=IF({guard},COUNT({values}),NA())', 'expected': counts[key]},
-                {'row': i, 'col': 3, 'formula': f'=IF({guard},SUM({values}),NA())', 'expected': float(totals[key])},
+                {'row': i, 'col': 3, 'formula': f'=IF({guard},AVERAGE({values}),NA())' if agg == 'avg' else f'=IF({guard},SUM({values}),NA())', 'expected': (float(totals[key]) / counts[key]) if agg == 'avg' else float(totals[key])},
             ])
         sheets.append({'name': helper, 'rows': table, 'formulas': [], 'formats': []})
-        stats.update(groups=len(totals), independent_total=str(sum(totals.values())))
+        stats.update(groups=len(totals), independent_total=str(sum(totals.values())), agg=agg)
     elif action == 'filter':
         crit = str(plan.get('value', '')).strip()
         filtered_rows = []
@@ -1049,22 +1201,36 @@ def prepare_sheets(source, reference, plan, token):
 
 def preview_plan(source, reference, plan, export_pdf=False, output_dir=OUTPUT):
     validate_plan(plan, source, reference)
-    reference = reference if plan['action'] == 'lookup' else None
+    reference = reference if plan['action'] in ('lookup', 'verify') else None
     for snapshot in (source, reference):
         if snapshot and file_hash(snapshot['path']) != snapshot['hash']:
             raise ValueError('File đã thay đổi sau khi đọc; nạp lại để kiểm tra kết quả dự kiến.')
-    sheets, name, stats = prepare_sheets(source, reference, plan, 'preview')
-    result = next(sheet for sheet in sheets if sheet['name'] == name)
-    samples = [row[:] for row in result['rows'][1:11]]
-    for patch in result['formulas']:
-        if patch['row'] <= len(samples) + 1:
-            samples[patch['row'] - 2][patch['col'] - 1] = patch['expected']
+    if plan['action'] == 'verify':
+        checked = run_verify(source, reference, plan)
+        stats = checked['summary']
+        result_columns = ['Dòng', 'Khóa', 'Cột', 'Giá trị file gốc', 'Giá trị file đối chiếu', 'Kết quả']
+        samples = [[issue['row'], issue['key'], issue['column'], issue['source_value'], issue['reference_value'], issue['status']]
+                   for issue in checked['issues'][:10]]
+        n_formula_checks = 0
+        scope_text = 'Chỉ đọc hai file, không sửa file gốc hay file đối chiếu; khi chấp nhận sẽ xuất báo cáo CSV vào thư mục kết quả.'
+        status_text = 'Chưa thực hiện; kết quả dự kiến tính hoàn toàn bằng Python (không ghi qua Excel).'
+    else:
+        sheets, name, stats = prepare_sheets(source, reference, plan, 'preview')
+        result = next(sheet for sheet in sheets if sheet['name'] == name)
+        samples = [row[:] for row in result['rows'][1:11]]
+        for patch in result['formulas']:
+            if patch['row'] <= len(samples) + 1:
+                samples[patch['row'] - 2][patch['col'] - 1] = patch['expected']
+        result_columns = result['rows'][0]
+        n_formula_checks = len(result['formulas'])
+        scope_text = 'Tạo workbook mới; thêm sheet kết quả, dữ liệu đối soát và kiểm tra. Giữ file gốc.'
+        status_text = 'Chưa thực hiện; kết quả dự kiến tính bằng Python, sẽ đối soát bằng Excel sau khi chấp nhận.'
     preview = dict(plan=dict(plan), source=dict(path=source['path'], sheet=source['sheet'], hash=source['hash'], header_row=source['header_row'], column_offset=source.get('column_offset', 0)),
                    reference=dict(path=reference['path'], sheet=reference['sheet'], hash=reference['hash'], header_row=reference['header_row'], column_offset=reference.get('column_offset', 0)) if reference else None,
-                   export_pdf=bool(export_pdf), stats=stats, columns=result['rows'][0], sample_rows=samples,
-                   formula_checks=len(result['formulas']), output_directory=str(Path(output_dir).resolve()),
-                   scope='Tạo workbook mới; thêm sheet kết quả, dữ liệu đối soát và kiểm tra. Giữ file gốc.',
-                   status='Chưa thực hiện; kết quả dự kiến tính bằng Python, sẽ đối soát bằng Excel sau khi chấp nhận.')
+                   export_pdf=bool(export_pdf), stats=stats, columns=result_columns, sample_rows=samples,
+                   formula_checks=n_formula_checks, output_directory=str(Path(output_dir).resolve()),
+                   scope=scope_text,
+                   status=status_text)
     preview['snapshot_digest'] = hashlib.sha256(json.dumps([
         {key: snapshot[key] for key in ('headers', 'data', 'metadata')} if snapshot else None
         for snapshot in (source, reference)], ensure_ascii=False, sort_keys=True, allow_nan=False, default=str).encode('utf-8')).hexdigest()
@@ -1072,14 +1238,233 @@ def preview_plan(source, reference, plan, export_pdf=False, output_dir=OUTPUT):
     return preview
 
 
-def execute(source, reference, plan, export_pdf=False, output_dir=OUTPUT, *, approval_token):
+# ---------- Usage statistics (dashboard "Thong ke") ----------
+# Local-only JSONL log at .work/usage-log.jsonl holding run METADATA only
+# (timestamp, action, engine bucket, duration, source row count, status).
+# Never row data, prompts or file contents. Recording must never break a
+# run, so record_usage swallows its own errors by design.
+
+def _engine_bucket(engine_used):
+    text = str(engine_used or '')
+    if 'Ollama' in text:
+        return 'Ollama'
+    if 'Siêu tốc' in text or 'Heuristic' in text:
+        return 'Heuristic'
+    if text:
+        return 'Cloud'
+    return 'Không rõ'
+
+
+def record_usage(action, status, duration_seconds=0.0, rows=0, engine_used='', batch=False, source_name=''):
+    try:
+        WORK.mkdir(exist_ok=True)
+        event = {
+            'ts': datetime.datetime.now().isoformat(timespec='seconds'),
+            'action': str(action or ''),
+            'status': status,
+            'duration_seconds': round(float(duration_seconds), 3),
+            'rows': int(rows or 0),
+            'engine': _engine_bucket(engine_used),
+            'batch': bool(batch),
+            'source': Path(source_name).name if source_name else '',
+        }
+        with open(WORK / 'usage-log.jsonl', 'a', encoding='utf-8') as fh:
+            fh.write(json.dumps(event, ensure_ascii=False) + '\n')
+    except (OSError, ValueError, TypeError):
+        pass
+
+
+def load_usage_events():
+    events = []
+    try:
+        lines = (WORK / 'usage-log.jsonl').read_text(encoding='utf-8').splitlines()
+    except OSError:
+        return events
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            item = json.loads(line)
+        except ValueError:
+            continue
+        if isinstance(item, dict) and item.get('ts'):
+            events.append(item)
+    return events
+
+
+def compute_usage_stats(events, days=30, now=None, until=None):
+    now = now or datetime.datetime.now()
+    parsed = []
+    for item in events:
+        try:
+            ts = datetime.datetime.fromisoformat(str(item.get('ts', '')))
+        except ValueError:
+            continue
+        parsed.append((ts, item))
+    cutoff = now - datetime.timedelta(days=days)
+    in_period = [(ts, e) for ts, e in parsed if ts >= cutoff and (until is None or ts <= until)]
+    per_day = {}
+    for offset in range(days):
+        day = (now - datetime.timedelta(days=offset)).date().isoformat()
+        per_day[day] = 0
+    per_action, per_engine, per_hour = {}, {}, [0] * 24
+    success = failed = 0
+    durations, total_rows = [], 0
+    for ts, e in in_period:
+        key = ts.date().isoformat()
+        if key in per_day:
+            per_day[key] += 1
+        per_action[e.get('action', '')] = per_action.get(e.get('action', ''), 0) + 1
+        per_engine[e.get('engine', 'Không rõ')] = per_engine.get(e.get('engine', 'Không rõ'), 0) + 1
+        per_hour[ts.hour] += 1
+        if e.get('status') == 'success':
+            success += 1
+        else:
+            failed += 1
+        try:
+            durations.append(float(e.get('duration_seconds', 0)))
+        except (TypeError, ValueError):
+            pass
+        try:
+            total_rows += int(e.get('rows', 0))
+        except (TypeError, ValueError):
+            pass
+    total_period = success + failed
+    today_key = now.date().isoformat()
+    recent = [e for _, e in sorted(parsed, key=lambda pair: pair[0])][-10:][::-1]
+    return {
+        'days': days,
+        'total_all': len(parsed),
+        'total_period': total_period,
+        'today': per_day.get(today_key, 0),
+        'success': success,
+        'failed': failed,
+        'success_rate': (success / total_period * 100) if total_period else 0.0,
+        'avg_duration': (sum(durations) / len(durations)) if durations else 0.0,
+        'total_rows': total_rows,
+        'per_day': per_day,
+        'per_action': per_action,
+        'per_engine': per_engine,
+        'per_hour': per_hour,
+        'recent': recent,
+    }
+
+
+def compute_usage_pair(events, days=30, now=None):
+    """Current-period stats plus the previous equal-length period, for KPI deltas."""
+    now = now or datetime.datetime.now()
+    current = compute_usage_stats(events, days=days, now=now, until=now)
+    prev_now = now - datetime.timedelta(days=days)
+    previous = compute_usage_stats(events, days=days, now=prev_now, until=prev_now)
+    return current, previous
+
+
+def trim_usage_log(max_age_days=365):
+    """Drop log events older than max_age_days; returns how many were removed."""
+    path = WORK / 'usage-log.jsonl'
+    try:
+        lines = path.read_text(encoding='utf-8').splitlines()
+    except OSError:
+        return 0
+    cutoff = datetime.datetime.now() - datetime.timedelta(days=max_age_days)
+    kept, removed = [], 0
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            item = json.loads(line)
+            ts = datetime.datetime.fromisoformat(str(item.get('ts', '')))
+        except (ValueError, AttributeError):
+            removed += 1
+            continue
+        if ts >= cutoff:
+            kept.append(line)
+        else:
+            removed += 1
+    if removed:
+        try:
+            path.write_text('\n'.join(kept) + ('\n' if kept else ''), encoding='utf-8')
+        except OSError:
+            return 0
+    return removed
+
+
+def load_dashboard_prefs():
+    try:
+        data = json.loads((WORK / 'dashboard-prefs.json').read_text(encoding='utf-8'))
+        days = int(data.get('days', 30))
+        mode = data.get('mode', 'day')
+    except (OSError, ValueError, TypeError):
+        return {'days': 30, 'mode': 'day'}
+    return {'days': days if days in (7, 30, 90) else 30, 'mode': mode if mode in ('day', 'week') else 'day'}
+
+
+def save_dashboard_prefs(days, mode):
+    try:
+        WORK.mkdir(exist_ok=True)
+        (WORK / 'dashboard-prefs.json').write_text(json.dumps({'days': days, 'mode': mode}), encoding='utf-8')
+    except OSError:
+        pass
+
+
+def execute(source, reference, plan, export_pdf=False, output_dir=OUTPUT, *, approval_token, _usage_batch=False):
+    started = time.time()
+    action = plan.get('action', '') if isinstance(plan, dict) else ''
+    engine_used = plan.get('engine_used', '') if isinstance(plan, dict) else ''
+    source_name = source.get('path', '') if isinstance(source, dict) else ''
+    try:
+        report = _execute_impl(source, reference, plan, export_pdf, output_dir, approval_token=approval_token)
+    except Exception:
+        record_usage(action, 'failed', time.time() - started, engine_used=engine_used, batch=_usage_batch, source_name=source_name)
+        raise
+    rows = 0
+    if isinstance(source, dict):
+        try:
+            rows = len(source.get('data', []))
+        except TypeError:
+            rows = 0
+    record_usage(action, 'success', time.time() - started, rows=rows, engine_used=engine_used, batch=_usage_batch, source_name=source_name)
+    return report
+
+
+def _execute_impl(source, reference, plan, export_pdf=False, output_dir=OUTPUT, *, approval_token):
     validate_plan(plan, source, reference)
-    reference = reference if plan['action'] == 'lookup' else None
+    reference = reference if plan['action'] in ('lookup', 'verify') else None
     if approval_token != preview_plan(source, reference, plan, export_pdf, output_dir)['approval_token']:
         raise ValueError('Thiếu chấp nhận hoặc bản xem trước đã đổi; cần kiểm tra kết quả dự kiến lại.')
     for snapshot in (source, reference):
         if snapshot and file_hash(snapshot['path']) != snapshot['hash']:
             raise ValueError('File đã thay đổi sau khi đọc; cần nạp lại trước khi chạy.')
+    if plan['action'] == 'verify':
+        # Read-only path: recompute the reconciliation and publish a CSV
+        # report (+ JSON twin, same convention as workbook runs). Neither
+        # input file is ever written.
+        checked = run_verify(source, reference, plan)
+        output_dir = Path(output_dir).resolve()
+        output_dir.mkdir(parents=True, exist_ok=True)
+        token = uuid.uuid4().hex[:8]
+        basename = f'{time.strftime("%Y%m%d-%H%M%S")}_verify_{token}'
+        csv_target = output_dir / (basename + '.csv')
+        with open(csv_target, 'w', encoding='utf-8-sig', newline='') as handle:
+            writer = csv.writer(handle)
+            writer.writerow(['Dòng', 'Khóa', 'Cột', 'Giá trị file gốc', 'Giá trị file đối chiếu', 'Kết quả'])
+            for issue in checked['issues']:
+                writer.writerow([issue['row'], issue['key'], issue['column'], issue['source_value'], issue['reference_value'], issue['status']])
+            for key in checked['extra_ref_keys']:
+                writer.writerow(['', key, '', '', '', 'Chỉ có trong file đối chiếu'])
+        report = dict(checked['summary'],
+                      approval=dict(token=approval_token, plan=dict(plan), export_pdf=False),
+                      formula_checks=0, saved_cell_checks=0,
+                      preservation={'original_sheets': 0, 'unchanged': True},
+                      source_unchanged=True, output=str(csv_target), pdf=None,
+                      pdf_layout='Không yêu cầu',
+                      security='Local; kiểm chứng chỉ đọc, không ghi file nguồn hay file đối chiếu',
+                      key_policy='NFC + trim + casefold; giữ 0 đầu; số so theo giá trị',
+                      output_sha256=file_hash(csv_target))
+        (output_dir / (basename + '.json')).write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding='utf-8')
+        return report
     token = uuid.uuid4().hex[:8]
     sheets, result_name, stats = prepare_sheets(source, reference, plan, token)
     output_dir = Path(output_dir).resolve()
@@ -1232,7 +1617,7 @@ def execute_batch(source_dir, reference_path=None, plan=None, output_dir=OUTPUT,
                         raise ValueError(f"File thiếu cột số '{v_col}'.")
 
             prev = preview_plan(src, ref_snapshot, file_plan, export_pdf=export_pdf, output_dir=output_dir)
-            exec_res = execute(src, ref_snapshot, file_plan, export_pdf=export_pdf, output_dir=output_dir, approval_token=prev['approval_token'])
+            exec_res = execute(src, ref_snapshot, file_plan, export_pdf=export_pdf, output_dir=output_dir, approval_token=prev['approval_token'], _usage_batch=True)
 
             item_res['status'] = 'success'
             item_res['output'] = exec_res['output']
@@ -1669,12 +2054,19 @@ def review_plan_dialog(app, source, reference, plan, preview, export_pdf,
     elif plan['action'] == 'filter':
         add_badge(badge_bar, '🎯 Dòng trích xuất', f"{stats.get('filtered_rows', 0)} / {stats.get('source_rows', 0)} dòng", bg='#d1e7dd', fg='#0f5132')
         add_badge(badge_bar, '🔍 Tiêu chí', stats.get('criteria', ''), bg='#cfe2ff', fg='#084298')
-    add_badge(badge_bar, '🔍 Công thức đối soát', preview.get('formula_checks', 0), bg='#e2e3e5', fg='#41464b')
+    elif plan['action'] == 'verify':
+        add_badge(badge_bar, '✓ Dòng khớp', stats.get('matched_rows', 0), bg='#d1e7dd', fg='#0f5132')
+        add_badge(badge_bar, '❌ Dòng lệch', stats.get('mismatch_rows', 0), bg='#f8d7da', fg='#842029')
+        add_badge(badge_bar, '⚠ Thiếu ở file đối chiếu', stats.get('missing_rows', 0), bg='#fff3cd', fg='#664d03')
+    if plan['action'] != 'verify':
+        add_badge(badge_bar, '🔍 Công thức đối soát', preview.get('formula_checks', 0), bg='#e2e3e5', fg='#41464b')
 
-    labels = {'source_rows': 'Dòng nguồn', 'filtered_rows': 'Dòng trích xuất', 'criteria': 'Tiêu chí lọc', 'matched': 'Khớp', 'missing': 'Thiếu / khóa trống', 'duplicate': 'Khóa trùng trên nguồn', 'reference_duplicate_keys': 'Khóa trùng trong danh mục', 'blank_keys': 'Khóa trống', 'groups': 'Số nhóm', 'independent_total': 'Tổng dự kiến', 'changed_cells': 'Ô được làm sạch'}
-    details = [plan.get('message', ''), f'Nguồn: {source["path"]} · Sheet {source["sheet"]}', f'Thao tác: {dict(lookup="Đối chiếu", summary="Tổng hợp", clean="Làm sạch", filter="Lọc & Trích xuất")[plan["action"]]}; Cột nguồn: {plan["key"]}']
+    labels = {'source_rows': 'Dòng nguồn', 'filtered_rows': 'Dòng trích xuất', 'criteria': 'Tiêu chí lọc', 'matched': 'Khớp', 'missing': 'Thiếu / khóa trống', 'duplicate': 'Khóa trùng trên nguồn', 'reference_duplicate_keys': 'Khóa trùng trong danh mục', 'blank_keys': 'Khóa trống', 'groups': 'Số nhóm', 'independent_total': 'Tổng dự kiến', 'changed_cells': 'Ô được làm sạch', 'reference_rows': 'Dòng file đối chiếu', 'compared_columns': 'Số cột kiểm chứng', 'matched_rows': 'Dòng khớp hoàn toàn', 'mismatch_rows': 'Dòng có lệch', 'missing_rows': 'Dòng thiếu trong file đối chiếu', 'duplicate_ref_rows': 'Dòng khóa trùng phía đối chiếu', 'blank_key_rows': 'Dòng khóa trống', 'extra_ref_rows': 'Khóa chỉ có ở file đối chiếu', 'cells_compared': 'Ô đã so', 'cells_mismatch': 'Ô lệch'}
+    details = [plan.get('message', ''), f'Nguồn: {source["path"]} · Sheet {source["sheet"]}', f'Thao tác: {dict(lookup="Đối chiếu", summary="Tổng hợp", clean="Làm sạch", filter="Lọc & Trích xuất", verify="Kiểm chứng đối chiếu")[plan["action"]]}; Cột nguồn: {plan["key"]}']
     if plan['action'] == 'lookup':
         details.append(f'Danh mục: {plan["ref_key"]}; Trả về: {plan["ref_value"]}')
+    if plan['action'] == 'verify':
+        details.append(f'Khóa file đối chiếu: {plan["ref_key"]}; Cột kiểm chứng: {plan.get("selected_columns", "")}')
     if plan['action'] == 'summary':
         details.append('Cột cộng: ' + plan['value'])
     if plan['action'] == 'filter':
@@ -1761,12 +2153,12 @@ def _build_app_class(tk, ttk, filedialog, messagebox):
 
 
         def _build_ui(self, window):
-            window.title('Excel Local Expert · Trợ Lý Bảng Tính Cục Bộ & AI v0.4.0')
+            window.title('Excel Local Lazy · Trợ Lý Bảng Tính Cục Bộ & AI v0.6.0')
             window.protocol('WM_DELETE_WINDOW', self.close)
-            width = min(1160, window.winfo_screenwidth() - 60)
-            height = min(900, window.winfo_screenheight() - 80)
+            width = min(1340, window.winfo_screenwidth() - 40)
+            height = min(920, window.winfo_screenheight() - 60)
             window.geometry(f'{width}x{height}+{max(0, (window.winfo_screenwidth() - width) // 2)}+12')
-            window.minsize(min(1080, width), min(800, height))
+            window.minsize(min(1180, width), min(800, height))
 
             style = ttk.Style()
             style.theme_use('vista')
@@ -1776,19 +2168,22 @@ def _build_app_class(tk, ttk, filedialog, messagebox):
             style.configure('StepDone.TLabel', font=('Segoe UI', 10, 'bold'), foreground='#198754')
             style.configure('StepPending.TLabel', font=('Segoe UI', 10), foreground='#adb5bd')
             style.configure('Highlight.TButton', font=('Segoe UI', 10, 'bold'))
+            # Keep the app background plainly white regardless of theme
+            # (product decision 2026-11-04: white background stays).
+            style.configure('TFrame', background='#ffffff')
+            style.configure('TLabel', background='#ffffff')
+            style.configure('TLabelframe', background='#ffffff')
+            style.configure('TLabelframe.Label', background='#ffffff')
+            style.configure('TNotebook', background='#ffffff')
 
-            outer = ttk.Frame(window, padding=16)
+            outer = ttk.Frame(window, padding=0)
             outer.pack(fill='both', expand=True)
 
-            # Header
-            header_frame = ttk.Frame(outer)
-            header_frame.pack(fill='x', pady=(0, 6))
-            ttk.Label(header_frame, text='Excel Local Expert v0.4.0', style='Title.TLabel').pack(side='left')
-            ttk.Label(header_frame, text='Dual-Engine AI · Tự chữa lành ô gộp & dòng tiêu đề · Đối soát độc lập', style='Sub.TLabel').pack(side='left', padx=12, pady=6)
-            ttk.Button(header_frame, text='⚙ Cài đặt AI & API Key', command=self.open_ai_settings).pack(side='right')
+            # App shell: sidebar navigation + pages (mockup layout, 2026-11-04)
+            self._build_shell(outer)
 
             # Stepper Bar
-            self.stepper_frame = ttk.Frame(outer, padding=6)
+            self.stepper_frame = ttk.Frame(self.pages['ops'], padding=6)
             self.stepper_frame.pack(fill='x', pady=(0, 8))
             self.step_labels = []
             steps = ['① Nạp Dữ Liệu', '② AI & Thiết Lập', '③ Xem Trước Dự Kiến', '④ Thực Thi & Hoàn Thành']
@@ -1798,6 +2193,8 @@ def _build_app_class(tk, ttk, filedialog, messagebox):
                 self.step_labels.append(lbl)
                 if i < len(steps) - 1:
                     ttk.Label(self.stepper_frame, text='➔', foreground='#ced4da').pack(side='left')
+
+            outer = self.pages['ops']
 
             # Data Section
             self.fields = {}
@@ -1845,8 +2242,12 @@ def _build_app_class(tk, ttk, filedialog, messagebox):
             op_box.pack(fill='x', pady=4)
             self.action = tk.StringVar(value='lookup')
             ttk.Label(op_box, text='Thao tác:').pack(side='left', padx=(0, 8))
-            for label, value in (('Đối chiếu (Lookup)', 'lookup'), ('Tổng hợp (Summary)', 'summary'), ('Làm sạch (Clean)', 'clean'), ('🎯 Lọc & Trích xuất (Filter)', 'filter')):
+            for label, value in (('Đối chiếu (Lookup)', 'lookup'), ('Tổng hợp (Summary)', 'summary'), ('Làm sạch (Clean)', 'clean'), ('🎯 Lọc & Trích xuất (Filter)', 'filter'), ('✅ Kiểm chứng đối chiếu (Verify)', 'verify')):
                 ttk.Radiobutton(op_box, text=label, variable=self.action, value=value, command=self.labels).pack(side='left', padx=(0, 14))
+            ttk.Label(op_box, text='Phép tính:').pack(side='left', padx=(10, 4))
+            self.agg_display = tk.StringVar(value='Tổng')
+            self.agg_combo = ttk.Combobox(op_box, textvariable=self.agg_display, values=('Tổng', 'Trung bình'), state='disabled', width=12)
+            self.agg_combo.pack(side='left')
 
             config = ttk.Frame(controls)
             config.pack(fill='x', pady=4)
@@ -2000,6 +2401,486 @@ def _build_app_class(tk, ttk, filedialog, messagebox):
             self.update_engine_badge()
             self.note(f"Đã chuyển động cơ AI sang: {self.ai_provider.get().upper()}")
 
+        # ---------- App shell: sidebar + pages (mockup layout) ----------
+        _GREEN = '#16a34a'
+        _GREEN_BRIGHT = '#22c55e'
+        _GREEN_DARK = '#14532d'
+        _GREEN_BG = '#eef7f1'
+        _INK = '#0f172a'
+        _MUT = '#64748b'
+        _LINE = '#e2e8f0'
+        _RED = '#dc2626'
+        _ACTION_NAMES = {'lookup': 'Đối chiếu', 'summary': 'Tổng hợp', 'clean': 'Làm sạch', 'filter': 'Lọc & trích xuất', 'verify': 'Kiểm chứng đối chiếu'}
+        _ACTION_COLORS = {'lookup': '#22c55e', 'summary': '#14b8a6', 'clean': '#86efac', 'filter': '#f59e0b', 'verify': '#0ea5e9'}
+
+        def _build_shell(self, outer):
+            prefs = load_dashboard_prefs()
+            self._dash_days_val = prefs['days']
+            self._stats_mode = prefs['mode']
+            self._hist_query = tk.StringVar()
+            self._hist_status = tk.StringVar(value='Tất cả')
+            self._current_page = 'ops'
+            shell = ttk.Frame(outer)
+            shell.pack(fill='both', expand=True)
+            self._build_sidebar(shell)
+            host = ttk.Frame(shell)
+            host.pack(side='left', fill='both', expand=True)
+            self.pages = {}
+            for name in ('overview', 'stats', 'history', 'ops', 'engines', 'reports', 'settings'):
+                frame = ttk.Frame(host, padding=14)
+                self.pages[name] = frame
+            self._page_bodies = {}
+            for name in ('overview', 'stats', 'history', 'engines', 'reports', 'settings'):
+                body = ttk.Frame(self.pages[name])
+                body.pack(fill='both', expand=True)
+                self._page_bodies[name] = body
+            self.show_page('ops')
+
+        def _build_sidebar(self, shell):
+            bar = tk.Frame(shell, bg='#ffffff', width=216, highlightbackground=self._LINE, highlightthickness=1)
+            bar.pack(side='left', fill='y')
+            bar.pack_propagate(False)
+            logo = tk.Frame(bar, bg='#ffffff')
+            logo.pack(fill='x', padx=14, pady=(14, 6))
+            icon = tk.Frame(logo, bg=self._GREEN_BRIGHT, width=38, height=38)
+            icon.pack(side='left')
+            icon.pack_propagate(False)
+            tk.Label(icon, text='▦', bg=self._GREEN_BRIGHT, fg='white', font=('Segoe UI', 15, 'bold')).place(relx=0.5, rely=0.5, anchor='center')
+            tk.Label(logo, text='Excel Local Lazy', bg='#ffffff', fg=self._INK, font=('Segoe UI', 11, 'bold')).pack(side='left', padx=(8, 0), anchor='w')
+            tk.Label(bar, text='Bản nội bộ · v0.6.0', bg='#ffffff', fg=self._MUT, font=('Segoe UI', 8)).pack(anchor='w', padx=14, pady=(0, 8))
+            self._nav_items = {}
+            self._nav_badge = None
+            groups = [('MENU CHÍNH', [('overview', '▦', 'Tổng quan'), ('stats', '📊', 'Thống kê'), ('history', '🕘', 'Lịch sử chạy'), ('ops', '☰', 'Thao tác')]),
+                      ('HỆ THỐNG', [('engines', '⚙', 'Động cơ AI'), ('reports', '🗎', 'Báo cáo'), ('settings', '⚙', 'Cài đặt')])]
+            for caption, items in groups:
+                tk.Label(bar, text=caption, bg='#ffffff', fg=self._MUT, font=('Segoe UI', 8, 'bold')).pack(anchor='w', padx=14, pady=(10, 4))
+                for name, glyph, text in items:
+                    row = tk.Frame(bar, bg='#ffffff')
+                    row.pack(fill='x', padx=8, pady=1)
+                    lbl = tk.Label(row, text=f'  {glyph}  {text}', bg='#ffffff', fg='#334155', font=('Segoe UI', 10), anchor='w')
+                    lbl.pack(side='left', fill='x', expand=True, ipady=5)
+                    badge = None
+                    if name == 'stats':
+                        badge = tk.Label(row, text='', bg=self._GREEN_BG, fg=self._GREEN_DARK, font=('Segoe UI', 8, 'bold'))
+                        badge.pack(side='right', padx=(0, 6))
+                        self._nav_badge = badge
+                    for widget in (row, lbl):
+                        widget.bind('<Button-1>', lambda _e, n=name: self.show_page(n))
+                    self._nav_items[name] = (row, lbl)
+            card = tk.Frame(bar, bg=self._GREEN_BG, highlightbackground=self._LINE, highlightthickness=1)
+            card.pack(fill='x', padx=12, pady=(16, 6))
+            tk.Label(card, text='Động cơ cục bộ', bg=self._GREEN_BG, fg=self._GREEN_DARK, font=('Segoe UI', 9, 'bold')).pack(anchor='w', padx=10, pady=(8, 2))
+            tk.Label(card, text='Ollama là động cơ mặc định. Cloud chỉ chạy khi bạn tự bật trong Cài đặt.', bg=self._GREEN_BG, fg='#334155', font=('Segoe UI', 8), wraplength=180, justify='left').pack(anchor='w', padx=10)
+            self._engine_card_status = tk.Label(card, text='● sẵn sàng', bg=self._GREEN_BG, fg=self._GREEN, font=('Segoe UI', 8, 'bold'))
+            self._engine_card_status.pack(anchor='w', padx=10, pady=(4, 8))
+            tk.Label(bar, text='Dữ liệu thống kê lưu trên máy này.', bg='#ffffff', fg=self._MUT, font=('Segoe UI', 8)).pack(anchor='w', padx=14, pady=(8, 0))
+
+        def show_page(self, name):
+            if not hasattr(self, 'pages'):
+                return
+            self._current_page = name
+            for key, frame in self.pages.items():
+                if key == name:
+                    frame.pack(fill='both', expand=True)
+                else:
+                    frame.pack_forget()
+            for key, (row, lbl) in self._nav_items.items():
+                active = key == name
+                row.configure(bg=self._GREEN if active else '#ffffff')
+                lbl.configure(bg=self._GREEN if active else '#ffffff', fg='white' if active else '#334155',
+                              font=('Segoe UI', 10, 'bold') if active else ('Segoe UI', 10))
+            self._refresh_engine_card()
+            if name == 'overview':
+                self._render_overview()
+            elif name == 'stats':
+                self._render_stats()
+            elif name == 'history':
+                self._render_history()
+            elif name == 'engines':
+                self._render_engines()
+            elif name == 'reports':
+                self._render_reports()
+            elif name == 'settings':
+                self._render_settings()
+
+        def show_dashboard(self):
+            self.show_page('stats')
+
+        def _refresh_engine_card(self):
+            if hasattr(self, '_engine_card_status'):
+                names = {'ollama': 'Ollama · cục bộ', 'smart_local': 'Siêu tốc 0-Token', 'smart': 'Smart Router · Cloud', 'heuristic': '100% Cục bộ (Offline)'}
+                self._engine_card_status.configure(text=f"● {names.get(self.ai_provider.get(), self.ai_provider.get())} · sẵn sàng")
+
+        def _update_nav_badge(self, stats):
+            if self._nav_badge is not None:
+                self._nav_badge.configure(text=str(stats['total_period']))
+
+        def _clear_body(self, name):
+            body = self._page_bodies[name]
+            for child in body.winfo_children():
+                child.destroy()
+            return body
+
+        def _page_header(self, body, title, subtitle=''):
+            head = ttk.Frame(body)
+            head.pack(fill='x')
+            ttk.Label(head, text=title, style='Title.TLabel').pack(side='left')
+            if subtitle:
+                ttk.Label(head, text=subtitle, style='Sub.TLabel').pack(side='left', padx=10, pady=6)
+            return head
+
+        def _delta_chip(self, parent, cur, prev, invert=False, points=False):
+            if prev in (0, 0.0) and cur in (0, 0.0):
+                text, good = '— 0%', True
+            elif prev in (0, 0.0):
+                text, good = '▲ mới', True
+            else:
+                delta = (cur - prev) if points else (cur - prev) / abs(prev) * 100
+                up = delta >= 0
+                arrow = '▲' if up else '▼'
+                text = f'{arrow} {abs(delta):.1f}' + (' điểm' if points else '%')
+                good = up != invert
+            chip = tk.Label(parent, text=text, bg='#dcfce7' if good else '#fee2e2', fg='#166534' if good else '#991b1b', font=('Segoe UI', 8, 'bold'))
+            chip.pack(anchor='w', padx=10, pady=(2, 0))
+            return chip
+
+        def _kpi_row(self, parent, stats, prev, days):
+            cards = ttk.Frame(parent)
+            cards.pack(fill='x', pady=(10, 4))
+            items = [
+                ('Tổng lượt sử dụng', f"{stats['total_period']}", stats['total_period'], prev['total_period'], f'so với {days} ngày trước đó', False, False),
+                ('Lượt chạy hôm nay', f"{stats['today']}", stats['today'], prev['today'], 'so với ngày cuối của kỳ trước', False, False),
+                ('Tỷ lệ thành công', f"{stats['success_rate']:.1f}%", stats['success_rate'], prev['success_rate'], 'kế hoạch đúng ngay lần đầu', False, True),
+                ('Thời gian xử lý TB', f"{stats['avg_duration']:.1f}s", stats['avg_duration'], prev['avg_duration'], 'mỗi lượt chạy, gồm cả Excel', True, False),
+            ]
+            for title, value, cur, prv, sub, invert, points in items:
+                card = tk.Frame(cards, bg='#ffffff', highlightbackground=self._LINE, highlightthickness=1)
+                card.pack(side='left', fill='x', expand=True, padx=4)
+                tk.Label(card, text=title, bg='#ffffff', fg=self._MUT, font=('Segoe UI', 9)).pack(anchor='w', padx=10, pady=(8, 0))
+                tk.Label(card, text=value, bg='#ffffff', fg=self._INK, font=('Segoe UI', 20, 'bold')).pack(anchor='w', padx=10)
+                self._delta_chip(card, cur, prv, invert=invert, points=points)
+                tk.Label(card, text=sub, bg='#ffffff', fg=self._MUT, font=('Segoe UI', 8)).pack(anchor='w', padx=10, pady=(2, 8))
+            return cards
+
+        def _chart_buckets(self, stats, mode):
+            per_day = sorted(stats['per_day'].items())
+            if mode == 'week':
+                buckets = []
+                for i in range(0, len(per_day), 7):
+                    chunk = per_day[i:i + 7]
+                    buckets.append((chunk[0][0][5:], sum(c for _, c in chunk)))
+                return buckets
+            return [(d[5:], c) for d, c in per_day]
+
+        def _draw_freq_chart(self, chart, buckets, total):
+            max_count = max([c for _, c in buckets] + [1])
+            avg = total / max(len(buckets), 1)
+            width = 760
+            slot = width / max(len(buckets), 1)
+            avg_y = 128 - (avg / max_count) * 104 if max_count else 128
+            chart.create_line(8, avg_y, width - 8, avg_y, fill='#f59e0b', dash=(4, 3))
+            chart.create_text(12, 12, text=f'Trung bình {avg:.1f} lượt/ngày', anchor='w', font=('Segoe UI', 7), fill='#b45309')
+            for i, (label, count) in enumerate(buckets):
+                x0 = 10 + i * slot + 3
+                x1 = 10 + (i + 1) * slot - 3
+                bar_h = (count / max_count) * 104 if count else 2
+                chart.create_rectangle(x0, 128 - bar_h, x1, 128, fill=self._GREEN_BRIGHT if count else '#e2e8f0', outline='')
+                if count:
+                    chart.create_text((x0 + x1) / 2, 118 - bar_h, text=str(count), font=('Segoe UI', 8, 'bold'), fill=self._GREEN_DARK)
+                if len(buckets) <= 14 or i % 2 == 0:
+                    chart.create_text((x0 + x1) / 2, 142, text=label, font=('Segoe UI', 7), fill='#666666')
+
+        def _draw_donut(self, canvas, data, total):
+            colors = self._ACTION_COLORS
+            start = 90
+            for key, count in sorted(data.items(), key=lambda kv: -kv[1]):
+                if not count or not total:
+                    continue
+                extent = count / total * 360
+                canvas.create_arc(10, 10, 130, 130, start=-start, extent=-extent, style='arc', width=16, outline=colors.get(key, '#94a3b8'))
+                start += extent
+            canvas.create_text(70, 62, text=str(total), font=('Segoe UI', 16, 'bold'), fill=self._INK)
+            canvas.create_text(70, 82, text='lượt trong kỳ', font=('Segoe UI', 7), fill=self._MUT)
+
+        def _range_pills(self, parent):
+            for label, val in (('90 ngày', 90), ('30 ngày', 30), ('7 ngày', 7)):
+                b = ttk.Button(parent, text=label, command=lambda v=val: self._dash_set_days(v))
+                b.pack(side='right', padx=(4, 0))
+                if val == self._dash_days_val:
+                    b.state(['disabled'])
+
+        def _dash_set_days(self, days):
+            self._dash_days_val = days
+            save_dashboard_prefs(days, self._stats_mode)
+            if self._current_page == 'stats':
+                self._render_stats()
+            elif self._current_page == 'history':
+                self._render_history()
+            elif self._current_page == 'overview':
+                self._render_overview()
+
+        def _stats_set_mode(self, mode):
+            self._stats_mode = mode
+            save_dashboard_prefs(self._dash_days_val, mode)
+            self._render_stats()
+
+        # ---------- Overview page ----------
+        def _render_overview(self):
+            trim_usage_log()
+            body = self._clear_body('overview')
+            events = load_usage_events()
+            stats, prev = compute_usage_pair(events, days=30)
+            self._update_nav_badge(compute_usage_stats(events, days=self._dash_days_val))
+            self._page_header(body, 'Tổng quan', 'Nhìn nhanh hoạt động 30 ngày gần nhất')
+            self._kpi_row(body, stats, prev, 30)
+            ttk.Label(body, text='Tần suất theo ngày (14 ngày gần nhất)', style='Sub.TLabel').pack(anchor='w', pady=(8, 2))
+            chart = tk.Canvas(body, height=158, bg='white', highlightthickness=1, highlightbackground=self._LINE)
+            chart.pack(fill='x')
+            buckets = self._chart_buckets(stats, 'day')[-14:]
+            self._draw_freq_chart(chart, buckets, sum(c for _, c in buckets))
+            row = ttk.Frame(body)
+            row.pack(fill='x', pady=(10, 0))
+            left = ttk.Frame(row)
+            left.pack(side='left', fill='both', expand=True)
+            ttk.Label(left, text='Hoạt động gần đây', style='Sub.TLabel').pack(anchor='w')
+            for e in stats['recent'][:5]:
+                line = f"{str(e.get('ts', ''))[:16].replace('T', ' ')} · {e.get('source', '')} · {self._ACTION_NAMES.get(e.get('action', ''), e.get('action', ''))} · {'Thành công' if e.get('status') == 'success' else 'Lỗi'}"
+                ttk.Label(left, text=line, style='Sub.TLabel').pack(anchor='w', pady=1)
+            right = ttk.Frame(row)
+            right.pack(side='left', padx=(16, 0))
+            ttk.Label(right, text='Bắt đầu nhanh', style='Sub.TLabel').pack(anchor='w')
+            ttk.Button(right, text='☰  Đi tới Thao tác', command=lambda: self.show_page('ops')).pack(fill='x', pady=2)
+            ttk.Button(right, text='📊  Xem Thống kê', command=lambda: self.show_page('stats')).pack(fill='x', pady=2)
+            ttk.Button(right, text='🕘  Lịch sử chạy', command=lambda: self.show_page('history')).pack(fill='x', pady=2)
+
+        # ---------- Stats page ----------
+        def _render_stats(self):
+            trim_usage_log()
+            body = self._clear_body('stats')
+            days = self._dash_days_val
+            events = load_usage_events()
+            stats, prev = compute_usage_pair(events, days=days)
+            self._update_nav_badge(stats)
+            head = self._page_header(body, 'Thống kê sử dụng', f'Lượt chạy, tần suất và hiệu quả xử lý — {days} ngày gần nhất')
+            ttk.Button(head, text='⬇ Xuất báo cáo', command=self.export_usage_csv).pack(side='right')
+            self._range_pills(head)
+            if stats['total_all'] == 0:
+                ttk.Label(body, text='Chưa có dữ liệu sử dụng. Nhật ký sẽ tự ghi sau mỗi lần thực thi thành công hoặc thất bại.', style='Sub.TLabel').pack(anchor='w', pady=14)
+                ttk.Label(body, text='Dữ liệu chỉ lưu cục bộ tại .work/usage-log.jsonl (chỉ siêu dữ liệu: thời gian, thao tác, động cơ, số dòng, trạng thái — không có nội dung bảng hay câu lệnh).', wraplength=980).pack(anchor='w')
+                return
+            self._kpi_row(body, stats, prev, days)
+            main = ttk.Frame(body)
+            main.pack(fill='x', pady=(8, 0))
+            chart_box = ttk.Frame(main)
+            chart_box.pack(side='left', fill='x', expand=True)
+            chart_head = ttk.Frame(chart_box)
+            chart_head.pack(fill='x')
+            ttk.Label(chart_head, text='Tần suất sử dụng', style='Sub.TLabel').pack(side='left')
+            for label, mode in (('Theo tuần', 'week'), ('Theo ngày', 'day')):
+                b = ttk.Button(chart_head, text=label, command=lambda m=mode: self._stats_set_mode(m))
+                b.pack(side='right', padx=(4, 0))
+                if self._stats_mode == mode:
+                    b.state(['disabled'])
+            chart = tk.Canvas(chart_box, height=158, bg='white', highlightthickness=1, highlightbackground=self._LINE)
+            chart.pack(fill='x', pady=(2, 0))
+            self._draw_freq_chart(chart, self._chart_buckets(stats, self._stats_mode), stats['total_period'])
+            side = ttk.Frame(main)
+            side.pack(side='left', fill='y', padx=(12, 0))
+            ttk.Label(side, text='Theo thao tác · Tỷ trọng lượt chạy', style='Sub.TLabel').pack(anchor='w')
+            donut = tk.Canvas(side, width=140, height=140, bg='white', highlightthickness=0)
+            donut.pack(anchor='w')
+            self._draw_donut(donut, stats['per_action'], stats['total_period'])
+            total = max(stats['total_period'], 1)
+            top_action = max(stats['per_action'].items(), key=lambda kv: kv[1]) if stats['per_action'] else ('', 0)
+            ttk.Label(side, text=f"Thao tác dùng nhiều nhất: {self._ACTION_NAMES.get(top_action[0], top_action[0])}", style='Sub.TLabel').pack(anchor='w', pady=(0, 4))
+            for key, count in sorted(stats['per_action'].items(), key=lambda kv: -kv[1]):
+                r = ttk.Frame(side)
+                r.pack(fill='x', pady=1)
+                tk.Label(r, text='●', fg=self._ACTION_COLORS.get(key, '#94a3b8'), bg='white', font=('Segoe UI', 8)).pack(side='left')
+                ttk.Label(r, text=f"{self._ACTION_NAMES.get(key, key)} ({key})", width=22).pack(side='left')
+                ttk.Label(r, text=f'{count}  {count / total * 100:.1f}%').pack(side='left')
+            ttk.Label(body, text='Tần suất theo giờ trong ngày (giờ nào hay dùng nhất)', style='Sub.TLabel').pack(anchor='w', pady=(10, 2))
+            heat = ttk.Frame(body)
+            heat.pack(fill='x')
+            max_hour = max(stats['per_hour'] + [1])
+            for h in range(24):
+                v = stats['per_hour'][h] / max_hour
+                color = '#14532d' if v > 0.66 else '#16a34a' if v > 0.33 else '#bbf7d0' if v > 0 else '#f1f5f9'
+                cell = tk.Frame(heat, bg=color, width=40, height=30)
+                cell.pack(side='left', fill='x', expand=True, padx=1)
+                fg = 'white' if v > 0.33 else '#64748b'
+                tk.Label(cell, text=f'{h}', bg=color, fg=fg, font=('Segoe UI', 7)).place(relx=0.5, rely=0.32, anchor='center')
+                tk.Label(cell, text=f"{stats['per_hour'][h]}", bg=color, fg=fg, font=('Segoe UI', 7, 'bold')).place(relx=0.5, rely=0.72, anchor='center')
+            mid = ttk.Frame(body)
+            mid.pack(fill='x', pady=(10, 2))
+            box = ttk.Frame(mid)
+            box.pack(side='left', fill='x', expand=True, padx=4)
+            ttk.Label(box, text='Theo động cơ AI', style='Sub.TLabel').pack(anchor='w')
+            total_e = max(sum(stats['per_engine'].values()), 1)
+            for key, count in sorted(stats['per_engine'].items(), key=lambda kv: -kv[1]):
+                r = ttk.Frame(box)
+                r.pack(fill='x', pady=1)
+                ttk.Label(r, text=key, width=18).pack(side='left')
+                ttk.Progressbar(r, maximum=total_e, value=count, length=220).pack(side='left', padx=4)
+                ttk.Label(r, text=f'{count} ({count / total_e * 100:.0f}%)').pack(side='left')
+            ttk.Label(body, text='Dữ liệu chỉ lưu cục bộ tại .work/usage-log.jsonl — chỉ siêu dữ liệu, không có nội dung bảng hay câu lệnh.', style='Sub.TLabel').pack(anchor='w', pady=(8, 0))
+
+        # ---------- History page ----------
+        def _render_history(self):
+            trim_usage_log()
+            body = self._clear_body('history')
+            days = self._dash_days_val
+            head = self._page_header(body, 'Lịch sử chạy', f'Mọi lần thực thi trong {days} ngày gần nhất')
+            ttk.Button(head, text='⬇ Xuất CSV', command=self.export_usage_csv).pack(side='right', padx=(4, 0))
+            ttk.Button(head, text='🗑 Xoá nhật ký', command=self.clear_usage_log).pack(side='right')
+            self._range_pills(head)
+            controls = ttk.Frame(body)
+            controls.pack(fill='x', pady=(10, 4))
+            ttk.Label(controls, text='Tìm kiếm:').pack(side='left')
+            entry = ttk.Entry(controls, textvariable=self._hist_query, width=36)
+            entry.pack(side='left', padx=(4, 10))
+            entry.bind('<KeyRelease>', lambda _e: self._fill_history_rows())
+            ttk.Label(controls, text='Trạng thái:').pack(side='left')
+            combo = ttk.Combobox(controls, textvariable=self._hist_status, values=('Tất cả', 'Thành công', 'Lỗi'), state='readonly', width=12)
+            combo.pack(side='left', padx=(4, 0))
+            combo.bind('<<ComboboxSelected>>', lambda _e: self._fill_history_rows())
+            self._hist_count = ttk.Label(controls, text='')
+            self._hist_count.pack(side='left', padx=12)
+            tree = ttk.Treeview(body, columns=('ts', 'source', 'action', 'engine', 'rows', 'dur', 'status'), show='headings', height=16)
+            for col, title, w in (('ts', 'Thời gian', 140), ('source', 'File nguồn', 300), ('action', 'Thao tác', 120), ('engine', 'Động cơ', 110), ('rows', 'Dòng', 60), ('dur', 'Thời lượng', 90), ('status', 'Trạng thái', 100)):
+                tree.heading(col, text=title)
+                tree.column(col, width=w)
+            tree.pack(fill='both', expand=True)
+            self._hist_tree = tree
+            self._fill_history_rows()
+
+        def _fill_history_rows(self):
+            if not hasattr(self, '_hist_tree'):
+                return
+            tree = self._hist_tree
+            for item in tree.get_children():
+                tree.delete(item)
+            events = load_usage_events()
+            stats = compute_usage_stats(events, days=self._dash_days_val)
+            cutoff = datetime.datetime.now() - datetime.timedelta(days=self._dash_days_val)
+            query = self._hist_query.get().strip().lower()
+            status = self._hist_status.get()
+            shown = 0
+            total_in_period = 0
+            for e in reversed(events):
+                try:
+                    ts = datetime.datetime.fromisoformat(str(e.get('ts', '')))
+                except ValueError:
+                    continue
+                if ts < cutoff:
+                    continue
+                total_in_period += 1
+                action_name = self._ACTION_NAMES.get(e.get('action', ''), e.get('action', ''))
+                status_text = 'Thành công' if e.get('status') == 'success' else 'Lỗi'
+                if status != 'Tất cả' and status_text != status:
+                    continue
+                haystack = f"{e.get('source', '')} {action_name} {e.get('engine', '')}".lower()
+                if query and query not in haystack:
+                    continue
+                tree.insert('', 'end', values=(str(e.get('ts', '')).replace('T', ' '), e.get('source', ''), action_name, e.get('engine', ''), e.get('rows', 0), f"{e.get('duration_seconds', 0)}s", status_text))
+                shown += 1
+                if shown >= 300:
+                    break
+            self._hist_count.configure(text=f'Hiển thị {shown} / {total_in_period} sự kiện')
+            self._update_nav_badge(stats)
+
+        def clear_usage_log(self):
+            if not messagebox.askyesno('Xoá nhật ký sử dụng', 'Xoá toàn bộ nhật ký sử dụng (.work/usage-log.jsonl)? Thống kê sẽ bắt đầu lại từ đầu.'):
+                return
+            try:
+                (WORK / 'usage-log.jsonl').unlink(missing_ok=True)
+            except OSError as exc:
+                messagebox.showerror('Xoá nhật ký', f'Không xoá được: {exc}')
+                return
+            if self._current_page == 'history':
+                self._render_history()
+            elif self._current_page == 'stats':
+                self._render_stats()
+            elif self._current_page == 'settings':
+                self._render_settings()
+
+        # ---------- Engines / Reports / Settings pages ----------
+        def _render_engines(self):
+            body = self._clear_body('engines')
+            self._page_header(body, 'Động cơ AI', 'Động cơ đang dùng và cách đổi')
+            current = {'ollama': 'Ollama Cục bộ (Mặc định)', 'smart_local': 'Siêu tốc 0-Token (Cục bộ ➔ Cloud khi cần)', 'smart': 'Smart Router (Cloud Cascade)', 'heuristic': '100% Cục bộ (Offline)'}.get(self.ai_provider.get(), self.ai_provider.get())
+            ttk.Label(body, text=f'Đang chọn: {current}', style='Sub.TLabel').pack(anchor='w', pady=(10, 4))
+            ttk.Label(body, text='Đổi động cơ ngay tại trang Thao tác (mục "Động cơ AI") hoặc mở Cài đặt để nhập API Key cho các động cơ Cloud. Cloud là tuỳ chọn bạn tự bật — mặc định chỉ chạy cục bộ, dữ liệu ô tính không rời khỏi máy.', wraplength=900, justify='left').pack(anchor='w', pady=2)
+            row = ttk.Frame(body)
+            row.pack(anchor='w', pady=10)
+            ttk.Button(row, text='⚙ Mở Cài đặt AI & API Key', command=self.open_ai_settings).pack(side='left')
+            ttk.Button(row, text='☰ Đi tới Thao tác', command=lambda: self.show_page('ops')).pack(side='left', padx=8)
+
+        def _render_reports(self):
+            body = self._clear_body('reports')
+            self._page_header(body, 'Báo cáo', 'Báo cáo sử dụng và các file kết quả gần đây')
+            row = ttk.Frame(body)
+            row.pack(anchor='w', pady=(10, 6))
+            ttk.Button(row, text='⬇ Xuất báo cáo sử dụng (CSV)', command=self.export_usage_csv).pack(side='left')
+            ttk.Button(row, text='📂 Mở thư mục kết quả', command=self.open_output_folder).pack(side='left', padx=8)
+            ttk.Label(body, text='File trong thư mục output (mới nhất trước):', style='Sub.TLabel').pack(anchor='w', pady=(6, 2))
+            tree = ttk.Treeview(body, columns=('name', 'mtime', 'size'), show='headings', height=14)
+            for col, title, w in (('name', 'Tên file', 520), ('mtime', 'Sửa đổi lúc', 160), ('size', 'Kích thước', 110)):
+                tree.heading(col, text=title)
+                tree.column(col, width=w)
+            files = []
+            try:
+                files = sorted((f for f in OUTPUT.iterdir() if f.is_file()), key=lambda f: f.stat().st_mtime, reverse=True)[:40]
+            except OSError:
+                files = []
+            for f in files:
+                st = f.stat()
+                tree.insert('', 'end', values=(f.name, datetime.datetime.fromtimestamp(st.st_mtime).strftime('%Y-%m-%d %H:%M'), f'{st.st_size / 1024:.1f} KB'))
+            tree.pack(fill='both', expand=True)
+
+        def open_output_folder(self):
+            try:
+                OUTPUT.mkdir(exist_ok=True)
+                os.startfile(str(OUTPUT))
+            except (OSError, AttributeError):
+                messagebox.showinfo('Thư mục kết quả', f'Thư mục kết quả:\n{OUTPUT}')
+
+        def _render_settings(self):
+            body = self._clear_body('settings')
+            self._page_header(body, 'Cài đặt', 'Nhật ký sử dụng và tuỳ chọn hiển thị')
+            events = load_usage_events()
+            log_path = WORK / 'usage-log.jsonl'
+            size_kb = (log_path.stat().st_size / 1024) if log_path.exists() else 0
+            ttk.Label(body, text=f'Nhật ký sử dụng: {len(events)} sự kiện · {size_kb:.1f} KB · tại .work/usage-log.jsonl', style='Sub.TLabel').pack(anchor='w', pady=(10, 2))
+            ttk.Label(body, text='Nhật ký chỉ chứa siêu dữ liệu (thời gian, thao tác, động cơ, số dòng, trạng thái), tự cắt bỏ phần quá 365 ngày, không chứa nội dung bảng hay câu lệnh.', wraplength=900, justify='left').pack(anchor='w')
+            row = ttk.Frame(body)
+            row.pack(anchor='w', pady=10)
+            ttk.Button(row, text='🗑 Xoá nhật ký', command=self.clear_usage_log).pack(side='left')
+            ttk.Label(row, text='Khoảng ngày mặc định cho Thống kê/Lịch sử:').pack(side='left', padx=(16, 4))
+            for label, val in (('7', 7), ('30', 30), ('90', 90)):
+                b = ttk.Button(row, text=label, command=lambda v=val: self._dash_set_days(v))
+                b.pack(side='left', padx=2)
+                if val == self._dash_days_val:
+                    b.state(['disabled'])
+            ttk.Label(body, text='Excel Local Lazy v0.6.0 · Dual-Engine AI · Tự chữa lành ô gộp & dòng tiêu đề · Đối soát độc lập', style='Sub.TLabel').pack(anchor='w', pady=(8, 0))
+
+        def export_usage_csv(self):
+            import csv as _csv
+            path = filedialog.asksaveasfilename(title='Xuất báo cáo sử dụng', defaultextension='.csv',
+                                                filetypes=[('CSV', '*.csv')], initialfile='bao-cao-su-dung.csv')
+            if not path:
+                return
+            events = load_usage_events()
+            try:
+                with open(path, 'w', encoding='utf-8-sig', newline='') as fh:
+                    writer = _csv.writer(fh)
+                    writer.writerow(['thoi_gian', 'file_nguon', 'thao_tac', 'dong_co', 'so_dong', 'thoi_luong_giay', 'hang_loat', 'trang_thai'])
+                    for e in events:
+                        writer.writerow([e.get('ts', ''), e.get('source', ''), e.get('action', ''), e.get('engine', ''), e.get('rows', 0), e.get('duration_seconds', 0), 'có' if e.get('batch') else 'không', e.get('status', '')])
+                messagebox.showinfo('Xuất báo cáo', f'Đã xuất {len(events)} dòng vào:\n{path}')
+            except OSError as exc:
+                messagebox.showerror('Xuất báo cáo', f'Không ghi được file: {exc}')
+
         def open_ai_settings(self):
             open_ai_settings_dialog(self, tk, ttk, messagebox)
 
@@ -2022,13 +2903,15 @@ def _build_app_class(tk, ttk, filedialog, messagebox):
 
         def labels(self):
             action = self.action.get()
-            self.config_labels['key'].configure(text={'lookup': 'Khóa nguồn', 'summary': 'Cột nhóm', 'clean': 'Cột làm sạch', 'filter': 'Cột cần lọc'}.get(action, 'Cột nguồn'))
+            self.config_labels['key'].configure(text={'lookup': 'Khóa nguồn', 'summary': 'Cột nhóm', 'clean': 'Cột làm sạch', 'filter': 'Cột cần lọc', 'verify': 'Khóa file gốc'}.get(action, 'Cột nguồn'))
             self.config_labels['value'].configure(text='Cột cần cộng' if action == 'summary' else ('Từ khóa / Tiêu chí lọc' if action == 'filter' else ''))
-            self.config_labels['ref_key'].configure(text='Cột trích xuất (Tùy chọn)' if action == 'filter' else 'Khóa danh mục')
-            self.config_labels['ref_value'].configure(text='' if action == 'filter' else 'Giá trị trả về')
+            self.config_labels['ref_key'].configure(text='Cột trích xuất (Tùy chọn)' if action == 'filter' else ('Khóa file đối chiếu' if action == 'verify' else 'Khóa danh mục'))
+            self.config_labels['ref_value'].configure(text='' if action == 'filter' else ('Cột cần so (cách nhau bằng dấu phẩy)' if action == 'verify' else 'Giá trị trả về'))
             for key, combo in self.combos.items():
-                enabled = key == 'key' or (key == 'value' and action in ('summary', 'filter')) or (key == 'ref_key' and action in ('lookup', 'filter')) or (key == 'ref_value' and action == 'lookup')
-                combo.configure(state='normal' if (key in ('value', 'ref_key') and action == 'filter') else ('readonly' if enabled else 'disabled'))
+                enabled = key == 'key' or (key == 'value' and action in ('summary', 'filter')) or (key == 'ref_key' and action in ('lookup', 'filter', 'verify')) or (key == 'ref_value' and action in ('lookup', 'verify'))
+                combo.configure(state='normal' if (key in ('value', 'ref_key') and action == 'filter') or (key == 'ref_value' and action == 'verify') else ('readonly' if enabled else 'disabled'))
+            if hasattr(self, 'agg_combo'):
+                self.agg_combo.configure(state='readonly' if action == 'summary' else 'disabled')
 
         def note(self, text):
             self.log.configure(state='normal')
@@ -2256,9 +3139,11 @@ def _build_app_class(tk, ttk, filedialog, messagebox):
                 self.action.set(plan['action'])
                 for key in self.vars:
                     self.vars[key].set(plan.get(key, ''))
+                if plan['action'] == 'verify':
+                    self.vars['ref_value'].set(plan.get('selected_columns', ''))
                 self.labels()
                 self.status.set(f'AI ({engine_name}) đã đề xuất kế hoạch. Đang chờ bạn kiểm tra và chấp nhận.')
-                action_label = {'lookup': 'Đối chiếu', 'summary': 'Tổng hợp', 'clean': 'Làm sạch', 'filter': 'Lọc & Trích xuất'}[plan['action']]
+                action_label = {'lookup': 'Đối chiếu', 'summary': 'Tổng hợp', 'clean': 'Làm sạch', 'filter': 'Lọc & Trích xuất', 'verify': 'Kiểm chứng đối chiếu'}[plan['action']]
                 self.note(f'[{engine_name}] ' + plan.get('message', '') + f'\nĐề xuất: {action_label}; cột nguồn: {plan["key"]}. Hãy bấm "Kiểm tra kết quả dự kiến".')
                 self.set_step(2)
                 self.run(plan)
@@ -2272,11 +3157,18 @@ def _build_app_class(tk, ttk, filedialog, messagebox):
                 messagebox.showinfo('Thiếu nguồn', 'Nạp file nguồn trước.')
                 return
             plan = proposal or {'action': self.action.get(), **{key: value.get() for key, value in self.vars.items()}, 'message': ''}
+            if plan.get('action') == 'verify' and proposal is None:
+                plan['selected_columns'] = self.vars['ref_value'].get()
+            if plan.get('action') == 'summary':
+                if proposal is None:
+                    plan['agg'] = 'avg' if self.agg_display.get() == 'Trung bình' else 'sum'
+                else:
+                    self.agg_display.set('Trung bình' if plan.get('agg') == 'avg' else 'Tổng')
             plan['lenient_numbers'] = True
             plan['allow_dates'] = True
             plan['clean_output'] = self.clean_output.get()
             source = self.source
-            reference = self.reference if plan['action'] == 'lookup' else None
+            reference = self.reference if plan['action'] in ('lookup', 'verify') else None
             export_pdf = self.pdf.get()
             try:
                 self.current('source', source)
@@ -2308,6 +3200,9 @@ def _build_app_class(tk, ttk, filedialog, messagebox):
             self.start_batch_run(b_dir, ref_path, plan, self.pdf.get())
 
         def start_batch_run(self, b_dir, ref_path, plan, export_pdf):
+            if plan.get('action') == 'verify':
+                messagebox.showinfo('Kiểm chứng đối chiếu', 'Kiểm chứng chạy từng cặp file (file gốc + file đối chiếu riêng), chưa hỗ trợ hàng loạt. Hãy nạp từng file gốc và chạy Kiểm chứng như bình thường.')
+                return
             self.set_step(4)
             b_path = Path(b_dir)
             files = [f for f in b_path.iterdir() if f.is_file() and f.suffix.lower() in ('.xlsx', '.xls', '.csv') and not f.name.startswith(('~', '.'))]
@@ -2403,6 +3298,14 @@ def _build_app_class(tk, ttk, filedialog, messagebox):
             self.note('Đã chấp nhận bản xem trước ' + approval_token[:12] + '. Bắt đầu thực thi và đối soát Excel Desktop.')
             def finished(report):
                 self.last_output = report['output']
+                if report.get('action') == 'verify':
+                    self.status.set('Đã kiểm chứng xong! Báo cáo CSV đã sẵn sàng.')
+                    self.note(f'Báo cáo kiểm chứng: {report["output"]}\n'
+                              f'Dòng khớp: {report["matched_rows"]}; Dòng lệch: {report["mismatch_rows"]} ({report["cells_mismatch"]} ô); '
+                              f'Thiếu trong file đối chiếu: {report["missing_rows"]}; Khóa trùng phía đối chiếu: {report["duplicate_ref_rows"]}; '
+                              f'Khóa chỉ có ở file đối chiếu: {report["extra_ref_rows"]}. File gốc không bị sửa.')
+                    messagebox.showinfo('Hoàn thành', f'Đã xuất báo cáo kiểm chứng:\n{report["output"]}')
+                    return
                 self.status.set('Đã tạo workbook và đối soát thành công!')
                 self.note(f'Kết quả: {report["output"]}\nCông thức đối soát: {report["formula_checks"]}; file nguồn nguyên vẹn.\nPDF: {report["pdf_layout"]}')
                 if report['action'] == 'lookup':
@@ -2412,7 +3315,8 @@ def _build_app_class(tk, ttk, filedialog, messagebox):
                 if report['action'] == 'clean':
                     self.note(f'Đã làm sạch {report["changed_cells"]} ô trên sheet kết quả.')
                 messagebox.showinfo('Hoàn thành', f'Đã xuất bản bảng tính thành công:\n{report["output"]}')
-            self.work('Đang tạo workbook, tính lại và đối soát trong Excel…', lambda: execute(source, reference, plan, export_pdf, approval_token=approval_token), finished)
+            work_title = 'Đang kiểm chứng đối chiếu…' if plan.get('action') == 'verify' else 'Đang tạo workbook, tính lại và đối soát trong Excel…'
+            self.work(work_title, lambda: execute(source, reference, plan, export_pdf, approval_token=approval_token), finished)
 
         def open_result(self):
             if self.last_output and Path(self.last_output).exists():
@@ -2467,7 +3371,7 @@ def gui(smoke=False, on_ready=None):
 
 def main():
     cleanup_stale_work_dirs()
-    parser = argparse.ArgumentParser(description='Excel Local Expert')
+    parser = argparse.ArgumentParser(description='Excel Local Lazy')
     parser.add_argument('--source')
     parser.add_argument('--sheet', default='')
     parser.add_argument('--reference')

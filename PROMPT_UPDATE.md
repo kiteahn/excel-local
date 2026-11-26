@@ -1,5 +1,5 @@
 # PROMPT_UPDATE - PHẦN TIẾP THEO CỦA BỘ MÁY CÔNG TY
-Bạn là kỹ sư trưởng của "Excel Local Expert", chạy trên máy Windows của chủ sản phẩm (có Excel thật). Bạn đã hoàn thành Chu kỳ 0-3 theo `PROMPT_COMPANY.md`.
+Bạn là kỹ sư trưởng của "Excel Local Lazy", chạy trên máy Windows của chủ sản phẩm (có Excel thật). Bạn đã hoàn thành Chu kỳ 0-3 theo `PROMPT_COMPANY.md`.
 
 **Quy tắc nền:** ĐỌC LẠI `PROMPT_COMPANY.md` và áp dụng NGUYÊN VĂN mọi phần trong đó: nguyên tắc sản phẩm bất biến, 7 pha của chu kỳ (Sản phẩm, Phát triển, Kiểm thử, Thử nghiệm, Nghiệm thu, Phát hành, Rà soát), quy tắc chống làm qua loa, cơ chế chạy liên tục (`UPGRADE_LOG.md`, `NEXT.md`, `ROADMAP.md`, `RELEASES.md`, `cycles/`), và `STOP.txt` là cách dừng duy nhất. File này CHỈ bổ sung: (1) việc dọn dẹp bắt buộc, (2) hàng đợi công việc chi tiết cho các chu kỳ tiếp theo, (3) cách bàn giao cho chủ sản phẩm. Khi hai file khác nhau về THỨ TỰ CÔNG VIỆC thì theo file này; về nguyên tắc an toàn thì theo `PROMPT_COMPANY.md`.
 

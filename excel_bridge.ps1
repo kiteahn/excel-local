@@ -151,6 +151,15 @@ try {
         if ($book.Connections.Count -gt 0) { throw 'Workbook has data connections' }
     } else {
         $book = $excel.Workbooks.Add()
+        # W-1: remember the default sheet(s) of the new workbook so the write
+        # path can remove them afterwards; otherwise every output would carry
+        # a stray empty default sheet next to the real result sheets.
+        $script:straySheets = @()
+        for ($si = 1; $si -le $book.Worksheets.Count; $si++) {
+            $s0 = $book.Worksheets.Item($si)
+            $script:straySheets += [string]$s0.Name
+            Release-Com $s0
+        }
     }
     $originalCalculation = $excel.Calculation
     $excel.Calculation = -4135
@@ -215,6 +224,18 @@ try {
                 Release-Com $range
             }
             Release-Com $sheet
+        }
+        if ($script:straySheets) {
+            $specNames = @($job.sheets | ForEach-Object { [string]$_.name })
+            foreach ($stray in $script:straySheets) {
+                if ($specNames -notcontains $stray) {
+                    try {
+                        $tmpSheet = $book.Worksheets.Item($stray)
+                        $tmpSheet.Delete()
+                        Release-Com $tmpSheet
+                    } catch { }
+                }
+            }
         }
         $timings.write_seconds = $clock.Elapsed.TotalSeconds - $phase
         $timings.write_detail = $script:writeDetail

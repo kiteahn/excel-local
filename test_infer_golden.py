@@ -67,18 +67,19 @@ CASES = [
     ("Lấy riêng danh sách lớp trưởng", ["Họ tên", "Chức vụ"], (), ("filter", "Chức vụ", "lớp trưởng", "", None)),
     ("Hôm nay thời tiết đẹp", ["A", "B"], (), None),
     # Q4 real-like probes (2026-11-03). L01-L03 were misplanned before the
-    # Q4 fixes; they now pin the corrected behaviour. L04-L05 are known
-    # limitations: AVERAGE is not implemented and the planner returns None
-    # instead of an honest clarify. Intended fix: recognise "trung bình" and
-    # return clarify with a message that only sums are supported.
+    # Q4 fixes; they now pin the corrected behaviour. L04-L05 were known
+    # limitations (AVERAGE unsupported, planner returned None); fixed
+    # 2026-11-04 by adding agg='avg' summary support end to end.
     ("Lọc nhân viên Kinh doanh", ["Mã NV", "Họ tên", "Phòng ban"], (),
      ("filter", "Phòng ban", "kinh doanh", "", None)),
     ("Cho tôi danh sách sinh viên lớp CNTT01", ["MSSV", "Họ và tên", "Lớp"], (),
      ("filter", "Lớp", "cntt01", "", None)),
     ("Lọc ra những sinh viên vắng", ["Mã SV", "Họ tên", "Lớp", "Trạng thái"], (),
      ("filter", "Trạng thái", "vắng", "", None)),
-    ("Tính điểm trung bình theo lớp", ["MSSV", "Họ và tên", "Lớp", "Điểm TB"], (), None),
-    ("Lương trung bình mỗi phòng ban", ["Mã NV", "Họ tên", "Phòng ban", "Lương cơ bản"], (), None),
+    ("Tính điểm trung bình theo lớp", ["MSSV", "Họ và tên", "Lớp", "Điểm TB"], (),
+     ("summary", "Lớp", "Điểm TB", "", "")),
+    ("Lương trung bình mỗi phòng ban", ["Mã NV", "Họ tên", "Phòng ban", "Lương cơ bản"], (),
+     ("summary", "Phòng ban", "Lương cơ bản", "", "")),
 ]
 
 def run():
@@ -90,6 +91,10 @@ def run():
         assert result is not None, f'{prompt!r}: expected {expected}, got None'
         got = tuple(result.get(k) for k in ('action', 'key', 'value', 'ref_key', 'ref_value'))
         assert got == expected, f'{prompt!r}: expected {expected}, got {got}'
+    avg_plan = ai_client.infer_smart_plan("Tính điểm trung bình theo lớp", ["MSSV", "Họ và tên", "Lớp", "Điểm TB"], ())
+    assert avg_plan and avg_plan.get('agg') == 'avg', f'avg agg missing: {avg_plan}'
+    sum_plan = ai_client.infer_smart_plan("Tính tổng điểm theo lớp", ["MSSV", "Họ và tên", "Lớp", "Điểm TB"], ())
+    assert not sum_plan or sum_plan.get('agg', 'sum') == 'sum', f'sum plan flipped to avg: {sum_plan}'
     print(f'All {len(CASES)} infer_smart_plan golden cases passed.')
 
 if __name__ == '__main__':
